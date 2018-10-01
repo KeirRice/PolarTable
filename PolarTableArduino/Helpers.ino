@@ -11,20 +11,6 @@ void p(char *fmt, ... ){
 }
 
 
-template<typename T, typename T2, typename T3>
-void bitsWrite(T &x, const T2 &n, const T3 b, const int w)
-/* Extention to bitWrite that supports more than one bit getting set at a time.
-x: the numeric variable to which to write
-n: which bit of the number to write, starting at 0 for the least-significant (rightmost) bit
-b: the value to write to the bits
-w: the width of the in bits of b
-*/
-{
-  int mask = ((1 << (w + 1)) - 1) << b; // Build a mask w wide, move it into position b
-  x = (x & ~mask) | ((n << b) & mask); // Clear the bits under mask and apply the value
-}
-
-
 void(* resetFunc) (void) = 0; //declare reset function @ address 0
 
 void doReset(){

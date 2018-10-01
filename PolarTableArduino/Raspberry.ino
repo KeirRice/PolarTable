@@ -154,7 +154,7 @@ void raspberry_loop() {
     }
     if(heartbeatChanged){
       // TODO: Make the heat beat monitor
-      heartbeatTime = currentMillis + 10000;
+      heartbeatTime = millis() + 10000;
       heartbeatChanged = false;
     }
   }

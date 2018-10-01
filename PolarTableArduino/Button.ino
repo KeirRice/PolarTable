@@ -63,7 +63,7 @@ void sleep(){
 
 void wake(){
     // Restart out millis counter as it wasn't running while alseep
-    resetMills();
+    resetMillis();
 }
 
 

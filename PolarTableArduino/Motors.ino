@@ -131,7 +131,7 @@ void send_state() {
   // turn on the output so the LEDs can light up:
   digitalWrite(ARDUINO_LATCH_PIN, HIGH);
   
-  dataSendTimer = currentMillis + 1;
+  dataSendTimer = millis() + 1;
   motor_settings_changed = false;
 }
 
@@ -195,7 +195,7 @@ void motor_loop()
       
     case DATA_STATE_SENDING :
       // Hold the state for 1ms for the drivers to pick it up.
-      if (currentMillis > dataSendTimer){
+      if (millis() > dataSendTimer){
          DATA_STATE = DATA_STATE_IDLE;
       }
       break;
@@ -232,27 +232,27 @@ void motor_loop()
       break;
       
     case MOTOR_STATE_TO_STOPPED :
-      stoppedTimer = currentMillis + 1000;
+      stoppedTimer = millis() + 1000;
       MOTOR_STATE = MOTOR_STATE_STOPPED;
       /* FALL THROUGH */
     case MOTOR_STATE_STOPPED :
       if(new_position){
         MOTOR_STATE = MOTOR_STATE_TO_MOVING;
       }
-      if (currentMillis > stoppedTimer){
+      if (millis() > stoppedTimer){
         MOTOR_STATE = MOTOR_STATE_TO_IDLE;
       }
       break;
       
     case MOTOR_STATE_TO_IDLE :
-      idleTimer = currentMillis + 10000;
+      idleTimer = millis() + 10000;
       MOTOR_STATE = MOTOR_STATE_IDLE;
       /* FALL THROUGH */
     case MOTOR_STATE_IDLE :
       if(new_position){
         MOTOR_STATE = MOTOR_STATE_STOPPED;
       }
-      if (currentMillis > idleTimer){
+      if (millis() > idleTimer){
         MOTOR_STATE = MOTOR_STATE_TO_SLEEP;
       }
       break;
