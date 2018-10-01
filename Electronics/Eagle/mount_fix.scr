@@ -1,0 +1,110 @@
+# NetScript
+# 
+# Exported from sx1509-breakout_mount.sch at 9/17/2018 12:48 PM
+# 
+# EAGLE Version 9.1.3 Copyright (c) 1988-2018 Autodesk, Inc.
+# 
+Change Class 0;
+Signal '0'        'JP2'      '1' \
+                  'JP5'      '4' \
+                  ;
+Change Class 0;
+Signal '1'        'JP2'      '2' \
+                  'JP5'      '5' \
+                  ;
+Change Class 0;
+Signal '2'        'JP2'      '3' \
+                  'JP5'      '6' \
+                  ;
+Change Class 0;
+Signal '3'        'JP2'      '4' \
+                  'JP5'      '7' \
+                  ;
+Change Class 0;
+Signal '3.3V'     'B1'       '3.3V' \
+                  'JP5'      '2' \
+                  'JP6'      '2' \
+                  'JP7'      '7' \
+                  ;
+Change Class 0;
+Signal '4'        'JP2'      '7' \
+                  'JP5'      '8' \
+                  ;
+Change Class 0;
+Signal '5'        'JP2'      '8' \
+                  'JP5'      '9' \
+                  ;
+Change Class 0;
+Signal '6'        'JP2'      '9' \
+                  'JP5'      '10' \
+                  ;
+Change Class 0;
+Signal '7'        'JP2'      '10' \
+                  'JP5'      '11' \
+                  ;
+Change Class 0;
+Signal '8'        'JP1'      '1' \
+                  'JP6'      '11' \
+                  ;
+Change Class 0;
+Signal '9'        'JP1'      '2' \
+                  'JP6'      '10' \
+                  ;
+Change Class 0;
+Signal '10'       'JP1'      '3' \
+                  'JP6'      '9' \
+                  ;
+Change Class 0;
+Signal '11'       'JP1'      '4' \
+                  'JP6'      '8' \
+                  ;
+Change Class 0;
+Signal '12'       'JP1'      '7' \
+                  'JP6'      '7' \
+                  ;
+Change Class 0;
+Signal '13'       'JP1'      '8' \
+                  'JP6'      '6' \
+                  ;
+Change Class 0;
+Signal '14'       'JP1'      '9' \
+                  'JP6'      '5' \
+                  ;
+Change Class 0;
+Signal '15'       'JP1'      '10' \
+                  'JP6'      '4' \
+                  ;
+Change Class 0;
+Signal 'GND'      'JP1'      '5' \
+                  'JP2'      '5' \
+                  'JP5'      '1' \
+                  'JP6'      '1' \
+                  'JP7'      '1' \
+                  ;
+Change Class 0;
+Signal 'NINT'     'B1'       'D10' \
+                  'JP7'      '6' \
+                  ;
+Change Class 0;
+Signal 'NRESET'   'B1'       'D11' \
+                  'JP7'      '2' \
+                  ;
+Change Class 0;
+Signal 'OSCIO'    'JP7'      '5' \
+                  ;
+Change Class 0;
+Signal 'SCL'      'B1'       'SCL' \
+                  'JP7'      '4' \
+                  ;
+Change Class 0;
+Signal 'SDA'      'B1'       'SDA' \
+                  'JP7'      '3' \
+                  ;
+Change Class 0;
+Signal 'VCC1'     'JP2'      '6' \
+                  'JP5'      '3' \
+                  ;
+Change Class 0;
+Signal 'VCC2'     'JP1'      '6' \
+                  'JP6'      '3' \
+                  ;
