@@ -1,0 +1,8 @@
+	error	stopped	stopping	moving	idle	sleep	wake
+error							
+stopped			1		1		1
+stopping				1			
+moving		1					
+idle		1					
+sleep					1		
+wake						1	

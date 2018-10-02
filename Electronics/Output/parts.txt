@@ -1,0 +1,47 @@
+Partlist
+
+Exported from sx1509-breakout_mount_remap5.sch at 9/27/2018 1:54 PM
+
+EAGLE Version 9.1.3 Copyright (c) 1988-2018 Autodesk, Inc.
+
+Assembly variant: 
+
+Part     Value                         Device                         Package                      Library                 Sheet
+
+B1       Connect down to Arduino       ARDUINO_UNO_R3_SHIELDNOLABELS  UNO_R3_SHIELD_NOLABELS       keir_library            1
+B2       Connect up to motor shield    ARDUINO_UNO_R3_SHIELDNOLABELS  UNO_R3_SHIELD_NOLABELS       keir_library            1
+C1       100u                          CPOL-EUE2-5                    E2-5                         rcl                     1
+C2       100u                          CPOL-EUE2-5                    E2-5                         rcl                     1
+C4       100nF                         C-EUC0805                      C0805                        resistor                1
+C5       330uF                         C-EUC0805                      C0805                        resistor                1
+C9       100n                          C-EUC0805                      C0805                        rcl                     1
+D1       1N5408                        1N5408                         DO15-12                      keir_library            1
+IC2      LM358D                        LM358D                         SO08                         keir_library            1
+J1       Pi Power Jack                 POWER_JACKPTH_BREAD            POWER_JACK_PTH_BREAD         SparkFun-Connectors     1
+J2       Header - Right angled, female CONN_031X03_2.54MM_RA_FEMALE   1X03                         keir_library            1
+J3       Pi Connection                 CONN_041X04_1.24MM_RA_MALE     1X04_1.24MM_RA_MALE          keir_library            1
+J4                                     CONN_041X04_1.24MM_RA_MALE     1X04_1.24MM_RA_MALE          keir_library            1
+J5       IR Sensors                    CONN_06SILK_FEMALE_PTH         1X06                         SparkFun-Connectors     1
+J6       Switch A + B                  CONN_03X22X03_2.54MM_RA_MALE   2X3                          keir_library            1
+J7       Switch C + D                  CONN_03X22X03_2.54MM_RA_MALE   2X3                          keir_library            1
+J8       Switch E + F                  CONN_03X22X03_2.54MM_RA_MALE   2X3                          keir_library            1
+J10      LED + Radio                   CONN_04X22X4_1.24MM_RA_MALE    2X4                          keir_library            1
+JP2      Bypass Power Control          JUMPER-SMT_2_NO_SILK_ROUND     SMT-JUMPER_2_NO_SILK_ROUND   SparkFun-Jumpers        1
+JP3      Enable Hold to Reset          JUMPER-SMT_2_NC_TRACE_SILK     SMT-JUMPER_2_NC_TRACE_SILK   SparkFun-Jumpers        1
+JP4      Route 15 to external          JUMPER-SMT_3_1-NC_TRACE_SILK   SMT-JUMPER_3_1-NC_TRACE_SILK SparkFun-Jumpers        1
+JP5                                    CONN_11                        1X11                         SparkFun-Connectors     1
+JP6                                    CONN_11                        1X11                         SparkFun-Connectors     1
+JP7                                    M07                            1X07                         SparkFun-Connectors     1
+Q1       BC337                         BC337                          TO92                         transistor-npn          1
+Q2       2N3906                        2N3906                         TO92D                        transistor-small-signal 1
+Q3       BC547                         BC547                          TO92                         transistor-npn          1
+R1       100                           R-US_R0805                     R0805                        resistor                1
+R2       22.1k                         R-US_R0805                     R0805                        resistor                1
+R3       22k                           R-US_R0805                     R0805                        resistor                1
+R4       16.2k                         R-US_R0805                     R0805                        resistor                1
+R5       221k                          R-US_R0805                     R0805                        resistor                1
+R7       1k                            R-US_R0805                     R0805                        resistor                1
+R8       1k                            R-US_R0805                     R0805                        resistor                1
+R9       1k                            R-US_R0805                     R0805                        resistor                1
+U3       SN74HC595DR                   SN74HC595HCD                   SO16                         keir_library            1
+VR1      10k                           TRIMPOT-PTH-10MM-KNOB-1/2W-10% TRIMPOT-PTH-3386U            SparkFun-Resistors      1

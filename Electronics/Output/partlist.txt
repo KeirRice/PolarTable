@@ -1,0 +1,32 @@
+Partlist
+
+Exported from layout4.sch at 9/8/2018 10:40 PM
+
+EAGLE Version 9.1.3 Copyright (c) 1988-2018 Autodesk, Inc.
+
+Assembly variant: 
+
+Part     Value                      Device                          Package                  Library             Sheet
+
+B1       ARDUINO_UNO_R3_SHIELDBASIC ARDUINO_UNO_R3_SHIELDBASIC      UNO_R3_SHIELD            SparkFun-Boards     1
+IC1      MCP23017SP                 MCP23017SP                      DIL28-3                  adafruit            1
+J1                                  CONN_02POLAR                    MOLEX-1X2                SparkFun-Connectors 1
+J3                                  CONN_04                         1X04                     SparkFun-Connectors 1
+J4                                  CONN_023.5MM                    SCREWTERMINAL-3.5MM-2    SparkFun-Connectors 1
+J5       LED                        CONN_04POLAR                    MOLEX-1X4                SparkFun-Connectors 1
+J6       Radius A                   CONN_03POLAR                    MOLEX-1X3                SparkFun-Connectors 1
+J7       Radius B                   CONN_03POLAR                    MOLEX-1X3                SparkFun-Connectors 1
+J8       Theta A                    CONN_03POLAR                    MOLEX-1X3                SparkFun-Connectors 1
+J9       Theta B                    CONN_03POLAR                    MOLEX-1X3                SparkFun-Connectors 1
+J10                                 CONN_03                         1X03                     SparkFun-Connectors 1
+J11                                 CONN_03                         1X03                     SparkFun-Connectors 1
+J12                                 CONN_08X2                       2X8                      SparkFun-Connectors 1
+R1       10k                        10KOHM-0603-1/10W-1%            0603                     SparkFun-Resistors  1
+R2       100                        100OHM-0603-1/4W-5%             0603                     SparkFun-Resistors  1
+R3       100                        100OHM-0603-1/4W-5%             0603                     SparkFun-Resistors  1
+R4       100                        100OHM-0603-1/4W-5%             0603                     SparkFun-Resistors  1
+S1       Reset                      MOMENTARY-SWITCH-SPST-PTH-6.0MM TACTILE_SWITCH_PTH_6.0MM SparkFun-Switches   1
+S2                                  DS03                            DS-03                    switch-dil          1
+T1       200mA/40V                  -NPN-TO220                      TO220                    transistor-neu-to92 1
+T2       200mA/40V                  -NPN-TO220                      TO220                    transistor-neu-to92 1
+T3       200mA/40V                  -NPN-TO220                      TO220                    transistor-neu-to92 1

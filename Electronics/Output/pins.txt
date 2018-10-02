@@ -1,0 +1,253 @@
+Pinlist
+
+Exported from sx1509-breakout_mount_remap5.sch at 9/27/2018 1:54 PM
+
+EAGLE Version 9.1.3 Copyright (c) 1988-2018 Autodesk, Inc.
+
+Part     Pad      Pin        Dir      Net
+
+B1       5V       5V         io       5V
+         A0       A0         io                *** unconnected ***
+         A1       A1         io                *** unconnected ***
+         A2       A2         io                *** unconnected ***
+         A3       A3         io                *** unconnected ***
+         A4       A4         io       SDA
+         A5       A5         io       SCL
+         D2       D2         io       NINT
+         D3       *D3        io       WAKE_SW
+         D4       D4         io       YSTEP
+         D5       *D5        io       YDIR
+         D6       *D6        io       XSTEP
+         D7       D7         io       XDIR
+         D8       D8         io       LATCH
+         D9       *D9        io       DATA
+         RX       RX         io       RX
+         TX       TX         io       TX
+         D10      *D10       io       CLK
+         D11      *D11       io                *** unconnected ***
+         D12      D12        io                *** unconnected ***
+         D13      D13        io                *** unconnected ***
+         RES      RES        io       RES
+         SCL      SCL        io       SCL
+         SDA      SDA        io       SDA
+         VIN      VIN        io       12V
+         3.3V     3.3V       io       3.3V
+         AREF     AREF       io       AREF
+         GND@0    GND        io       GND
+         GND@1    GND        io       GND
+         GND@2    GND        io       GND
+         IOREF    IOREF      io       IOREF
+
+B2       5V       5V         io       5V
+         A0       A0         io       ENY
+         A1       A1         io       SLEEPY
+         A2       A2         io       ENX
+         A3       A3         io       SLEEPX
+         A4       A4         io       SDA
+         A5       A5         io       SCL
+         D2       D2         io       XSTEP
+         D3       *D3        io       XDIR
+         D4       D4         io       XMS1
+         D5       *D5        io       XMS2
+         D6       *D6        io       YSTEP
+         D7       D7         io       YDIR
+         D8       D8         io       YMS1
+         D9       *D9        io       YMS2
+         RX       RX         io       RX
+         TX       TX         io       TX
+         D10      *D10       io                *** unconnected ***
+         D11      *D11       io                *** unconnected ***
+         D12      D12        io                *** unconnected ***
+         D13      D13        io                *** unconnected ***
+         RES      RES        io       RES
+         SCL      SCL        io       SCL
+         SDA      SDA        io       SDA
+         VIN      VIN        io       12V
+         3.3V     3.3V       io       3.3V
+         AREF     AREF       io       AREF
+         GND@0    GND        io       GND
+         GND@1    GND        io       GND
+         GND@2    GND        io       GND
+         IOREF    IOREF      io       IOREF
+
+C1       +        +          pas      12V
+         -        -          pas      GND
+
+C2       +        +          pas      PI_5V
+         -        -          pas      GND
+
+C4       1        1          pas      N$2
+         2        2          pas      GND
+
+C5       1        1          pas      N$8
+         2        2          pas      GND
+
+C9       1        1          pas      12V
+         2        2          pas      GND
+
+D1       A        A          pas      N$4
+         C        C          pas      12V
+
+IC2      1        OUT        out      COMP_OUT
+         2        -IN        in       N$8
+         3        +IN        in       N$5
+         4        V-         pwr      GND
+         5        +IN        in                *** unconnected ***
+         6        -IN        in                *** unconnected ***
+         7        OUT        out               *** unconnected ***
+         8        V+         pwr      3.3V
+
+J1       GND      GND        io       GND
+         PWR      PWR        io       N$4
+         GNDBREAK GNDBREAK   io       GND
+
+J2       1        1          pas      12V
+         2        2          pas      GND
+         3        3          pas      PI_5V
+
+J3       1        1          pas      PI_5V
+         2        2          pas      PI_GROUND
+         3        3          pas      SCL
+         4        4          pas      SDA
+
+J4       1        1          pas      3.3V
+         2        2          pas      15_PLUG
+         3        3          pas      B7
+         4        4          pas      GND
+
+J5       1        1          pas      3.3V
+         2        2          pas      GND
+         3        3          pas      B15
+         4        4          pas      B14
+         5        5          pas      B13
+         6        6          pas      B12
+
+J6       1        1          io       GND
+         2        2          io       GND
+         3        3          io       B10
+         4        4          io       B11
+         5        5          io       3.3V
+         6        6          io       3.3V
+
+J7       1        1          io       GND
+         2        2          io       GND
+         3        3          io       B8
+         4        4          io       B9
+         5        5          io       3.3V
+         6        6          io       3.3V
+
+J8       1        1          io       GND
+         2        2          io       GND
+         3        3          io       B5
+         4        4          io       B6
+         5        5          io       3.3V
+         6        6          io       3.3V
+
+J10      1        1          pas      B0
+         2        2          pas      GND
+         3        3          pas      WAKE_SW
+         4        4          pas               *** unconnected ***
+         5        5          pas      B1_SCIN
+         6        6          pas      B3_RXDATA
+         7        7          pas      B2_SDIN
+         8        8          pas      3.3V
+
+JP2      1        1          pas      PI_GROUND
+         2        2          pas      GND
+
+JP3      1        1          pas      WAKE_SW
+         2        2          pas      $N99
+
+JP4      1        1          pas      15_PLUG
+         2        2          pas      B4
+         3        3          pas      PIPOWER_SIGNAL
+
+JP5      1        1          pas      GND
+         2        2          pas      3.3V
+         3        3          pas               *** unconnected ***
+         4        4          pas      B0
+         5        5          pas      B1_SCIN
+         6        6          pas      B2_SDIN
+         7        7          pas      B3_RXDATA
+         8        8          pas      B4
+         9        9          pas      B5
+         10       10         pas      B6
+         11       11         pas      B7
+
+JP6      1        1          pas      GND
+         2        2          pas      3.3V
+         3        3          pas               *** unconnected ***
+         4        4          pas      B15
+         5        5          pas      B14
+         6        6          pas      B13
+         7        7          pas      B12
+         8        8          pas      B11
+         9        9          pas      B10
+         10       10         pas      B9
+         11       11         pas      B8
+
+JP7      1        1          pas      GND
+         2        2          pas      RES
+         3        3          pas      SDA
+         4        4          pas      SCL
+         5        5          pas               *** unconnected ***
+         6        6          pas      NINT
+         7        7          pas      3.3V
+
+Q1       1        E          pas      GND
+         2        B          pas      N$2
+         3        C          pas      PI_GROUND
+
+Q2       B        B          pas      N$1
+         C        C          pas      N$7
+         E        E          pas      3.3V
+
+Q3       1        E          pas      RES
+         2        B          pas      COMP_OUT
+         3        C          pas      N$3
+
+R1       1        1          pas      PIPOWER_SIGNAL
+         2        2          pas      N$2
+
+R2       1        1          pas      GND
+         2        2          pas      N$8
+
+R3       1        1          pas      GND
+         2        2          pas      N$5
+
+R4       1        1          pas      N$5
+         2        2          pas      3.3V
+
+R5       1        1          pas      COMP_OUT
+         2        2          pas      N$5
+
+R7       1        1          pas      N$1
+         2        2          pas      $N99
+
+R8       1        1          pas      3.3V
+         2        2          pas      $N99
+
+R9       1        1          pas      3.3V
+         2        2          pas      N$3
+
+U3       1        B          hiz      ENX
+         2        C          hiz      SLEEPY
+         3        D          hiz      ENY
+         4        E          hiz      YMS1
+         5        F          hiz      YMS2
+         6        G          hiz      XMS1
+         7        H          hiz      XMS2
+         8        GND        pwr      GND
+         9        !QH        out               *** unconnected ***
+         10       !SRCLR     in       3.3V
+         11       SERCLK     in       CLK
+         12       RCLK       in       LATCH
+         13       !OE        in       GND
+         14       SER        in       DATA
+         15       A          hiz      SLEEPX
+         16       VCC        pwr      3.3V
+
+VR1      1        CCW        pas      N$7
+         2        WIPER      pas      N$8
+         3        CW         pas      N$8
+

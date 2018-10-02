@@ -1,0 +1,254 @@
+Netlist
+
+Exported from sx1509-breakout_mount_remap5.sch at 9/27/2018 1:54 PM
+
+EAGLE Version 9.1.3 Copyright (c) 1988-2018 Autodesk, Inc.
+
+Net            Part     Pad      Pin        Sheet
+
+$N99           JP3      2        2          1
+               R7       2        2          1
+               R8       2        2          1
+
+3.3V           B1       3.3V     3.3V       1
+               B2       3.3V     3.3V       1
+               IC2      8        V+         1
+               J10      8        8          1
+               J4       1        1          1
+               J5       1        1          1
+               J6       5        5          1
+               J6       6        6          1
+               J7       5        5          1
+               J7       6        6          1
+               J8       5        5          1
+               J8       6        6          1
+               JP5      2        2          1
+               JP6      2        2          1
+               JP7      7        7          1
+               Q2       E        E          1
+               R4       2        2          1
+               R8       1        1          1
+               R9       1        1          1
+               U3       10       !SRCLR     1
+               U3       16       VCC        1
+
+5V             B1       5V       5V         1
+               B2       5V       5V         1
+
+12V            B1       VIN      VIN        1
+               B2       VIN      VIN        1
+               C1       +        +          1
+               C9       1        1          1
+               D1       C        C          1
+               J2       1        1          1
+
+15_PLUG        J4       2        2          1
+               JP4      1        1          1
+
+AREF           B1       AREF     AREF       1
+               B2       AREF     AREF       1
+
+B0             J10      1        1          1
+               JP5      4        4          1
+
+B1_SCIN        J10      5        5          1
+               JP5      5        5          1
+
+B2_SDIN        J10      7        7          1
+               JP5      6        6          1
+
+B3_RXDATA      J10      6        6          1
+               JP5      7        7          1
+
+B4             JP4      2        2          1
+               JP5      8        8          1
+
+B5             J8       3        3          1
+               JP5      9        9          1
+
+B6             J8       4        4          1
+               JP5      10       10         1
+
+B7             J4       3        3          1
+               JP5      11       11         1
+
+B8             J7       3        3          1
+               JP6      11       11         1
+
+B9             J7       4        4          1
+               JP6      10       10         1
+
+B10            J6       3        3          1
+               JP6      9        9          1
+
+B11            J6       4        4          1
+               JP6      8        8          1
+
+B12            J5       6        6          1
+               JP6      7        7          1
+
+B13            J5       5        5          1
+               JP6      6        6          1
+
+B14            J5       4        4          1
+               JP6      5        5          1
+
+B15            J5       3        3          1
+               JP6      4        4          1
+
+CLK            B1       D10      *D10       1
+               U3       11       SERCLK     1
+
+COMP_OUT       IC2      1        OUT        1
+               Q3       2        B          1
+               R5       1        1          1
+
+DATA           B1       D9       *D9        1
+               U3       14       SER        1
+
+ENX            B2       A2       A2         1
+               U3       1        B          1
+
+ENY            B2       A0       A0         1
+               U3       3        D          1
+
+GND            B1       GND@0    GND        1
+               B1       GND@1    GND        1
+               B1       GND@2    GND        1
+               B2       GND@0    GND        1
+               B2       GND@1    GND        1
+               B2       GND@2    GND        1
+               C1       -        -          1
+               C2       -        -          1
+               C4       2        2          1
+               C5       2        2          1
+               C9       2        2          1
+               IC2      4        V-         1
+               J1       GND      GND        1
+               J1       GNDBREAK GNDBREAK   1
+               J10      2        2          1
+               J2       2        2          1
+               J4       4        4          1
+               J5       2        2          1
+               J6       1        1          1
+               J6       2        2          1
+               J7       1        1          1
+               J7       2        2          1
+               J8       1        1          1
+               J8       2        2          1
+               JP2      2        2          1
+               JP5      1        1          1
+               JP6      1        1          1
+               JP7      1        1          1
+               Q1       1        E          1
+               R2       1        1          1
+               R3       1        1          1
+               U3       13       !OE        1
+               U3       8        GND        1
+
+IOREF          B1       IOREF    IOREF      1
+               B2       IOREF    IOREF      1
+
+LATCH          B1       D8       D8         1
+               U3       12       RCLK       1
+
+N$1            Q2       B        B          1
+               R7       1        1          1
+
+N$2            C4       1        1          1
+               Q1       2        B          1
+               R1       2        2          1
+
+N$3            Q3       3        C          1
+               R9       2        2          1
+
+N$4            D1       A        A          1
+               J1       PWR      PWR        1
+
+N$5            IC2      3        +IN        1
+               R3       2        2          1
+               R4       1        1          1
+               R5       2        2          1
+
+N$7            Q2       C        C          1
+               VR1      1        CCW        1
+
+N$8            C5       1        1          1
+               IC2      2        -IN        1
+               R2       2        2          1
+               VR1      2        WIPER      1
+               VR1      3        CW         1
+
+NINT           B1       D2       D2         1
+               JP7      6        6          1
+
+PIPOWER_SIGNAL JP4      3        3          1
+               R1       1        1          1
+
+PI_5V          C2       +        +          1
+               J2       3        3          1
+               J3       1        1          1
+
+PI_GROUND      J3       2        2          1
+               JP2      1        1          1
+               Q1       3        C          1
+
+RES            B1       RES      RES        1
+               B2       RES      RES        1
+               JP7      2        2          1
+               Q3       1        E          1
+
+RX             B1       RX       RX         1
+               B2       RX       RX         1
+
+SCL            B1       A5       A5         1
+               B1       SCL      SCL        1
+               B2       A5       A5         1
+               B2       SCL      SCL        1
+               J3       3        3          1
+               JP7      4        4          1
+
+SDA            B1       A4       A4         1
+               B1       SDA      SDA        1
+               B2       A4       A4         1
+               B2       SDA      SDA        1
+               J3       4        4          1
+               JP7      3        3          1
+
+SLEEPX         B2       A3       A3         1
+               U3       15       A          1
+
+SLEEPY         B2       A1       A1         1
+               U3       2        C          1
+
+TX             B1       TX       TX         1
+               B2       TX       TX         1
+
+WAKE_SW        B1       D3       *D3        1
+               J10      3        3          1
+               JP3      1        1          1
+
+XDIR           B1       D7       D7         1
+               B2       D3       *D3        1
+
+XMS1           B2       D4       D4         1
+               U3       6        G          1
+
+XMS2           B2       D5       *D5        1
+               U3       7        H          1
+
+XSTEP          B1       D6       *D6        1
+               B2       D2       D2         1
+
+YDIR           B1       D5       *D5        1
+               B2       D7       D7         1
+
+YMS1           B2       D8       D8         1
+               U3       4        E          1
+
+YMS2           B2       D9       *D9        1
+               U3       5        F          1
+
+YSTEP          B1       D4       D4         1
+               B2       D6       *D6        1
+
