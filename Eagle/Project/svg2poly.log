@@ -1,0 +1,33 @@
+ PATH  FOUND 
+Scale factor = 1.000000
+ 0) 0.00,0.00
+ PATH  FOUND 
+Scale factor = 1.000000
+ 1) 0.00,0.00
+ PATH  FOUND 
+Scale factor = 1.000000
+ 2) 0.00,0.00
+ PATH  FOUND 
+Scale factor = 1.000000
+ 3) 0.00,0.00
+ PATH  FOUND 
+Scale factor = 1.000000
+ 4) 0.00,0.00
+ PATH  FOUND 
+Scale factor = 1.000000
+ 5) 0.00,0.00
+
+Object origin:
+0.000000 0.000000
+
+Eagle Command:
+set wire_bend 2;
+change layer tNames;
+set width 0.000500;
+poly (R 0.000000 0.000000) (R 0.000000 0.000000);
+poly (R 0.000000 0.000000) (R 0.000000 0.000000);
+poly (R 0.000000 0.000000) (R 0.000000 0.000000);
+poly (R 0.000000 0.000000) (R 0.000000 0.000000);
+poly (R 0.000000 0.000000) (R 0.000000 0.000000);
+poly (R 0.000000 0.000000) (R 0.000000 0.000000);
+
