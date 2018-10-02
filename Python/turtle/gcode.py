@@ -2,9 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import re
+
+import controller
+import plots.cartesian
+import plots.polar
 import units
 import time
-import go
+import turtle_table
 
 CW, CCW = 'Clockwise', 'Counter-clockwise'
 
@@ -176,11 +180,11 @@ class Machine(object):
 				print 'No xy point value {}.'.format(point)
 				return
 
-			# Overlay the set values ontop of our current position.
-			if self.is_absolute:
-				base = self.pos
-			elif self.is_relative:
+			# Overlay the set values on top of our current position.
+			if self.is_relative:
 				base = units.Cartesian(self.units(0.0), self.units(0.0))
+			else:  # self.is_absolute
+				base = self.pos
 			for i, _ in enumerate(point):
 				if point[i] is not None:
 					base[i] = point[i] * self.scale
@@ -334,7 +338,6 @@ class Machine(object):
 
 		# Remove double spaces
 		line = re.sub(r'\s+', ' ', line)
-		line
 		
 		line_words = iter(line.split(' '))
 		words = list()
@@ -407,10 +410,10 @@ class Machine(object):
 					command.state['plane'] = self.PLANE_XY
 				elif word.value == 18:
 					raise FeatureNotSupported('G18	ZX plane selection')
-					self.plane = self.PLANE_ZX
+					# self.plane = self.PLANE_ZX
 				elif word.value == 19:
 					raise FeatureNotSupported('G19	YZ plane selection')
-					self.plane = self.PLANE_YZ
+					# self.plane = self.PLANE_YZ
 
 				if word.value == 20:
 					command.set_units(self.UNITS_INCHES)
@@ -470,9 +473,9 @@ class Machine(object):
 		return command
 
 
-c = go.Controller()
-pol = go.PolarPlot(c)
-plot = go.CartesianPlot(pol)
+c = controller.Controller()
+pol = plots.polar.PolarPlot(c)
+plot = plots.cartesian.CartesianPlot(pol)
 plot.set_origin(units.Cartesian(-350, -350))
 
 machine_handle = Machine(plot, 3)
@@ -481,4 +484,4 @@ with open('exercise.gcode', 'r') as fh:
 
 # machine_handle.parse_lines(test_three)
 
-go.exit()
+turtle_table.exit()

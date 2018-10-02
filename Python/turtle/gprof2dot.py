@@ -2153,7 +2153,7 @@ class OprofileParser(LineParser):
         if entry.symbol.startswith('"') and entry.symbol.endswith('"'):
             entry.symbol = entry.symbol[1:-1]
         entry.id = ':'.join((entry.application, entry.image, source, entry.symbol))
-        entry.self = fields.get('self', None) != None
+        entry.self = fields.get('self', None) is not None
         if entry.self:
             entry.id += ':self'
         if entry.symbol:
@@ -2661,8 +2661,8 @@ class PstatsParser:
             callee[TIME] = tt
             self.profile[TIME] += tt
             self.profile[TOTAL_TIME] = max(self.profile[TOTAL_TIME], ct)
-            for fn, value in compat_iteritems(callers):
-                caller = self.get_function(fn)
+            for fn2, value in compat_iteritems(callers):
+                caller = self.get_function(fn2)
                 call = Call(callee.id)
                 if isinstance(value, tuple):
                     for i in xrange(0, len(value), 4):
