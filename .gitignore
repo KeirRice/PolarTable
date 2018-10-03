@@ -4,3 +4,5 @@ Python/turtle/\.idea/
 *.pyc
 
 Electronics/Eagle/svg2poly\.log
+
+*.?#?
