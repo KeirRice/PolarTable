@@ -4,3 +4,6 @@
 [submodule "Arduino/libraries/Bounce2"]
 	path = Arduino/libraries/Bounce2
 	url = https://github.com/thomasfredericks/Bounce2.git
+[submodule "Arduino/libraries/FastLED"]
+	path = Arduino/libraries/FastLED
+	url = https://github.com/FastLED/FastLED.git
