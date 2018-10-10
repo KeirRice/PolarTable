@@ -7,3 +7,6 @@
 [submodule "Arduino/libraries/FastLED"]
 	path = Arduino/libraries/FastLED
 	url = https://github.com/FastLED/FastLED.git
+[submodule "Arduino/libraries/SX1509"]
+	path = Arduino/libraries/SX1509
+	url = https://github.com/sparkfun/SparkFun_SX1509_Arduino_Library.git
