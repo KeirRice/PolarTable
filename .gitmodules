@@ -1,3 +1,6 @@
 [submodule "Arduino/libraries/AccelStepper"]
 	path = Arduino/libraries/AccelStepper
 	url = https://github.com/waspinator/AccelStepper.git
+[submodule "Arduino/libraries/Bounce2"]
+	path = Arduino/libraries/Bounce2
+	url = https://github.com/thomasfredericks/Bounce2.git
