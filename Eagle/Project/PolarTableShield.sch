@@ -27308,8 +27308,8 @@ the signal grounds</text>
 <net name="GND" class="4">
 <segment>
 <pinref part="J5" gate="G$1" pin="9"/>
-<wire x1="-30.48" y1="-71.12" x2="-43.18" y2="-71.12" width="0.1524" layer="91"/>
-<label x="-38.1" y="-71.12" size="1.778" layer="95" align="bottom-right"/>
+<wire x1="-30.48" y1="-71.12" x2="-33.02" y2="-71.12" width="0.1524" layer="91"/>
+<label x="-33.02" y="-71.12" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 <segment>
 <pinref part="J6" gate="G$1" pin="1"/>
@@ -27428,8 +27428,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="J5" gate="G$1" pin="4"/>
-<wire x1="-15.24" y1="-63.5" x2="-5.08" y2="-63.5" width="0.1524" layer="91"/>
-<label x="-7.62" y="-63.5" size="1.778" layer="95" align="bottom-right"/>
+<wire x1="-15.24" y1="-63.5" x2="-10.16" y2="-63.5" width="0.1524" layer="91"/>
+<label x="-10.16" y="-63.5" size="1.27" layer="95" xref="yes"/>
 </segment>
 </net>
 <net name="3.3V" class="3">
@@ -27440,8 +27440,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="J5" gate="G$1" pin="11"/>
-<wire x1="-30.48" y1="-73.66" x2="-43.18" y2="-73.66" width="0.1524" layer="91"/>
-<label x="-38.1" y="-73.66" size="1.778" layer="95" align="bottom-right"/>
+<wire x1="-30.48" y1="-73.66" x2="-33.02" y2="-73.66" width="0.1524" layer="91"/>
+<label x="-33.02" y="-73.66" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 <segment>
 <pinref part="J6" gate="G$1" pin="5"/>
@@ -27512,8 +27512,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="J5" gate="G$1" pin="2"/>
-<wire x1="-15.24" y1="-60.96" x2="-5.08" y2="-73.66" width="0.1524" layer="91"/>
-<label x="-7.62" y="-73.66" size="1.778" layer="95" align="bottom-right"/>
+<wire x1="-15.24" y1="-60.96" x2="-10.16" y2="-60.96" width="0.1524" layer="91"/>
+<label x="-10.16" y="-60.96" size="1.27" layer="95" xref="yes"/>
 </segment>
 </net>
 <net name="SW_C" class="3">
@@ -27524,8 +27524,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="U$1" gate="G$3" pin="P$8"/>
-<wire x1="68.58" y1="7.62" x2="73.66" y2="10.16" width="0.1524" layer="91"/>
-<label x="73.66" y="10.16" size="1.27" layer="95" xref="yes"/>
+<wire x1="68.58" y1="7.62" x2="73.66" y2="7.62" width="0.1524" layer="91"/>
+<label x="73.66" y="7.62" size="1.27" layer="95" xref="yes"/>
 </segment>
 </net>
 <net name="SW_D" class="3">
@@ -27536,8 +27536,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="U$1" gate="G$3" pin="P$9"/>
-<wire x1="68.58" y1="10.16" x2="73.66" y2="7.62" width="0.1524" layer="91"/>
-<label x="73.66" y="7.62" size="1.27" layer="95" xref="yes"/>
+<wire x1="68.58" y1="10.16" x2="73.66" y2="10.16" width="0.1524" layer="91"/>
+<label x="73.66" y="10.16" size="1.27" layer="95" xref="yes"/>
 </segment>
 </net>
 <net name="SW_E" class="3">
@@ -27548,8 +27548,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="U$1" gate="G$2" pin="P$4"/>
-<wire x1="10.16" y1="15.24" x2="5.08" y2="10.16" width="0.1524" layer="91"/>
-<label x="5.08" y="10.16" size="1.27" layer="95" rot="R180" xref="yes"/>
+<wire x1="10.16" y1="15.24" x2="5.08" y2="15.24" width="0.1524" layer="91"/>
+<label x="5.08" y="15.24" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 </net>
 <net name="SW_F" class="3">
@@ -27560,8 +27560,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="U$1" gate="G$2" pin="P$3"/>
-<wire x1="10.16" y1="17.78" x2="5.08" y2="7.62" width="0.1524" layer="91"/>
-<label x="5.08" y="7.62" size="1.27" layer="95" rot="R180" xref="yes"/>
+<wire x1="10.16" y1="17.78" x2="5.08" y2="17.78" width="0.1524" layer="91"/>
+<label x="5.08" y="17.78" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 </net>
 <net name="B0" class="3">
@@ -27678,8 +27678,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="J5" gate="G$1" pin="12"/>
-<wire x1="-15.24" y1="-73.66" x2="-7.62" y2="-60.96" width="0.1524" layer="91"/>
-<label x="-10.16" y="-60.96" size="1.778" layer="95" align="bottom-right"/>
+<wire x1="-15.24" y1="-73.66" x2="-10.16" y2="-73.66" width="0.1524" layer="91"/>
+<label x="-10.16" y="-73.66" size="1.27" layer="95" xref="yes"/>
 </segment>
 </net>
 <net name="D3_WAKE_SW" class="4">
@@ -28062,15 +28062,15 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="J5" gate="G$1" pin="1"/>
-<wire x1="-43.3324" y1="-60.96" x2="-30.48" y2="-60.96" width="0.1524" layer="91"/>
-<label x="-43.18" y="-60.96" size="1.778" layer="95"/>
+<wire x1="-33.1724" y1="-60.96" x2="-30.48" y2="-60.96" width="0.1524" layer="91"/>
+<label x="-33.02" y="-60.96" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 </net>
 <net name="B4" class="3">
 <segment>
 <pinref part="U$1" gate="G$2" pin="P$6"/>
-<wire x1="10.16" y1="10.16" x2="5.08" y2="15.24" width="0.1524" layer="91"/>
-<label x="5.08" y="15.24" size="1.27" layer="95" rot="R180" xref="yes"/>
+<wire x1="10.16" y1="10.16" x2="5.08" y2="10.16" width="0.1524" layer="91"/>
+<label x="5.08" y="10.16" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 <segment>
 <pinref part="J4" gate="G$1" pin="8"/>
@@ -28086,8 +28086,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="J5" gate="G$1" pin="3"/>
-<wire x1="-43.3324" y1="-63.5" x2="-30.48" y2="-63.5" width="0.1524" layer="91"/>
-<label x="-43.18" y="-63.5" size="1.778" layer="95"/>
+<wire x1="-33.1724" y1="-63.5" x2="-30.48" y2="-63.5" width="0.1524" layer="91"/>
+<label x="-33.02" y="-63.5" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 </net>
 <net name="IR_H" class="3">
@@ -28098,8 +28098,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="J5" gate="G$1" pin="5"/>
-<wire x1="-30.48" y1="-66.04" x2="-43.3324" y2="-66.04" width="0.1524" layer="91"/>
-<label x="-43.18" y="-66.04" size="1.778" layer="95"/>
+<wire x1="-30.48" y1="-66.04" x2="-33.1724" y2="-66.04" width="0.1524" layer="91"/>
+<label x="-33.02" y="-66.04" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 </net>
 <net name="IR_G" class="3">
@@ -28110,8 +28110,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="J5" gate="G$1" pin="7"/>
-<wire x1="-43.3324" y1="-68.58" x2="-30.48" y2="-68.58" width="0.1524" layer="91"/>
-<label x="-43.18" y="-68.58" size="1.778" layer="95"/>
+<wire x1="-33.1724" y1="-68.58" x2="-30.48" y2="-68.58" width="0.1524" layer="91"/>
+<label x="-33.02" y="-68.58" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 </net>
 <net name="SW_A" class="3">
@@ -28122,8 +28122,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="U$1" gate="G$3" pin="P$10"/>
-<wire x1="68.58" y1="12.7" x2="73.66" y2="15.24" width="0.1524" layer="91"/>
-<label x="73.66" y="15.24" size="1.27" layer="95" xref="yes"/>
+<wire x1="68.58" y1="12.7" x2="73.66" y2="12.7" width="0.1524" layer="91"/>
+<label x="73.66" y="12.7" size="1.27" layer="95" xref="yes"/>
 </segment>
 </net>
 <net name="N$4" class="1">
@@ -28205,8 +28205,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="U$1" gate="G$2" pin="P$7"/>
-<wire x1="10.16" y1="7.62" x2="5.08" y2="12.7" width="0.1524" layer="91"/>
-<label x="5.08" y="12.7" size="1.27" layer="95" rot="R180" xref="yes"/>
+<wire x1="10.16" y1="7.62" x2="5.08" y2="7.62" width="0.1524" layer="91"/>
+<label x="5.08" y="7.62" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 </net>
 <net name="SW_B" class="3">
@@ -28217,8 +28217,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="U$1" gate="G$3" pin="P$11"/>
-<wire x1="68.58" y1="15.24" x2="73.66" y2="12.7" width="0.1524" layer="91"/>
-<label x="73.66" y="12.7" size="1.27" layer="95" xref="yes"/>
+<wire x1="68.58" y1="15.24" x2="73.66" y2="15.24" width="0.1524" layer="91"/>
+<label x="73.66" y="15.24" size="1.27" layer="95" xref="yes"/>
 </segment>
 </net>
 <net name="B1" class="3">
@@ -28248,8 +28248,8 @@ the signal grounds</text>
 <net name="B3" class="3">
 <segment>
 <pinref part="U$1" gate="G$2" pin="P$5"/>
-<wire x1="10.16" y1="12.7" x2="5.08" y2="17.78" width="0.1524" layer="91"/>
-<label x="5.08" y="17.78" size="1.27" layer="95" rot="R180" xref="yes"/>
+<wire x1="10.16" y1="12.7" x2="5.08" y2="12.7" width="0.1524" layer="91"/>
+<label x="5.08" y="12.7" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 <segment>
 <pinref part="J4" gate="G$1" pin="7"/>
@@ -28421,8 +28421,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="J5" gate="G$1" pin="10"/>
-<wire x1="-15.24" y1="-71.12" x2="-7.62" y2="-66.04" width="0.1524" layer="91"/>
-<label x="-10.16" y="-66.04" size="1.778" layer="95" align="bottom-right"/>
+<wire x1="-15.24" y1="-71.12" x2="-10.16" y2="-71.12" width="0.1524" layer="91"/>
+<label x="-10.16" y="-71.12" size="1.27" layer="95" xref="yes"/>
 </segment>
 </net>
 <net name="A1" class="4">
@@ -28433,8 +28433,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="J5" gate="G$1" pin="8"/>
-<wire x1="-15.24" y1="-68.58" x2="-7.62" y2="-68.58" width="0.1524" layer="91"/>
-<label x="-10.16" y="-68.58" size="1.778" layer="95" align="bottom-right"/>
+<wire x1="-15.24" y1="-68.58" x2="-10.16" y2="-68.58" width="0.1524" layer="91"/>
+<label x="-10.16" y="-68.58" size="1.27" layer="95" xref="yes"/>
 </segment>
 </net>
 <net name="A2" class="4">
@@ -28445,8 +28445,8 @@ the signal grounds</text>
 </segment>
 <segment>
 <pinref part="J5" gate="G$1" pin="6"/>
-<wire x1="-15.24" y1="-66.04" x2="-7.62" y2="-71.12" width="0.1524" layer="91"/>
-<label x="-10.16" y="-71.12" size="1.778" layer="95" align="bottom-right"/>
+<wire x1="-15.24" y1="-66.04" x2="-10.16" y2="-66.04" width="0.1524" layer="91"/>
+<label x="-10.16" y="-66.04" size="1.27" layer="95" xref="yes"/>
 </segment>
 </net>
 </nets>
