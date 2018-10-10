@@ -71,7 +71,7 @@ void sleepNow()         // here we put the arduino to sleep
      * In all but the IDLE sleep modes only LOW can be used.
      */
     
-    attachInterrupt(digitalPinToInterrupt(ARDUINO_WAKE_SWITCH_PIN), wakeUpNow, LOW); // use interrupt 0 (pin 2) and run function
+    attachInterrupt(digitalPinToInterrupt(PIN_WAKE_SWITCH), wakeUpNow, LOW); // use interrupt 0 (pin 2) and run function
                                        // wakeUpNow when pin 2 gets LOW
  
     sleep_mode();            // here the device is actually put to sleep!!
@@ -79,7 +79,7 @@ void sleepNow()         // here we put the arduino to sleep
  
     sleep_disable();         // first thing after waking from sleep:
                              // disable sleep...
-    detachInterrupt(digitalPinToInterrupt(ARDUINO_WAKE_SWITCH_PIN));      // disables interrupt 0 on pin 2 so the
+    detachInterrupt(digitalPinToInterrupt(PIN_WAKE_SWITCH));      // disables interrupt 0 on pin 2 so the
                              // wakeUpNow code will not be executed
                              // during normal running time.
  

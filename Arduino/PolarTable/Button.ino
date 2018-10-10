@@ -9,17 +9,6 @@ extern SX1509 io;
 // Instantiate a Bounce object
 Bounce bounce = Bounce(); 
 
-
-/*************************************************************
-Pins
-*************************************************************/
-
-static const char ARDUINO_WAKE_SWITCH_PIN = 3;
-
-// SX1509 Pins:
-static const char SX1509_LED_PIN = 3;
-
-
 /*************************************************************
 State
 *************************************************************/
@@ -52,7 +41,7 @@ void sleep(){
     // Breathe an LED: 500ms LOW, 500ms HIGH,
     // 251ms to rise from low to high
     // 250ms to fall from high to low
-    io.breathe(SX1509_LED_PIN, 500, 500, 251, 250);
+    io.breathe(PIN_WAKE_LED, 500, 500, 251, 250);
   
     // Shutdown the Pi
     
@@ -85,13 +74,13 @@ void button_setup()
   // Use the internal 2MHz oscillator.
   // Set LED clock to 500kHz (2MHz / (2^(3-1)):
   io.clock(INTERNAL_CLOCK_2MHZ, 3);
-  io.pinMode(SX1509_LED_PIN, ANALOG_OUTPUT); // LED needs PWM
-  io.ledDriverInit(SX1509_LED_PIN);
+  io.pinMode(PIN_WAKE_LED, ANALOG_OUTPUT); // LED needs PWM
+  io.ledDriverInit(PIN_WAKE_LED);
 
-  pinMode(ARDUINO_WAKE_SWITCH_PIN, INPUT_PULLUP);
+  pinMode(PIN_WAKE_SWITCH, INPUT_PULLUP);
   char debounce_time = 5; // Milliseconds
   bounce.interval(debounce_time);
-  bounce.attach(ARDUINO_WAKE_SWITCH_PIN);
+  bounce.attach(PIN_WAKE_SWITCH);
 }
 
 void button_loop(){
@@ -153,22 +142,22 @@ void button_loop(){
   switch(LED_STATE){
     
     case LED_STATE_TO_OFF :
-      io.digitalWrite(SX1509_LED_PIN, LOW);
+      io.digitalWrite(PIN_WAKE_LED, LOW);
       LED_STATE = LED_STATE_OFF;
       /* FALL THROUGH */
     case LED_STATE_OFF :
       break;
       
     case LED_STATE_TO_ON :
-      io.breathe(SX1509_LED_PIN, 0, 1000, 1000, 250);
-      io.digitalWrite(SX1509_LED_PIN, HIGH);
+      io.breathe(PIN_WAKE_LED, 0, 1000, 1000, 250);
+      io.digitalWrite(PIN_WAKE_LED, HIGH);
       LED_STATE = LED_STATE_ON;
       /* FALL THROUGH */
     case LED_STATE_ON :
       break;
       
     case LED_STATE_TO_BLINK :
-      io.breathe(SX1509_LED_PIN, 500, 500, 250, 250);
+      io.breathe(PIN_WAKE_LED, 500, 500, 250, 250);
       LED_STATE = LED_STATE_BLINK;
       /* FALL THROUGH */
     case LED_STATE_BLINK :

@@ -1,3 +1,5 @@
+#include "pins.h"
+
 #define DEBUG 1
 #include "Debug.h"
 

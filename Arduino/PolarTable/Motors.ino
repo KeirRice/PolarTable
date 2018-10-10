@@ -5,41 +5,21 @@ Motor control
 #include <AccelStepper.h>
 #include <MultiStepper.h>
 
-/*************************************************************
-Pins
-*************************************************************/
-
-static const char ARDUINO_LATCH_PIN = 8;  //Pin connected to latch pin (ST_CP) of 74HC595
-static const char ARDUINO_DATA_PIN = 9;  //Pin connected to Data in (DS) of 74HC595
-static const char ARDUINO_CLOCK_PIN = 10;  //Pin connected to clock pin (SH_CP) of 74HC595
-
-static const char SHIFT_SLEEPX_PIN = 1;
-static const char SHIFT_ENABLEX_PIN = 2;
-static const char SHIFT_SLEEPY_PIN = 3;
-static const char SHIFT_ENABLEY_PIN = 4;
-static const char SHIFT_YMS_PIN = 5;
-static const char SHIFT_XMS_PIN = 7;
-
-static const char  STEPPER_Y_STEP_PIN = 4;
-static const char  STEPPER_Y_DIR_PIN = 5;
-static const char  STEPPER_X_STEP_PIN = 6;
-static const char  STEPPER_X_DIR_PIN = 7;
-
 // Define some steppers and the pins the will use
-AccelStepper theta_stepper(AccelStepper::DRIVER, STEPPER_Y_STEP_PIN, STEPPER_Y_DIR_PIN);
-AccelStepper radius_stepper(AccelStepper::DRIVER, STEPPER_X_STEP_PIN, STEPPER_X_DIR_PIN);
+AccelStepper theta_stepper(AccelStepper::DRIVER, PIN_MOTOR_YSTEP, PIN_MOTOR_YDIR);
+AccelStepper radius_stepper(AccelStepper::DRIVER, PIN_MOTOR_XSTEP, PIN_MOTOR_XDIR);
 MultiStepper stepper = MultiStepper();
 
 /*************************************************************
 Variables
 *************************************************************/
 
-// static const char sleepXMask = 1 << SHIFT_SLEEPX_PIN;
-// static const char enXMask = 1 << SHIFT_ENABLEX_PIN;
-// static const char sleepYMask = 1 << SHIFT_SLEEPY_PIN;
-// static const char enYMask = 1 << SHIFT_ENABLEY_PIN;
-// static const char yMSMask = 3 << SHIFT_YMS_PIN; // b11
-// static const char xMSMask = 3 << SHIFT_XMS_PIN; // b11
+// static const char sleepXMask = 1 << PIN_MOTOR_SLEEPX;
+// static const char enXMask = 1 << PIN_MOTOR_ENABLEX;
+// static const char sleepYMask = 1 << PIN_MOTOR_SLEEPY;
+// static const char enYMask = 1 << PIN_MOTOR_ENABLEY;
+// static const char yMSMask = 3 << PIN_MOTOR_YMS1; // 3 == b11
+// static const char xMSMask = 3 << PIN_MOTOR_XMS1; // 3 == b11
 
 static const char FULL_STEP = 0; // b00
 static const char HALF_STEP = 2; // b10
@@ -76,8 +56,8 @@ static const int MOTOR_STATE_TO_SLEEP = 14;
 static const int MOTOR_STATE_TO_WAKE = 15;
 
 /*═════════╦═══════╦═════════╦══════════╦════════╦══════╦═══════╦══════╗
-║          ║ error ║ stopped ║ stopping ║ moving ║ idle ║ sleep ║ wake ║
-╠══════════╬═══════╬═════════╬══════════╬════════╬══════╬═══════╬══════╣
+║                ║ error      ║ stopped       ║ stopping        ║ moving       ║ idle     ║ sleep      ║ wake     ║
+╠═════════╬═══════╬═════════╬══════════╬════════╬══════╬═══════╬══════╣
 ║ error    ║       ║         ║          ║        ║      ║       ║      ║
 ║ stopped  ║       ║         ║        1 ║        ║    1 ║       ║    1 ║
 ║ stopping ║       ║         ║          ║      1 ║      ║       ║      ║
@@ -123,13 +103,13 @@ void set_position_in_motor_steps(long theta, long delta)
 void send_state() {
   // turn off the output so the pins don't light up
   // while you're shifting bits:
-  digitalWrite(ARDUINO_LATCH_PIN, LOW);
+  digitalWrite(PIN_SHIFT_LATCH, LOW);
 
   // shift the bits out:
-  shiftOut(ARDUINO_DATA_PIN, ARDUINO_CLOCK_PIN, MSBFIRST, motor_settings);
+  shiftOut(PIN_SHIFT_DATA, PIN_SHIFT_CLOCK, MSBFIRST, motor_settings);
 
   // turn on the output so the LEDs can light up:
-  digitalWrite(ARDUINO_LATCH_PIN, HIGH);
+  digitalWrite(PIN_SHIFT_LATCH, HIGH);
   
   dataSendTimer = millis() + 1;
   motor_settings_changed = false;
@@ -155,21 +135,21 @@ void motor_setup() {
 
   /* We use a shift register for the motor settings. */
   // Set pins to output because they are addressed in the main loop
-  pinMode(ARDUINO_LATCH_PIN, OUTPUT);
-  pinMode(ARDUINO_DATA_PIN, OUTPUT);  
-  pinMode(ARDUINO_CLOCK_PIN, OUTPUT);
+  pinMode(PIN_SHIFT_LATCH, OUTPUT);
+  pinMode(PIN_SHIFT_DATA, OUTPUT);  
+  pinMode(PIN_SHIFT_CLOCK, OUTPUT);
   
   // Full steps
-  bitsWrite(motor_settings, SHIFT_XMS_PIN, FULL_STEP, 2);
-  bitsWrite(motor_settings, SHIFT_YMS_PIN, FULL_STEP, 2);
+  bitsWrite(motor_settings, PIN_MOTOR_XMS1, FULL_STEP, 2);
+  bitsWrite(motor_settings, PIN_MOTOR_YMS1, FULL_STEP, 2);
   
   // Enable (Sleep is active low)
-  bitWrite(motor_settings, SHIFT_ENABLEX_PIN, 1);
-  bitWrite(motor_settings, SHIFT_ENABLEY_PIN, 1);
+  bitWrite(motor_settings, PIN_MOTOR_ENABLEX, 1);
+  bitWrite(motor_settings, PIN_MOTOR_ENABLEY, 1);
   
   // Turn off sleep (Sleep is active low)
-  bitWrite(motor_settings, SHIFT_SLEEPX_PIN, 1);
-  bitWrite(motor_settings, SHIFT_SLEEPY_PIN, 1);
+  bitWrite(motor_settings, PIN_MOTOR_SLEEPX, 1);
+  bitWrite(motor_settings, PIN_MOTOR_SLEEPY, 1);
   
   send_state();
 }
@@ -258,8 +238,8 @@ void motor_loop()
       break;
       
     case MOTOR_STATE_TO_SLEEP :
-      bitWrite(motor_settings, SHIFT_SLEEPX_PIN, 0);
-      bitWrite(motor_settings, SHIFT_SLEEPY_PIN, 0);
+      bitWrite(motor_settings, PIN_MOTOR_SLEEPX, 0);
+      bitWrite(motor_settings, PIN_MOTOR_SLEEPY, 0);
       MOTOR_STATE = MOTOR_STATE_SLEEP;
       /* FALL THROUGH */
     case MOTOR_STATE_SLEEP :
@@ -269,8 +249,8 @@ void motor_loop()
       break;
       
     case MOTOR_STATE_TO_WAKE :
-      bitWrite(motor_settings, SHIFT_SLEEPX_PIN, 1);
-      bitWrite(motor_settings, SHIFT_SLEEPY_PIN, 1);
+      bitWrite(motor_settings, PIN_MOTOR_SLEEPX, 1);
+      bitWrite(motor_settings, PIN_MOTOR_SLEEPY, 1);
       MOTOR_STATE = MOTOR_STATE_WAKE;
       /* FALL THROUGH */
     case MOTOR_STATE_WAKE :

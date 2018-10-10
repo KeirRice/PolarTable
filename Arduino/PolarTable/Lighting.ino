@@ -5,10 +5,6 @@ Lighting
 #include <FastLED.h>
 
 #define NUM_LEDS 1
-
-static const char DATA_PIN = 12;
-static const char CLOCK_PIN = 13;
-
 CRGB leds[NUM_LEDS];
 
 const unsigned char LIGHTING_STATE_IDLE = 0;
@@ -69,7 +65,7 @@ bool blend(bool reset=false)
 }
 
 void lighting_setup() {
-  FastLED.addLeds<P9813, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);
+  FastLED.addLeds<P9813, PIN_LED_SDIN, PIN_LED_SCIN, RGB>(leds, NUM_LEDS);
 }
 
 void lighting_loop() {
@@ -109,5 +105,3 @@ void lighting_loop() {
       break;
   }
 }
-
-

@@ -10,18 +10,9 @@ extern SX1509 io; // Create an SX1509 object to be used throughout
  Pin assignmets
 *************************************************************/
 
-// SX1509 Pins
-static const char SX1509_CHANNEL_1_PIN = 4;
-static const char SX1509_CHANNEL_2_PIN = 5;
-static const char SX1509_CHANNEL_3_PIN = 6;
-static const char SX1509_CHANNEL_4_PIN = 7;
-
-static const char SX1509_CHANNEL_A_PIN = 8;
-static const char SX1509_CHANNEL_B_PIN = 9;
-
 // Masks
-static const int ABSOLUTE_PIN_MASK = (1<<SX1509_CHANNEL_1_PIN) | (1<<SX1509_CHANNEL_2_PIN) | (1<<SX1509_CHANNEL_3_PIN) | (1<<SX1509_CHANNEL_4_PIN);
-static const int RELATIVE_PIN_MASK = (1<<SX1509_CHANNEL_B_PIN) | (1<<SX1509_CHANNEL_A_PIN);
+static const int ABSOLUTE_PIN_MASK = (1<<PIN_G_IR) | (1<<PIN_H_IR) | (1<<PIN_I_IR) | (1<<PIN_J_IR);
+static const int RELATIVE_PIN_MASK = (1<<PIN_F_SWITCH) | (1<<PIN_E_SWITCH);
 
 // Arduino pin
 static const char ARDUINO_INT_PIN = 2;
@@ -163,10 +154,10 @@ void UpdateAbsolutePosition(unsigned int intStatus)
   if (intStatus & ABSOLUTE_PIN_MASK)
   {
     absoluteEncoderState = (absoluteEncoderState<<4) | 
-      (io.digitalRead(SX1509_CHANNEL_1_PIN) | 
-      (io.digitalRead(SX1509_CHANNEL_2_PIN)<<1) |
-      (io.digitalRead(SX1509_CHANNEL_3_PIN)<<2) |
-      (io.digitalRead(SX1509_CHANNEL_4_PIN)<<3));
+      (io.digitalRead(PIN_G_IR) | 
+      (io.digitalRead(PIN_H_IR)<<1) |
+      (io.digitalRead(PIN_I_IR)<<2) |
+      (io.digitalRead(PIN_J_IR)<<3));
     
     char row = (char) absoluteEncoderState & absoluteDirectionLookupRowMask;
     char column = (char) absoluteEncoderState & absoluteDirectionLookupColumnMask;
@@ -193,7 +184,7 @@ void UpdateRelativePosition(unsigned int intStatus)
 {
     if (intStatus & RELATIVE_PIN_MASK)
     {
-      relativeEncoderState = (relativeEncoderState<<2) | (io.digitalRead(SX1509_CHANNEL_A_PIN) | (io.digitalRead(SX1509_CHANNEL_B_PIN)<<1));
+      relativeEncoderState = (relativeEncoderState<<2) | (io.digitalRead(PIN_E_SWITCH) | (io.digitalRead(PIN_F_SWITCH)<<1));
       char lookup = relativeDirectionLookup[(int) relativeEncoderState];
       if(lookup == 2){
         //error
@@ -241,37 +232,37 @@ void encoder_setup()
   io.debounceTime(debounce_time);
   
   // Use io.pinMode(<pin>, <mode>) to set our relative encoder switches
-  io.pinMode(SX1509_CHANNEL_A_PIN, INPUT_PULLUP);
-  io.pinMode(SX1509_CHANNEL_B_PIN, INPUT_PULLUP);
+  io.pinMode(PIN_E_SWITCH, INPUT_PULLUP);
+  io.pinMode(PIN_F_SWITCH, INPUT_PULLUP);
 
   // Use io.pinMode(<pin>, <mode>) to set our absolute encoder switches
-  io.pinMode(SX1509_CHANNEL_1_PIN, INPUT_PULLUP);
-  io.pinMode(SX1509_CHANNEL_2_PIN, INPUT_PULLUP);
-  io.pinMode(SX1509_CHANNEL_3_PIN, INPUT_PULLUP);
-  io.pinMode(SX1509_CHANNEL_4_PIN, INPUT_PULLUP);
+  io.pinMode(PIN_G_IR, INPUT_PULLUP);
+  io.pinMode(PIN_H_IR, INPUT_PULLUP);
+  io.pinMode(PIN_I_IR, INPUT_PULLUP);
+  io.pinMode(PIN_J_IR, INPUT_PULLUP);
   
   // Use io.enableInterrupt(<pin>, <signal>) to enable an
   // interrupt on a pin. The <signal> variable can be either 
   // FALLING, RISING, or CHANGE. Set it to falling, which will
   // mean the button was pressed:
-  io.enableInterrupt(SX1509_CHANNEL_A_PIN, CHANGE);
-  io.enableInterrupt(SX1509_CHANNEL_B_PIN, CHANGE);
+  io.enableInterrupt(PIN_E_SWITCH, CHANGE);
+  io.enableInterrupt(PIN_F_SWITCH, CHANGE);
   
-  io.enableInterrupt(SX1509_CHANNEL_1_PIN, CHANGE);
-  io.enableInterrupt(SX1509_CHANNEL_2_PIN, CHANGE);
-  io.enableInterrupt(SX1509_CHANNEL_3_PIN, CHANGE);
-  io.enableInterrupt(SX1509_CHANNEL_4_PIN, CHANGE);
+  io.enableInterrupt(PIN_G_IR, CHANGE);
+  io.enableInterrupt(PIN_H_IR, CHANGE);
+  io.enableInterrupt(PIN_I_IR, CHANGE);
+  io.enableInterrupt(PIN_J_IR, CHANGE);
   
   // Read the encoder state from the SX1509 and pack it into a byte
   // On init current and previous can be the same.
-  relativeEncoderState = io.digitalRead(SX1509_CHANNEL_A_PIN) | (io.digitalRead(SX1509_CHANNEL_B_PIN) << 1);
+  relativeEncoderState = io.digitalRead(PIN_E_SWITCH) | (io.digitalRead(PIN_F_SWITCH) << 1);
   relativeEncoderState = (relativeEncoderState << 2) | relativeEncoderState;
   
   absoluteEncoderState = 
-    (io.digitalRead(SX1509_CHANNEL_1_PIN) | 
-    (io.digitalRead(SX1509_CHANNEL_2_PIN)<<1) |
-    (io.digitalRead(SX1509_CHANNEL_3_PIN)<<2) |
-    (io.digitalRead(SX1509_CHANNEL_4_PIN)<<3));
+    (io.digitalRead(PIN_G_IR) | 
+    (io.digitalRead(PIN_H_IR)<<1) |
+    (io.digitalRead(PIN_I_IR)<<2) |
+    (io.digitalRead(PIN_J_IR)<<3));
   absoluteEncoderState = (absoluteEncoderState<<4) | absoluteEncoderState;
   
   
