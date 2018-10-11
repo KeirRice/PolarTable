@@ -31,8 +31,6 @@ unsigned char send_buffer_size = 0;
 volatile byte recieve_buffer[32];
 volatile unsigned char recieve_buffer_size = 0;
 
-#define UNUSED(x) (void)(x)
-
 // callback for received data
 void receiveData(int byteCount){ // Wire supports max 32bytes
   UNUSED(byteCount);
