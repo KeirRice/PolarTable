@@ -12,9 +12,6 @@ extern SX1509 io; // Create an SX1509 object to be used throughout
 static const int ABSOLUTE_PIN_MASK = (1<<PIN_G_IR) | (1<<PIN_H_IR) | (1<<PIN_I_IR) | (1<<PIN_J_IR);
 static const int RELATIVE_PIN_MASK = (1<<PIN_F_SWITCH) | (1<<PIN_E_SWITCH);
 
-// Arduino pin
-static const char ARDUINO_INT_PIN = 2;
-
 /*************************************************************
 State variables.
 *************************************************************/
@@ -226,7 +223,7 @@ void encoder_setup()
 
   // The SX1509 has built-in debounce.
   char debounce_time = 4; // <time_ms> can be either 0, 1, 2, 4, 8, 16, 32, or 64 ms.
-  io.debounceTime(4);
+  io.debounceTime(debounce_time);
   
   // Use io.pinMode(<pin>, <mode>) to set our relative encoder switches
   io.pinMode(PIN_E_SWITCH, INPUT_PULLUP);
@@ -265,12 +262,12 @@ void encoder_setup()
   // Don't forget to configure your Arduino pins! Set the
   // Arduino's interrupt input to INPUT_PULLUP. The SX1509's
   // interrupt output is active-low.
-  pinMode(ARDUINO_INT_PIN, INPUT_PULLUP);
+  pinMode(PIN_SX1509_INT, INPUT_PULLUP);
   
   // Attach an Arduino interrupt to the interrupt pin. Call 
   // the encodeInterupt function, whenever the pin goes from HIGH to 
   // LOW.
-  attachInterrupt(digitalPinToInterrupt(ARDUINO_INT_PIN), encoderISR, FALLING);
+  attachInterrupt(digitalPinToInterrupt(PIN_SX1509_INT), encoderISR, FALLING);
 }
 
 
