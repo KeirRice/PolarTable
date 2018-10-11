@@ -5,11 +5,15 @@
 #include <util/atomic.h> // this library includes the ATOMIC_BLOCK macro.
 #include "Wire.h"
 
-/* STATE MACHINE */
+/*************************************************************
+  States
+*************************************************************/
 
+// The high bit is used to flag if we need to send the data
+// or if we are recieving the data.
 static const char RASP_SEND_DATA = 1 << 7;
-static const char RASP_REQUEST_DATA = 1 << 6;
 
+// The rest are values to specify the data type.
 static const char RASP_NULL = 0;
 
 static const char RASP_LED_ON = 1;
@@ -27,7 +31,7 @@ static const char RASP_WAKE = 22;
 
 char RASP_REQ = RASP_NULL;
 
-/* Buffers */
+// Buffers
 byte send_buffer[32];
 unsigned char send_buffer_size = 0;
 
@@ -76,30 +80,23 @@ void raspberry_setup() {
 
 void raspberry_loop() {
   // Check if there is any data waiting for us in the recieve buffer
-  byte recieve_data[recieve_buffer_size];
-  byte recieve_data_size = 0;
+  // If we have some new data run it quickly through the state machine, set values and trigger events.
   if (recieve_buffer_size) {
+    byte recieve_data_size = 0;
+    byte recieve_data[recieve_buffer_size];
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
       memcpy(&recieve_data[0], (byte*) &recieve_buffer[0], recieve_buffer_size);
       recieve_data_size = recieve_buffer_size;
       recieve_buffer_size = 0;
     }
-  }
 
-  // If we have some new data run it quickly through the state machine, set values and trigger events.
-  if (recieve_data_size) {
-    byte header = recieve_data[0];
-    DEBUG_PRINTLN(header);
-
-    if (header & RASP_REQUEST_DATA) {
-      // Drop the MS two bits and setup our state for the next request.
-      RASP_REQ = header & 0x00111111;
-    }
-    else if (header & RASP_SEND_DATA) {
-      // Drop the MS two bits and read in the expected values.
-      header = header & 0x00111111;
-      DEBUG_PRINTLN(header);
-      switch (header) {
+    // Unpack the bits and find out what data we aew working with.
+    bool is_send = recieve_data[0] & RASP_SEND_DATA;
+    RASP_REQ = recieve_data[0] & (~RASP_SEND_DATA);
+  
+    if (!is_send){
+      // We have new data to push out to the device.
+      switch (RASP_REQ) {
         case RASP_LED_ON :
           lighting_event(LED_ON_REQUEST);
           break;
@@ -111,7 +108,7 @@ void raspberry_loop() {
           {
             DEBUG_PRINT("ledColorChanged ");
             CHSV ledColor;
-            memcpy(&ledColor.raw[0], &recieve_data[1], recieve_buffer_size - 1);
+            memcpy(&ledColor.raw[0], &recieve_data[1], recieve_data_size - 1);
             set_color(ledColor);
             break;
           }
@@ -119,7 +116,7 @@ void raspberry_loop() {
         case RASP_THETA :
           {
             motor theta;
-            memcpy(&theta.uBytes[0], &recieve_data[1], recieve_buffer_size - 1);
+            memcpy(&theta.uBytes[0], &recieve_data[1], recieve_data_size - 1);
             set_theta_motor_position(theta);
             break;
           }
@@ -127,7 +124,7 @@ void raspberry_loop() {
         case RASP_RADIUS :
           {
             motor radius;
-            memcpy(&radius.uBytes[0], &recieve_data[1], recieve_buffer_size - 1);
+            memcpy(&radius.uBytes[0], &recieve_data[1], recieve_data_size - 1);
             set_radius_motor_position(radius);
             break;
           }
@@ -148,51 +145,54 @@ void raspberry_loop() {
 
   static byte send_data[32];
   static byte send_data_size = 0;
-  if (RASP_REQ != RASP_NULL) {
-    // If we have a request for data load up the send buffer.
-    switch (RASP_REQ) {
-      case RASP_LED_ON :
-        send_data_size = 1;
-        send_data[0] = 1;  // true
-        break;
+  // If we have a request for data load up the send buffer.
+  switch (RASP_REQ) {
+    case RASP_NULL:
+      break;
+      
+    case RASP_LED_ON :
+      send_data_size = 1;
+      send_data[0] = 1;  // true
+      break;
 
-      case RASP_LED_OFF :
-        send_data_size = 1;
-        send_data[0] = 1;  // true
-        break;
+    case RASP_LED_OFF :
+      send_data_size = 1;
+      send_data[0] = 1;  // true
+      break;
 
-      case RASP_LED_COLOR :
-        send_data_size = 3;
-        memcpy(&send_data[0], &get_color().raw[0], send_data_size);
-        break;
-
-      case RASP_THETA :
-        wire_long theta_out;
-        theta_out.u = 321657498;
-
-        send_data_size = 4;
-        memcpy(&send_data[0], &theta_out.uBytes[0], send_data_size);
-        break;
-
-      case RASP_RADIUS :
-        wire_long radius_out;
-        radius_out.u = 2132498;
-
-        send_data_size = 4;
-        memcpy(&send_data[0], &radius_out.uBytes[0], send_data_size);
-        break;
-
-      case RASP_STAYALIVE :
-        // TODO: This is our chance to tell the Pi to shutdown.
-        send_data_size = 1;
-        send_data[0] = 1;  // true
-        break;
-
-      default :
-        break;
+    case RASP_LED_COLOR :
+    {
+      send_data_size = 3;
+      memcpy(&send_data[0], &get_color().raw[0], send_data_size);
+      break;
     }
-    RASP_REQ = RASP_NULL;
+
+    case RASP_THETA :
+    {
+      wire_packed<long> theta_out = wire_pack(321657498);
+      memcpy(&send_data[0], &theta_out.uBytes[0], theta_out.size);
+      break;
   }
+
+    case RASP_RADIUS :
+    {
+      wire_packed<long> radius_out = wire_pack(2132498);
+      memcpy(&send_data[0], &radius_out.uBytes[0], radius_out.size);
+      break;
+    }
+
+    case RASP_STAYALIVE :
+    {
+      // TODO: This is our chance to tell the Pi to shutdown.
+      send_data_size = 1;
+      send_data[0] = 1;  // true
+      break;
+    }
+    default :
+      break;
+  }
+  // Reset the request?
+  RASP_REQ = RASP_NULL;
 
   if (send_data_size) {
     // Don't overwrite the last send_buffer message until it's sent

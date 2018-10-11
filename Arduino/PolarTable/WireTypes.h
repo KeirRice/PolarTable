@@ -1,16 +1,22 @@
 #pragma once
 
-union wire_long
+template<typename T>
+struct wire_packed
 {
-  long u;
-  byte uBytes[sizeof(long)];
+  union
+  {
+    T u;
+    byte uBytes[sizeof(T)];
+  };
+  int size = sizeof(T);
 };
 
-union wire_int
-{
-  int u;
-  byte uBytes[sizeof(int)];
-};
+template<typename T>
+wire_packed<T> wire_pack(T t) {
+  wire_packed<T> r;
+  r.u = t;
+  return r;
+}
 
 struct motor
 {
