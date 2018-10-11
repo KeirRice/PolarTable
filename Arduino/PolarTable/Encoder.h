@@ -2,8 +2,6 @@
 Manage the encoders.
 *************************************************************/
 
-#include <Wire.h> // Include the I2C library
-
 extern SX1509 io; // Create an SX1509 object to be used throughout
 
 /*************************************************************
@@ -29,15 +27,15 @@ volatile bool SX1509Interrupt = false; // Track Interrupts in ISR
 // bit 1 == current CHANNEL_B
 // bit 3 == prev CHANNEL_A
 // bit 4 == prev CHANNEL_B
-char relativeEncoderState;
-int steps = 0;
+static byte relativeEncoderState;
+static long long int steps = 0;
 char direction = 1;
 
 // Encoder state packed into a byte so we can use it as an index into the direction array.
 // bits 0-3 == current values
 // bits 4-7 == previous values
-char absoluteEncoderState;
-int position;
+static byte absoluteEncoderState;
+static long long int position;
 
 
 /*************************************************************
@@ -115,9 +113,8 @@ void setupAbsoluteDirectionLookup(){
 }
 const char absolutePositionLookup[16] = {0, 15, 7, 8, 3, 12, 4, 11, 1, 14, 6, 9, 2, 13, 5, 10};
 
-const uint absoluteDirectionLookupRowMask = 15 << 4;
-const uint absoluteDirectionLookupColumnMask = 15;
-
+const unsigned int absoluteDirectionLookupRowMask = 15 << 4;
+const unsigned int absoluteDirectionLookupColumnMask = 15;
 
 const char relativeDirectionLookup[16] = {
   0,  // 00 00 // no change
@@ -159,9 +156,9 @@ void UpdateAbsolutePosition(unsigned int intStatus)
       (io.digitalRead(PIN_I_IR)<<2) |
       (io.digitalRead(PIN_J_IR)<<3));
     
-    char row = (char) absoluteEncoderState & absoluteDirectionLookupRowMask;
-    char column = (char) absoluteEncoderState & absoluteDirectionLookupColumnMask;
-    char lookup = absoluteDirectionLookup[row][column];
+    byte row = absoluteEncoderState & absoluteDirectionLookupRowMask;
+    byte column = absoluteEncoderState & absoluteDirectionLookupColumnMask;
+    byte lookup = absoluteDirectionLookup[row][column];
     position = absolutePositionLookup[column];
     if(lookup == 2){
       //error
@@ -180,7 +177,7 @@ void UpdateAbsolutePosition(unsigned int intStatus)
 
 
 // Check if we have an interrupt from the relative encoders
-void UpdateRelativePosition(unsigned int intStatus)
+void UpdateRelativePosition(const unsigned int intStatus)
 {
     if (intStatus & RELATIVE_PIN_MASK)
     {
@@ -229,7 +226,7 @@ void encoder_setup()
 
   // The SX1509 has built-in debounce.
   char debounce_time = 4; // <time_ms> can be either 0, 1, 2, 4, 8, 16, 32, or 64 ms.
-  io.debounceTime(debounce_time);
+  io.debounceTime(4);
   
   // Use io.pinMode(<pin>, <mode>) to set our relative encoder switches
   io.pinMode(PIN_E_SWITCH, INPUT_PULLUP);
@@ -264,7 +261,6 @@ void encoder_setup()
     (io.digitalRead(PIN_I_IR)<<2) |
     (io.digitalRead(PIN_J_IR)<<3));
   absoluteEncoderState = (absoluteEncoderState<<4) | absoluteEncoderState;
-  
   
   // Don't forget to configure your Arduino pins! Set the
   // Arduino's interrupt input to INPUT_PULLUP. The SX1509's

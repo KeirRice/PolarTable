@@ -31,29 +31,27 @@ static const char EIGHTH_STEP = 3; // b11
 State
 *************************************************************/
 
-const char DATA_STATE_IDLE = 0;
-const char DATA_STATE_CHANGED = 1;
-const char DATA_STATE_SENDING = 2;
-char DATA_STATE = 0;
+static const State DATA_STATE_IDLE = 0;
+static const State DATA_STATE_CHANGED = 1;
+static const State DATA_STATE_SENDING = 2;
+State DATA_STATE = 0;
 
-unsigned long dataSendTimer = 0;
 unsigned char motor_settings = 0;
-bool motor_settings_changed = true;
 
-static const int MOTOR_STATE_ERROR = 0;
-static const int MOTOR_STATE_STOPPING = 6;
-static const int MOTOR_STATE_STOPPED = 1;
-static const int MOTOR_STATE_MOVING = 2;
-static const int MOTOR_STATE_IDLE = 3;
-static const int MOTOR_STATE_SLEEP = 4;
-static const int MOTOR_STATE_WAKE = 5;
+static const State MOTOR_STATE_ERROR = 0;
+static const State MOTOR_STATE_STOPPING = 6;
+static const State MOTOR_STATE_STOPPED = 1;
+static const State MOTOR_STATE_MOVING = 2;
+static const State MOTOR_STATE_IDLE = 3;
+static const State MOTOR_STATE_SLEEP = 4;
+static const State MOTOR_STATE_WAKE = 5;
 
-static const int MOTOR_STATE_TO_STOPPING = 16;
-static const int MOTOR_STATE_TO_STOPPED = 11;
-static const int MOTOR_STATE_TO_MOVING = 12;
-static const int MOTOR_STATE_TO_IDLE = 13;
-static const int MOTOR_STATE_TO_SLEEP = 14;
-static const int MOTOR_STATE_TO_WAKE = 15;
+static const State MOTOR_STATE_TO_STOPPING = 16;
+static const State MOTOR_STATE_TO_STOPPED = 11;
+static const State MOTOR_STATE_TO_MOVING = 12;
+static const State MOTOR_STATE_TO_IDLE = 13;
+static const State MOTOR_STATE_TO_SLEEP = 14;
+static const State MOTOR_STATE_TO_WAKE = 15;
 
 /*═════════╦═══════╦═════════╦══════════╦════════╦══════╦═══════╦══════╗
 ║                ║ error      ║ stopped       ║ stopping        ║ moving       ║ idle     ║ sleep      ║ wake     ║
@@ -67,10 +65,7 @@ static const int MOTOR_STATE_TO_WAKE = 15;
 ║ wake     ║       ║         ║          ║        ║      ║     1 ║      ║
 ╚══════════╩═══════╩═════════╩══════════╩════════╩══════╩═══════╩═════*/
 
-int MOTOR_STATE = 3;
-
-unsigned int stoppedTimer = 0;
-unsigned int idleTimer = 0;
+State MOTOR_STATE = MOTOR_STATE_IDLE;
 
 long absolute_position_in_steps[2] = {0, 0};
 bool new_position = false;
@@ -80,16 +75,16 @@ bool new_position = false;
 Functions
 *************************************************************/
 
-void get_motor_position(motor motors[]){
+void get_motor_position(Motor motors[]){
   motors[0].steps = theta_stepper.currentPosition();
   motors[1].steps = radius_stepper.currentPosition();
 }
 
-void set_theta_motor_position(motor motor){
+void set_theta_motor_position(Motor motor){
   theta_stepper.moveTo(motor.steps);
 }
 
-void set_delta_motor_position(motor motor){
+void set_radius_motor_position(Motor motor){
   radius_stepper.moveTo(motor.steps);
 }
 
@@ -110,9 +105,6 @@ void send_state() {
 
   // turn on the output so the LEDs can light up:
   digitalWrite(PIN_SHIFT_LATCH, HIGH);
-  
-  dataSendTimer = millis() + 1;
-  motor_settings_changed = false;
 }
 
 
@@ -157,6 +149,9 @@ void motor_setup() {
 
 void motor_loop()
 {
+  static unsigned long dataSendTimer = 0;
+  static bool motor_settings_changed = true;
+  
   switch (DATA_STATE) {
     case DATA_STATE_IDLE :
       // Only trigger a settings update from idle.
@@ -170,6 +165,8 @@ void motor_loop()
       
     case DATA_STATE_CHANGED :
       send_state();
+      dataSendTimer = millis() + 10;
+      motor_settings_changed = false;
       DATA_STATE = DATA_STATE_SENDING;
       break;
       
@@ -179,10 +176,13 @@ void motor_loop()
          DATA_STATE = DATA_STATE_IDLE;
       }
       break;
+      
     default:
       break;
-  }  
-  
+  }
+
+  static unsigned long stoppedTimer = 0;
+  static unsigned long idleTimer = 0;
   switch (MOTOR_STATE) {
     case MOTOR_STATE_ERROR :
       /* TODO: ALARM BELLS*/

@@ -1,7 +1,5 @@
-#ifndef _WIRE_TYPES_H    // Put these two lines at the top of your file.
-#define _WIRE_TYPES_H    // (Use a suitable name, usually based on the file name.)
+#pragma once
 
-// Place your main header code here.
 union wire_long
 {
   long u;
@@ -20,38 +18,11 @@ struct motor
     struct              // component-wise representation
     {
       union {
-        long s;
-        long steps;
+        long long s;
+        long long steps;
       };
     };
-    char uBytes[sizeof(long)];
+    char uBytes[sizeof(long long)];
   };
 };
-typedef motor motor;
-
-
-// struct wire_color
-// {
-//   union {
-//     struct              // component-wise representation
-//     {
-//       union {
-//         unsigned char r;
-//         unsigned char red;
-//       };
-//       union {
-//         unsigned char b;
-//         unsigned char blue;
-//       };
-//       union {
-//         unsigned char g;
-//         unsigned char green;
-//       };
-//     };
-//     char uBytes[sizeof(int)];
-//     unsigned int c;          // packed representation
-//   };
-// };
-
-
-#endif // _WIRE_TYPES_H
+typedef motor Motor;

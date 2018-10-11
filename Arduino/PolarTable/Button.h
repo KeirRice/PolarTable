@@ -13,27 +13,31 @@ Bounce bounce = Bounce();
 State
 *************************************************************/
 
-static const char LED_STATE_OFF = 0;
-static const char LED_STATE_ON = 1;
-static const char LED_STATE_BLINK = 2;
+static const State LED_STATE_OFF = 0;
+static const State LED_STATE_ON = 1;
+static const State LED_STATE_BLINK = 2;
 
-static const char LED_STATE_TO_OFF = 10;
-static const char LED_STATE_TO_ON = 11;
-static const char LED_STATE_TO_BLINK = 12;
+static const State LED_STATE_TO_OFF = 10;
+static const State LED_STATE_TO_ON = 11;
+static const State LED_STATE_TO_BLINK = 12;
 
 
-static const int POWER_STATE_OFF = 0;
-static const int POWER_STATE_ON = 1;
+static const State POWER_STATE_OFF = 0;
+static const State POWER_STATE_ON = 1;
 
-static const char POWER_STATE_TO_OFF = 10;
-static const char POWER_STATE_TO_ON = 11;
+static const State POWER_STATE_TO_OFF = 10;
+static const State POWER_STATE_TO_ON = 11;
 
-char POWER_STATE = POWER_STATE_ON;
-char LED_STATE = LED_STATE_OFF;
+Event button_current_event = 0;
 
 /*************************************************************
 Functions
 *************************************************************/
+
+void wake(){
+    // Restart out millis counter as it wasn't running while alseep
+    resetMillis();
+}
 
 void sleep(){
     DEBUG_PRINTLN("going to sleep");
@@ -50,18 +54,8 @@ void sleep(){
     wake(); // Called after we are woken
 }
 
-void wake(){
-    // Restart out millis counter as it wasn't running while alseep
-    resetMillis();
-}
-
-
-bool pi_request_sleep_event(){
-  if (POWER_STATE == POWER_STATE_ON || POWER_STATE == POWER_STATE_TO_OFF){
-    POWER_STATE == POWER_STATE_TO_OFF;
-    return true;
-  }
-  return false;
+void button_event(Event new_event){
+  button_current_event = new_event;
 }
 
 
@@ -84,14 +78,33 @@ void button_setup()
 }
 
 void button_loop(){
-  
   DEBUG_PRINTLN("button_loop");
+  
+  static char POWER_STATE = POWER_STATE_ON;
+  static char LED_STATE = LED_STATE_OFF;
+  
   static unsigned long ledOffTimer = 0;
   static unsigned long piOffTimer = 0;
   
   bounce.update();
-  DEBUG_PRINTLN("bounce updated");
-  
+  DEBUG_PRINTLN("bounce updated");  
+
+  switch (button_current_event){
+    case SLEEP_REQUEST :
+      if (POWER_STATE == POWER_STATE_ON || POWER_STATE == POWER_STATE_TO_OFF){
+        POWER_STATE = POWER_STATE_TO_OFF;
+        button_current_event = 0;
+      }
+      break;
+      
+    case WAKE_REQUEST :
+      POWER_STATE = POWER_STATE_TO_ON;
+      button_current_event = 0;
+      break;
+      
+    default :
+      break;
+  }
   
   DEBUG_PRINTLN("switching power state");
   switch(POWER_STATE) {
@@ -130,7 +143,7 @@ void button_loop(){
       
     default :
       break;
-  }
+    }
   
   // Check if we have a timer active and action the state change.
   if (ledOffTimer > 0 and ledOffTimer > millis()){

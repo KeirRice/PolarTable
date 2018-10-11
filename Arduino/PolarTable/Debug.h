@@ -1,5 +1,4 @@
-#ifndef _DEBUG_H    // Put these two lines at the top of your file.
-#define _DEBUG_H    // (Use a suitable name, usually based on the file name.)
+#pragma once
 
 #define DEBUG_PRINT(...) \
             do { \
@@ -17,7 +16,7 @@
                 Serial.flush(); \
               }\
             } while (0)
-#define DEBUG_PRINT_VAR1(a, b) \
+#define DEBUG_PRINT_VAR2(a, b) \
             do { \
               if (DEBUG){ \
                 Serial.print(#a ":\t"); Serial.print(a); Serial.print('\t'); \
@@ -25,7 +24,7 @@
                 Serial.flush(); \
               }\
             } while (0)
-#define DEBUG_PRINT_VAR1(a, b, c) \
+#define DEBUG_PRINT_VAR3(a, b, c) \
             do { \
               if (DEBUG){ \
                 Serial.print(#a ":\t"); Serial.print(a); Serial.print('\t'); \
@@ -54,5 +53,3 @@
                 Serial.flush(); \
               }\
             } while (0)
-
-#endif // _DEBUG_H

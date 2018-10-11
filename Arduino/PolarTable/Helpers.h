@@ -1,5 +1,9 @@
+#pragma once
+
 #include <stdarg.h>
 #include <avr/sleep.h>
+
+long startMillis = 0;
 
 void p(char *fmt, ... ){
         char buf[128]; // resulting string limited to 128 chars
@@ -15,6 +19,10 @@ void(* resetFunc) (void) = 0; //declare reset function @ address 0
 
 void doReset(){
   resetFunc();  //call reset
+}
+
+void resetMillis(){
+  startMillis = millis();
 }
 
 void wakeUpNow()        // here the interrupt is handled after wakeup
@@ -82,5 +90,18 @@ void sleepNow()         // here we put the arduino to sleep
     detachInterrupt(digitalPinToInterrupt(PIN_WAKE_SWITCH));      // disables interrupt 0 on pin 2 so the
                              // wakeUpNow code will not be executed
                              // during normal running time.
- 
+}
+
+
+template<typename T, typename T2, typename T3>
+void bitsWrite(T &x, const T2 &n, const T3 b, const int w)
+/* Extention to bitWrite that supports more than one bit getting set at a time.
+x: the numeric variable to which to write
+n: which bit of the number to write, starting at 0 for the least-significant (rightmost) bit
+b: the value to write to the bits
+w: the width of the in bits of b
+*/
+{
+  int mask = ((1 << (w + 1)) - 1) << b; // Build a mask w wide, move it into position b
+  x = (x & ~mask) | ((n << b) & mask); // Clear the bits under mask and apply the value
 }

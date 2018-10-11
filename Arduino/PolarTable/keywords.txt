@@ -1,0 +1,29 @@
+#######################################
+# Syntax Coloring Map For FastLED
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+State	KEYWORD1
+Event	KEYWORD1
+wire_long	KEYWORD1
+wire_int	KEYWORD1
+motor	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+# FastLED methods
+set_color	KEYWORD2
+get_color	KEYWORD2
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+# Chipsets
+LIGHTING_STATE_IDLE	LITERAL1

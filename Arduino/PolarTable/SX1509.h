@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef ENABLE_SX1509
   #include <SparkFunSX1509.h> // Include SX1509 library
 
