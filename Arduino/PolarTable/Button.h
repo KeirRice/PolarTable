@@ -4,8 +4,6 @@ Manage the wake/sleep button.
 
 #include <Bounce2.h>
 
-extern SX1509 io;
-
 // Instantiate a Bounce object
 Bounce bounce = Bounce(); 
 
@@ -13,22 +11,24 @@ Bounce bounce = Bounce();
 State
 *************************************************************/
 
-static const State LED_STATE_OFF = 0;
-static const State LED_STATE_ON = 1;
-static const State LED_STATE_BLINK = 2;
+static const State POWER_STATE_OFF = 1;
+static const State POWER_STATE_SHUTDOWN = 2;
+static const State POWER_STATE_ON = 3;
 
-static const State LED_STATE_TO_OFF = 10;
-static const State LED_STATE_TO_ON = 11;
-static const State LED_STATE_TO_BLINK = 12;
-
-
-static const State POWER_STATE_OFF = 0;
-static const State POWER_STATE_ON = 1;
-
-static const State POWER_STATE_TO_OFF = 10;
-static const State POWER_STATE_TO_ON = 11;
+static const State POWER_STATE_TO_OFF = 11;
+static const State POWER_STATE_TO_ON = 12;
 
 Event button_current_event = 0;
+
+
+/*************************************************************
+Interface
+*************************************************************/
+
+void request_sleep(){
+  button_current_event = POWER_STATE_TO_OFF;
+}
+
 
 /*************************************************************
 Functions
@@ -41,23 +41,14 @@ void wake(){
 
 void sleep(){
     DEBUG_PRINTLN("going to sleep");
-    delay(300);
-    // Breathe an LED: 500ms LOW, 500ms HIGH,
-    // 251ms to rise from low to high
-    // 250ms to fall from high to low
-    io.breathe(PIN_WAKE_LED, 500, 500, 251, 250);
-  
+
     // Shutdown the Pi
+    delay(300);
     
     sleepNow();     // sleep function called here
     
     wake(); // Called after we are woken
 }
-
-void button_event(Event new_event){
-  button_current_event = new_event;
-}
-
 
 /*************************************************************
 Setup and main loop.
@@ -65,12 +56,6 @@ Setup and main loop.
 
 void button_setup()
 {
-  // Use the internal 2MHz oscillator.
-  // Set LED clock to 500kHz (2MHz / (2^(3-1)):
-  io.clock(INTERNAL_CLOCK_2MHZ, 3);
-  io.pinMode(PIN_WAKE_LED, ANALOG_OUTPUT); // LED needs PWM
-  io.ledDriverInit(PIN_WAKE_LED);
-
   pinMode(PIN_WAKE_SWITCH, INPUT_PULLUP);
   char debounce_time = 5; // Milliseconds
   bounce.interval(debounce_time);
@@ -80,103 +65,49 @@ void button_setup()
 void button_loop(){
   DEBUG_PRINTLN("button_loop");
   
-  static char POWER_STATE = POWER_STATE_ON;
-  static char LED_STATE = LED_STATE_OFF;
-  
-  static unsigned long ledOffTimer = 0;
+  static State power_state = POWER_STATE_ON;
   static unsigned long piOffTimer = 0;
   
   bounce.update();
-  DEBUG_PRINTLN("bounce updated");  
-
-  switch (button_current_event){
-    case SLEEP_REQUEST :
-      if (POWER_STATE == POWER_STATE_ON || POWER_STATE == POWER_STATE_TO_OFF){
-        POWER_STATE = POWER_STATE_TO_OFF;
-        button_current_event = 0;
-      }
-      break;
-      
-    case WAKE_REQUEST :
-      POWER_STATE = POWER_STATE_TO_ON;
-      button_current_event = 0;
-      break;
-      
-    default :
-      break;
-  }
   
   DEBUG_PRINTLN("switching power state");
   switch(POWER_STATE) {
     case POWER_STATE_TO_OFF :
+      // Blink the light for 3 seconds, then leave off
+      request_led_blink(LED_STATE_OFF, 3000);
+      
       // Shut down the pi
       piOffTimer = millis() + 3000;
+      power_state = POWER_STATE_SHUTDOWN;
+      break;
       
-      // Blink the light for 3 seconds
-      ledOffTimer = millis() + 3000;
-      LED_STATE = LED_STATE_TO_BLINK;
-      
+    case POWER_STATE_SHUTDOWN :
       // Check if we have a timer active and action the state change.
       if (piOffTimer > 0 and piOffTimer > millis()){
         piOffTimer = 0;
-        POWER_STATE = POWER_STATE_OFF;
+        power_state = POWER_STATE_OFF;
       }
       break;
       
     case POWER_STATE_OFF :
       sleep();
-      POWER_STATE = POWER_STATE_TO_ON;
+      power_state = POWER_STATE_TO_ON;
       /* FALL THROUGH */
 
     case POWER_STATE_TO_ON :
-      // Blink the light for 3 seconds
-      ledOffTimer = millis() + 3000;
-      LED_STATE = LED_STATE_TO_BLINK;
+      // Blink the light for 3 seconds, then leave on
+      request_led_blink(LED_STATE_ON, 3000);
       
-      POWER_STATE = POWER_STATE_ON;
+      power_state = POWER_STATE_ON;
       /* FALLTHROUGH */
     case POWER_STATE_ON :
-      if (bounce.rose()){ // Relase
-        POWER_STATE = LED_STATE_TO_OFF;
+      if (bounce.rose() or button_current_event == SLEEP_REQUEST){ // Relase
+        power_state = LED_STATE_TO_OFF;
+        button_current_event = 0;
       }
       break;
       
     default :
       break;
     }
-  
-  // Check if we have a timer active and action the state change.
-  if (ledOffTimer > 0 and ledOffTimer > millis()){
-    ledOffTimer = 0;
-    LED_STATE = LED_STATE_TO_OFF;
-  }
-  
-  DEBUG_PRINTLN("switching led state");
-  switch(LED_STATE){
-    
-    case LED_STATE_TO_OFF :
-      io.digitalWrite(PIN_WAKE_LED, LOW);
-      LED_STATE = LED_STATE_OFF;
-      /* FALL THROUGH */
-    case LED_STATE_OFF :
-      break;
-      
-    case LED_STATE_TO_ON :
-      io.breathe(PIN_WAKE_LED, 0, 1000, 1000, 250);
-      io.digitalWrite(PIN_WAKE_LED, HIGH);
-      LED_STATE = LED_STATE_ON;
-      /* FALL THROUGH */
-    case LED_STATE_ON :
-      break;
-      
-    case LED_STATE_TO_BLINK :
-      io.breathe(PIN_WAKE_LED, 500, 500, 250, 250);
-      LED_STATE = LED_STATE_BLINK;
-      /* FALL THROUGH */
-    case LED_STATE_BLINK :
-      break;
-    
-    default :
-      break;
-  }
 }
