@@ -3,17 +3,9 @@
 #include <stdarg.h>
 #include <avr/sleep.h>
 
+#define UNUSED(x) (void)(x)
+
 long startMillis = 0;
-
-void p(char *fmt, ... ){
-        char buf[128]; // resulting string limited to 128 chars
-        va_list args;
-        va_start (args, fmt );
-        vsnprintf(buf, 128, fmt, args);
-        va_end (args);
-        Serial.print(buf);
-}
-
 
 void(* resetFunc) (void) = 0; //declare reset function @ address 0
 
