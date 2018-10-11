@@ -117,13 +117,9 @@ void raspberry_loop() {
           }
         
         case RASP_SLEEP :
-          button_event(SLEEP_REQUEST);
+          request_sleep();
           break;
           
-        case RASP_WAKE :
-          button_event(WAKE_REQUEST);
-          break;
-        
         case RASP_STAYALIVE :
           // TODO
           break;
