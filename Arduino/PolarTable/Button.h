@@ -73,7 +73,7 @@ void button_loop() {
   bounce.update();
 
   DEBUG_PRINTLN("switching power state");
-  switch (POWER_STATE) {
+  switch (power_state) {
     case POWER_STATE_TO_OFF :
       // Blink the light for 3 seconds, then leave off
       request_led_blink(LED_STATE_OFF, 3000);
