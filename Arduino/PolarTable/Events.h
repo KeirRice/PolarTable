@@ -1,11 +1,11 @@
 /*************************************************************
-Events that can be send between modules
+  Events that can be send between modules
 *************************************************************/
 
 #pragma once
 
 /*************************************************************
-All the events in that can be generated
+  All the events in that can be generated
 *************************************************************/
 
 typedef unsigned char Event;

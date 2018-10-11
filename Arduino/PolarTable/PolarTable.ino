@@ -16,7 +16,7 @@ typedef unsigned char State;
 #include "Helpers.h"
 
 // Ignore warning for the libraries.
-#pragma GCC diagnostic push 
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 
 #include <FastLED.h>
@@ -42,18 +42,17 @@ typedef unsigned char State;
 #include "Motors.h"
 #include "Raspberry.h"
 
-
 SX1509 io;
 extern long startMillis;
 
 void setup()
 {
-  if(DEBUG){
+  if (DEBUG) {
     Serial.begin(11500);
-  }  
+  }
   DEBUG_PRINTLN("Setup serial.");
   DEBUG_WHERE();
-  
+
   resetMillis();
   if (!io.begin(SX1509_ADDRESS))
   {

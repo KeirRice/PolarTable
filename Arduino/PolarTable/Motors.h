@@ -1,5 +1,5 @@
 /*************************************************************
-Motor control
+  Motor control
 *************************************************************/
 
 #include <AccelStepper.h>
@@ -11,7 +11,7 @@ AccelStepper radius_stepper(AccelStepper::DRIVER, PIN_MOTOR_XSTEP, PIN_MOTOR_XDI
 MultiStepper stepper = MultiStepper();
 
 /*************************************************************
-Variables
+  Variables
 *************************************************************/
 
 // static const char sleepXMask = 1 << PIN_MOTOR_SLEEPX;
@@ -28,7 +28,7 @@ static const char EIGHTH_STEP = 3; // b11
 
 
 /*************************************************************
-State
+  State
 *************************************************************/
 
 static const State DATA_STATE_IDLE = 0;
@@ -54,16 +54,16 @@ static const State MOTOR_STATE_TO_SLEEP = 14;
 static const State MOTOR_STATE_TO_WAKE = 15;
 
 /*═════════╦═══════╦═════════╦══════════╦════════╦══════╦═══════╦══════╗
-║                ║ error      ║ stopped       ║ stopping        ║ moving       ║ idle     ║ sleep      ║ wake     ║
-╠═════════╬═══════╬═════════╬══════════╬════════╬══════╬═══════╬══════╣
-║ error    ║       ║         ║          ║        ║      ║       ║      ║
-║ stopped  ║       ║         ║        1 ║        ║    1 ║       ║    1 ║
-║ stopping ║       ║         ║          ║      1 ║      ║       ║      ║
-║ moving   ║       ║       1 ║          ║        ║      ║       ║      ║
-║ idle     ║       ║       1 ║          ║        ║      ║       ║      ║
-║ sleep    ║       ║         ║          ║        ║    1 ║       ║      ║
-║ wake     ║       ║         ║          ║        ║      ║     1 ║      ║
-╚══════════╩═══════╩═════════╩══════════╩════════╩══════╩═══════╩═════*/
+  ║                ║ error      ║ stopped       ║ stopping        ║ moving       ║ idle     ║ sleep      ║ wake     ║
+  ╠═════════╬═══════╬═════════╬══════════╬════════╬══════╬═══════╬══════╣
+  ║ error    ║       ║         ║          ║        ║      ║       ║      ║
+  ║ stopped  ║       ║         ║        1 ║        ║    1 ║       ║    1 ║
+  ║ stopping ║       ║         ║          ║      1 ║      ║       ║      ║
+  ║ moving   ║       ║       1 ║          ║        ║      ║       ║      ║
+  ║ idle     ║       ║       1 ║          ║        ║      ║       ║      ║
+  ║ sleep    ║       ║         ║          ║        ║    1 ║       ║      ║
+  ║ wake     ║       ║         ║          ║        ║      ║     1 ║      ║
+  ╚══════════╩═══════╩═════════╩══════════╩════════╩══════╩═══════╩═════*/
 
 State MOTOR_STATE = MOTOR_STATE_IDLE;
 
@@ -72,25 +72,25 @@ bool new_position = false;
 
 
 /*************************************************************
-Functions
+  Functions
 *************************************************************/
 
-void get_motor_position(Motor motors[]){
+void get_motor_position(Motor motors[]) {
   motors[0].steps = theta_stepper.currentPosition();
   motors[1].steps = radius_stepper.currentPosition();
 }
 
-void set_theta_motor_position(Motor motor){
+void set_theta_motor_position(Motor motor) {
   theta_stepper.moveTo(motor.steps);
 }
 
-void set_radius_motor_position(Motor motor){
+void set_radius_motor_position(Motor motor) {
   radius_stepper.moveTo(motor.steps);
 }
 
 void set_position_in_motor_steps(long theta, long delta)
 {
-  absolute_position_in_steps[0] = theta; 
+  absolute_position_in_steps[0] = theta;
   absolute_position_in_steps[1] = delta;
   new_position = true;
 }
@@ -109,40 +109,40 @@ void send_state() {
 
 
 /*************************************************************
-Setup and Main loop
+  Setup and Main loop
 *************************************************************/
 
 void motor_setup() {
-  
+
   theta_stepper.setMaxSpeed(200.0);
   theta_stepper.setMinPulseWidth(20); // Driver supports 1us
   // theta_stepper.setAcceleration(200.0);
-  
+
   radius_stepper.setMaxSpeed(100.0);
   radius_stepper.setMinPulseWidth(20); // Driver supports 1us
   // radius_stepper.setAcceleration(100.0);
-  
+
   stepper.addStepper(theta_stepper);
   stepper.addStepper(radius_stepper);
 
   /* We use a shift register for the motor settings. */
   // Set pins to output because they are addressed in the main loop
   pinMode(PIN_SHIFT_LATCH, OUTPUT);
-  pinMode(PIN_SHIFT_DATA, OUTPUT);  
+  pinMode(PIN_SHIFT_DATA, OUTPUT);
   pinMode(PIN_SHIFT_CLOCK, OUTPUT);
-  
+
   // Full steps
   bitsWrite(motor_settings, PIN_MOTOR_XMS1, FULL_STEP, 2);
   bitsWrite(motor_settings, PIN_MOTOR_YMS1, FULL_STEP, 2);
-  
+
   // Enable (Sleep is active low)
   bitWrite(motor_settings, PIN_MOTOR_ENABLEX, 1);
   bitWrite(motor_settings, PIN_MOTOR_ENABLEY, 1);
-  
+
   // Turn off sleep (Sleep is active low)
   bitWrite(motor_settings, PIN_MOTOR_SLEEPX, 1);
   bitWrite(motor_settings, PIN_MOTOR_SLEEPY, 1);
-  
+
   send_state();
 }
 
@@ -151,32 +151,32 @@ void motor_loop()
 {
   static unsigned long dataSendTimer = 0;
   static bool motor_settings_changed = true;
-  
+
   switch (DATA_STATE) {
     case DATA_STATE_IDLE :
       // Only trigger a settings update from idle.
-      if (motor_settings_changed){
+      if (motor_settings_changed) {
         DATA_STATE = DATA_STATE_CHANGED;
         /* FALL THROUGH */
       }
       else {
         break;
       }
-      
+
     case DATA_STATE_CHANGED :
       send_state();
       dataSendTimer = millis() + 10;
       motor_settings_changed = false;
       DATA_STATE = DATA_STATE_SENDING;
       break;
-      
+
     case DATA_STATE_SENDING :
       // Hold the state for 1ms for the drivers to pick it up.
-      if (millis() > dataSendTimer){
-         DATA_STATE = DATA_STATE_IDLE;
+      if (millis() > dataSendTimer) {
+        DATA_STATE = DATA_STATE_IDLE;
       }
       break;
-      
+
     default:
       break;
   }
@@ -187,76 +187,76 @@ void motor_loop()
     case MOTOR_STATE_ERROR :
       /* TODO: ALARM BELLS*/
       break;
-    
+
     case MOTOR_STATE_TO_MOVING :
       // stepper.moveTo(absolute);
       new_position = false;
       stepper.run();
       break;
-    
+
     case MOTOR_STATE_MOVING :
       stepper.run();
       // if(!stepper.isRunning()){
       //   MOTOR_STATE = MOTOR_STATE_TO_STOPPING;
       // }
       break;
-      
+
     case MOTOR_STATE_TO_STOPPING :
       // stepper.stop();
       MOTOR_STATE = MOTOR_STATE_STOPPING;
-      /* FALL THROUGH */
+    /* FALL THROUGH */
     case MOTOR_STATE_STOPPING :
       // if(!stepper.isRunning()){
       //   MOTOR_STATE = MOTOR_STATE_TO_STOPPED;
       // }
       break;
-      
+
     case MOTOR_STATE_TO_STOPPED :
       stoppedTimer = millis() + 1000;
       MOTOR_STATE = MOTOR_STATE_STOPPED;
-      /* FALL THROUGH */
+    /* FALL THROUGH */
     case MOTOR_STATE_STOPPED :
-      if(new_position){
+      if (new_position) {
         MOTOR_STATE = MOTOR_STATE_TO_MOVING;
       }
-      if (millis() > stoppedTimer){
+      if (millis() > stoppedTimer) {
         MOTOR_STATE = MOTOR_STATE_TO_IDLE;
       }
       break;
-      
+
     case MOTOR_STATE_TO_IDLE :
       idleTimer = millis() + 10000;
       MOTOR_STATE = MOTOR_STATE_IDLE;
-      /* FALL THROUGH */
+    /* FALL THROUGH */
     case MOTOR_STATE_IDLE :
-      if(new_position){
+      if (new_position) {
         MOTOR_STATE = MOTOR_STATE_STOPPED;
       }
-      if (millis() > idleTimer){
+      if (millis() > idleTimer) {
         MOTOR_STATE = MOTOR_STATE_TO_SLEEP;
       }
       break;
-      
+
     case MOTOR_STATE_TO_SLEEP :
       bitWrite(motor_settings, PIN_MOTOR_SLEEPX, 0);
       bitWrite(motor_settings, PIN_MOTOR_SLEEPY, 0);
       MOTOR_STATE = MOTOR_STATE_SLEEP;
-      /* FALL THROUGH */
+    /* FALL THROUGH */
     case MOTOR_STATE_SLEEP :
-      if(new_position){
-         MOTOR_STATE = MOTOR_STATE_TO_WAKE;
+      if (new_position) {
+        MOTOR_STATE = MOTOR_STATE_TO_WAKE;
       }
       break;
-      
+
     case MOTOR_STATE_TO_WAKE :
       bitWrite(motor_settings, PIN_MOTOR_SLEEPX, 1);
       bitWrite(motor_settings, PIN_MOTOR_SLEEPY, 1);
       MOTOR_STATE = MOTOR_STATE_WAKE;
-      /* FALL THROUGH */
+    /* FALL THROUGH */
     case MOTOR_STATE_WAKE :
       MOTOR_STATE = MOTOR_STATE_TO_STOPPED;
       break;
-    
+
     default:
       break;
   }
