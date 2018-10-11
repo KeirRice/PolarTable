@@ -2,9 +2,9 @@
 #define ENABLE_SX1509
 #define ENABLE_I2C_WIRE
 #define TINYFSM_NOSTDLIB
-#define SLAVE_ADDRESS 0x04
+#define I2C_ADDRESS 0x04
 
-const byte SX1509_ADDRESS = 0x3E;  // SX1509 I2C address (00)
+const byte SX1509_I2C_ADDRESS = 0x3E;  // SX1509 I2C address (00)
 
 typedef unsigned int uint;
 typedef unsigned char State;
@@ -54,7 +54,7 @@ void setup()
   DEBUG_WHERE();
 
   resetMillis();
-  if (!io.begin(SX1509_ADDRESS))
+  if (!io.begin(SX1509_I2C_ADDRESS))
   {
     DEBUG_PRINTLN("Failed to begin SX1509 coms.");
     while (1);

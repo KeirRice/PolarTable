@@ -215,7 +215,7 @@ void encoder_setup()
 
   // Call io.begin(<address>) to initialize the SX1509. If
   // it successfully communicates, it'll return 1.
-  if (!io.begin(SX1509_ADDRESS))
+  if (!io.begin(SX1509_I2C_ADDRESS))
   {
     Serial.println("Failed to communicate.");
     while (1) ;

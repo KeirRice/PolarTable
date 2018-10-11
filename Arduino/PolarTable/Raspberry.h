@@ -1,3 +1,6 @@
+/*************************************************************
+  Communicate witht he Rasberry Pi
+*************************************************************/
 
 #include <util/atomic.h> // this library includes the ATOMIC_BLOCK macro.
 #include "Wire.h"
@@ -31,7 +34,16 @@ unsigned char send_buffer_size = 0;
 volatile byte recieve_buffer[32];
 volatile unsigned char recieve_buffer_size = 0;
 
-// callback for received data
+
+/*************************************************************
+  Interupts
+*************************************************************/
+
+// The controller calls us (peripheral) and tells use what data it wants.
+// We save that into the recieve buffer and use it for generating data for the
+// next request to sendData
+
+// Data selection by controller
 void receiveData(int byteCount) { // Wire supports max 32bytes
   UNUSED(byteCount);
   for (recieve_buffer_size = 0; Wire.available(); ++recieve_buffer_size)
@@ -40,7 +52,7 @@ void receiveData(int byteCount) { // Wire supports max 32bytes
   }
 }
 
-// callback for sending data
+// Data rquest by controller
 void sendData() {
   if (send_buffer_size > 0) {
     Wire.write(send_buffer, send_buffer_size);
@@ -48,12 +60,16 @@ void sendData() {
   }
 }
 
-/* Setup and loop */
-void raspberry_setup() {
-  // initialize i2c as slave
-  Wire.begin(SLAVE_ADDRESS);
 
-  // define callbacks for i2c communication
+/*************************************************************
+  Setup and loop
+*************************************************************/
+
+void raspberry_setup() {
+  // Initialize i2c as peripheral
+  Wire.begin(I2C_ADDRESS);
+
+  // Define callbacks for i2c communication
   Wire.onReceive(receiveData);
   Wire.onRequest(sendData);
 }
