@@ -1,3 +1,7 @@
+/*************************************************************
+Debug functions that can be compiled out on release
+*************************************************************/
+
 #pragma once
 
 #define DEBUG_PRINT(...) \
