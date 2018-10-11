@@ -1,6 +1,7 @@
 #define DEBUG 1
-// #define ENABLE_SX1509
+#define ENABLE_SX1509
 #define ENABLE_I2C_WIRE
+#define TINYFSM_NOSTDLIB
 #define SLAVE_ADDRESS 0x04
 
 const byte SX1509_ADDRESS = 0x3E;  // SX1509 I2C address (00)
@@ -14,6 +15,10 @@ typedef unsigned char State;
 #include "Events.h"
 #include "Helpers.h"
 
+// Ignore warning for the libraries.
+#pragma GCC diagnostic push 
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+
 #include <FastLED.h>
 #include <Bounce2.h>
 #include "SX1509.h"
@@ -24,9 +29,12 @@ typedef unsigned char State;
 #include <MultiStepper.h>
 #include <util/atomic.h> // this library includes the ATOMIC_BLOCK macro.
 
+#pragma GCC diagnostic pop
+
 #include "WireTypes.h"
 #include "pixeltypes.h"
 
+#include "ButtonLED.h"
 #include "Button.h"
 #include "Calibration.h"
 #include "Encoder.h"
