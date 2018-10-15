@@ -6,3 +6,21 @@ Python/turtle/\.idea/
 Electronics/Eagle/svg2poly\.log
 
 *.?#?
+
+Eagle/netlist\.net
+
+Eagle/netlist\.scr
+
+Spice/IR_board\.log
+
+Spice/IR_board\.op\.raw
+
+Spice/IR_board\.raw
+
+Spice/LM393Test\.log
+
+Spice/LM393Test\.op\.raw
+
+Spice/LM393Test\.raw
+
+Spice/TestSymbol_LM339\.asy

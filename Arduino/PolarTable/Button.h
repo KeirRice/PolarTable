@@ -53,7 +53,8 @@ void sleep() {
 
 
 void on_system_on_enter(){
-  request_led_pulse_on();
+  // evtManager.trigger(Event("button.led", &BUTTON_PULSE_ON));
+  LEDListener().trigger((void*) &BUTTON_PULSE_ON);
 }
 void on_system_on_state(){
   if (bounce.rose()) { // OnRelease
@@ -61,24 +62,21 @@ void on_system_on_state(){
   }
 }
 void on_system_shutdown_enter(){
-  request_led_pulse_off();
+  // evtManager.trigger(Event("button.led", &BUTTON_OFF));
+  
   // TODO: Send shutdown command to PI
 }
 void off_system_shutdown_state(){
   // TODO: Check if Pi is down?
 }
 void on_system_off_enter(){
-  request_led_off();
+  // evtManager.trigger(Event("button.led", &BUTTON_OFF));
 }
 void off_system_off_state(){
   sleep();
   fsm_system.trigger(WAKE_REQUEST);
 }
 
-void on_trans_system_on_system_shutdown()
-{
-  Serial.println("Transitioning from ON to SHUTDOWN");
-}
 /*************************************************************
   Setup and main loop.
 *************************************************************/
@@ -90,7 +88,7 @@ void button_setup()
   bounce.interval(debounce_time);
   bounce.attach(PIN_WAKE_SWITCH);
 
-  fsm_system.add_transition(&state_system_on, &state_system_shutdown, SLEEP_REQUEST, &on_trans_system_on_system_shutdown);  
+  fsm_system.add_transition(&state_system_on, &state_system_shutdown, SLEEP_REQUEST, NULL);  
   fsm_system.add_timed_transition(&state_system_shutdown, &state_system_off, 3000, NULL);
   fsm_system.add_transition(&state_system_off, &state_system_on, WAKE_REQUEST, NULL);
 }

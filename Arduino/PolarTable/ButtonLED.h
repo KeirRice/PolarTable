@@ -4,6 +4,80 @@
 
 extern SX1509 io;
 
+
+/*************************************************************
+  Event
+*************************************************************/
+
+class EventManager {
+  public:
+  EventManager();
+
+  void subscribe(Subscriber sub);
+  void trigger(Event evt);
+}
+
+
+class Event {
+  public:
+  Event();
+  
+  void trigger(void *data);
+  void handler(void *data=0);
+  
+  private:
+  void *extraData = 0;
+}
+Event::trigger(void *data=0){
+  extraData = data;
+  fsm_button_led.trigger((int) lstn->extraData);
+}
+
+class LEDEvent : public Event {
+  public:
+  LEDEvent();
+}
+
+LEDEvent::handler(void *data){
+  fsm_button_led.trigger((int) data);
+}
+
+
+class LEDListener : public EvtListener {
+  public:
+  LEDListener(EvtAction trigger);
+
+  void setupListener();
+  bool isEventTriggered();
+  void trigger(void *data);
+  private:
+  static bool fired;
+};
+LEDListener::LEDListener(){}
+LEDListener::LEDListener(EvtAction t)
+{
+  this->triggerAction = t;
+}
+bool LEDListener::fired = false;
+void LEDListener::setupListener() {
+  // Nothing to setup
+}
+
+bool LEDListener::isEventTriggered() {
+  bool shouldFire = fired;
+  fired = false;
+  return shouldFire;
+}
+void LEDListener::trigger(void *data=0) {
+  extraData = data;
+  fired = true;
+}
+
+void led_event_handler(EvtListener *lstn) {
+  fsm_button_led.trigger((int) lstn->extraData);
+}
+
+
 /*************************************************************
   State
 *************************************************************/
@@ -44,37 +118,14 @@ void pulse_button_led_enter(){
   io.breathe(PIN_WAKE_LED, low_ms, high_ms, rise_ms, fall_ms);
 }
 
-
-/*************************************************************
-  Interface
-*************************************************************/
-
-void request_led_on() {
-  fsm_button_led.trigger(BUTTON_ON);
-}
-
-void request_led_off() {
-  fsm_button_led.trigger(BUTTON_OFF);
-}
-
-void request_led_pulse() {
-  fsm_button_led.trigger(BUTTON_PULSE);
-}
-
-void request_led_pulse_on() {
-  fsm_button_led.trigger(BUTTON_PULSE_ON);
-}
-
-void request_led_pulse_off() {
-  fsm_button_led.trigger(BUTTON_PULSE_OFF);
-}
-
 /*************************************************************
   Setup and main loop.
 *************************************************************/
 
 void button_led_setup()
 {
+  evtManager.addListener(new LEDListener((EvtAction)led_event_handler));
+  
   // Off => On, On => OFF
   fsm_button_led.add_transition(&state_button_led_off, &state_button_led_on, BUTTON_ON, NULL);  
   fsm_button_led.add_transition(&state_button_led_on, &state_button_led_off, BUTTON_OFF, NULL);

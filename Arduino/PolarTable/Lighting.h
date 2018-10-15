@@ -20,7 +20,7 @@ CHSV colorTarget = CHSV(192, 255, 255); // target color
 CHSV colorCurrent = colorStart;
 CHSV incomingColorTarget;
 
-Event active_lighting_event = 0;
+EventID active_lighting_event = 0;
 
 /*************************************************************
   Access
@@ -35,7 +35,7 @@ CHSV get_color() {
   return colorTarget;
 }
 
-void lighting_event(Event new_event)
+void lighting_event(EventID new_event)
 {
   active_lighting_event = new_event;
 }

@@ -24,6 +24,7 @@ class SX1509
     void clock(byte oscSource = 2, byte oscDivider = 1, byte oscPinFunction = 0, byte oscFreqOut = 0);
     void pinMode(byte pin, byte inOut);
     void digitalWrite(byte pin, byte highLow);
+    void analogWrite(byte pin, byte highLow);
     byte digitalRead(byte pin);
     void breathe(byte pin, unsigned long tOn, unsigned long tOff, unsigned long rise, unsigned long fall, byte onInt = 255, byte offInt = 0, bool log = 0);
 };
@@ -38,6 +39,7 @@ byte SX1509::begin(byte address = 0x3E, byte resetPin = 0xFF) {
 void SX1509::clock(byte oscSource = 2, byte oscDivider = 1, byte oscPinFunction = 0, byte oscFreqOut = 0) {}
 void SX1509::pinMode(byte pin, byte inOut) {}
 void SX1509::digitalWrite(byte pin, byte highLow) {}
+void SX1509::analogWrite(byte pin, byte highLow) {}
 byte SX1509::digitalRead(byte pin) {
   return 0;
 }
