@@ -8,10 +8,10 @@
 #define NUM_LEDS 1
 CRGB leds[NUM_LEDS];
 
-static const State LIGHTING_STATE_IDLE = 0;
-static const State LIGHTING_STATE_TO_TARGET = 1;
-static const State LIGHTING_STATE_TO_OFF = 2;
-State current_lighting_state = LIGHTING_STATE_IDLE;
+static const State2 LIGHTING_STATE_IDLE = 0;
+static const State2 LIGHTING_STATE_TO_TARGET = 1;
+static const State2 LIGHTING_STATE_TO_OFF = 2;
+State2 current_lighting_state = LIGHTING_STATE_IDLE;
 
 static const uint8_t blendRate = 50;  // How fast to blend.  Higher is slower.  [milliseconds]
 

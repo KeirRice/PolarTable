@@ -31,27 +31,27 @@ static const char EIGHTH_STEP = 3; // b11
   State
 *************************************************************/
 
-static const State DATA_STATE_IDLE = 0;
-static const State DATA_STATE_CHANGED = 1;
-static const State DATA_STATE_SENDING = 2;
-State DATA_STATE = 0;
+static const State2 DATA_STATE_IDLE = 0;
+static const State2 DATA_STATE_CHANGED = 1;
+static const State2 DATA_STATE_SENDING = 2;
+State2 DATA_STATE = 0;
 
 unsigned char motor_settings = 0;
 
-static const State MOTOR_STATE_ERROR = 0;
-static const State MOTOR_STATE_STOPPING = 6;
-static const State MOTOR_STATE_STOPPED = 1;
-static const State MOTOR_STATE_MOVING = 2;
-static const State MOTOR_STATE_IDLE = 3;
-static const State MOTOR_STATE_SLEEP = 4;
-static const State MOTOR_STATE_WAKE = 5;
+static const State2 MOTOR_STATE_ERROR = 0;
+static const State2 MOTOR_STATE_STOPPING = 6;
+static const State2 MOTOR_STATE_STOPPED = 1;
+static const State2 MOTOR_STATE_MOVING = 2;
+static const State2 MOTOR_STATE_IDLE = 3;
+static const State2 MOTOR_STATE_SLEEP = 4;
+static const State2 MOTOR_STATE_WAKE = 5;
 
-static const State MOTOR_STATE_TO_STOPPING = 16;
-static const State MOTOR_STATE_TO_STOPPED = 11;
-static const State MOTOR_STATE_TO_MOVING = 12;
-static const State MOTOR_STATE_TO_IDLE = 13;
-static const State MOTOR_STATE_TO_SLEEP = 14;
-static const State MOTOR_STATE_TO_WAKE = 15;
+static const State2 MOTOR_STATE_TO_STOPPING = 16;
+static const State2 MOTOR_STATE_TO_STOPPED = 11;
+static const State2 MOTOR_STATE_TO_MOVING = 12;
+static const State2 MOTOR_STATE_TO_IDLE = 13;
+static const State2 MOTOR_STATE_TO_SLEEP = 14;
+static const State2 MOTOR_STATE_TO_WAKE = 15;
 
 /*═════════╦═══════╦═════════╦══════════╦════════╦══════╦═══════╦══════╗
   ║                ║ error      ║ stopped       ║ stopping        ║ moving       ║ idle     ║ sleep      ║ wake     ║
@@ -65,7 +65,7 @@ static const State MOTOR_STATE_TO_WAKE = 15;
   ║ wake     ║       ║         ║          ║        ║      ║     1 ║      ║
   ╚══════════╩═══════╩═════════╩══════════╩════════╩══════╩═══════╩═════*/
 
-State MOTOR_STATE = MOTOR_STATE_IDLE;
+State2 MOTOR_STATE = MOTOR_STATE_IDLE;
 
 long absolute_position_in_steps[2] = {0, 0};
 bool new_position = false;

@@ -7,7 +7,7 @@
 const byte SX1509_I2C_ADDRESS = 0x3E;  // SX1509 I2C address (00)
 
 typedef unsigned int uint;
-typedef unsigned char State;
+typedef unsigned char State2;
 
 #include "Debug.h"
 
@@ -19,6 +19,7 @@ typedef unsigned char State;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 
+#include <Fsm.h>
 #include <FastLED.h>
 #include <Bounce2.h>
 #include "SX1509.h"

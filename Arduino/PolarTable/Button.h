@@ -11,14 +11,20 @@ Bounce bounce = Bounce();
   State
 *************************************************************/
 
-static const State POWER_STATE_OFF = 1;
-static const State POWER_STATE_SHUTDOWN = 2;
-static const State POWER_STATE_ON = 3;
+void on_system_on_enter();
+void on_system_on_state();
+void on_system_shutdown_enter();
+void off_system_shutdown_state();
+void on_system_off_enter();
+void off_system_off_state();
 
-static const State POWER_STATE_TO_OFF = 11;
-static const State POWER_STATE_TO_ON = 12;
+void on_trans_system_on_system_shutdown();
 
-Event button_current_event = 0;
+State state_system_on(&on_system_on_enter, &on_system_on_state, NULL);
+State state_system_shutdown(&on_system_shutdown_enter, &off_system_shutdown_state, NULL);
+State state_system_off(&on_system_off_enter, &off_system_off_state, NULL);
+
+Fsm fsm_system(&state_system_on);
 
 
 /*************************************************************
@@ -26,9 +32,8 @@ Event button_current_event = 0;
 *************************************************************/
 
 void request_sleep() {
-  button_current_event = POWER_STATE_TO_OFF;
+  fsm_system.trigger(SLEEP_REQUEST);
 }
-
 
 /*************************************************************
   Functions
@@ -41,16 +46,39 @@ void wake() {
 
 void sleep() {
   DEBUG_PRINTLN("going to sleep");
-
-  // Shutdown the Pi
-  delay(300);
-
+  // TODO: Shutdown the SX1509 and the motor drivers and the LEDs
   sleepNow();     // sleep function called here
-
   wake(); // Called after we are woken
 }
 
 
+void on_system_on_enter(){
+  request_led_pulse_on();
+}
+void on_system_on_state(){
+  if (bounce.rose()) { // OnRelease
+    fsm_system.trigger(SLEEP_REQUEST);
+  }
+}
+void on_system_shutdown_enter(){
+  request_led_pulse_off();
+  // TODO: Send shutdown command to PI
+}
+void off_system_shutdown_state(){
+  // TODO: Check if Pi is down?
+}
+void on_system_off_enter(){
+  request_led_off();
+}
+void off_system_off_state(){
+  sleep();
+  fsm_system.trigger(WAKE_REQUEST);
+}
+
+void on_trans_system_on_system_shutdown()
+{
+  Serial.println("Transitioning from ON to SHUTDOWN");
+}
 /*************************************************************
   Setup and main loop.
 *************************************************************/
@@ -61,55 +89,12 @@ void button_setup()
   char debounce_time = 5; // Milliseconds
   bounce.interval(debounce_time);
   bounce.attach(PIN_WAKE_SWITCH);
+
+  fsm_system.add_transition(&state_system_on, &state_system_shutdown, SLEEP_REQUEST, &on_trans_system_on_system_shutdown);  
+  fsm_system.add_timed_transition(&state_system_shutdown, &state_system_off, 3000, NULL);
+  fsm_system.add_transition(&state_system_off, &state_system_on, WAKE_REQUEST, NULL);
 }
 
-
 void button_loop() {
-  DEBUG_PRINTLN("button_loop");
-
-  static State power_state = POWER_STATE_ON;
-  static unsigned long piOffTimer = 0;
-
-  bounce.update();
-
-  DEBUG_PRINTLN("switching power state");
-  switch (power_state) {
-    case POWER_STATE_TO_OFF :
-      // Blink the light for 3 seconds, then leave off
-      request_led_blink(LED_STATE_OFF, 3000);
-
-      // Shut down the pi
-      piOffTimer = millis() + 3000;
-      power_state = POWER_STATE_SHUTDOWN;
-      break;
-
-    case POWER_STATE_SHUTDOWN :
-      // Check if we have a timer active and action the state change.
-      if (piOffTimer > 0 and piOffTimer > millis()) {
-        piOffTimer = 0;
-        power_state = POWER_STATE_OFF;
-      }
-      break;
-
-    case POWER_STATE_OFF :
-      sleep();
-      power_state = POWER_STATE_TO_ON;
-    /* FALL THROUGH */
-
-    case POWER_STATE_TO_ON :
-      // Blink the light for 3 seconds, then leave on
-      request_led_blink(LED_STATE_ON, 3000);
-
-      power_state = POWER_STATE_ON;
-    /* FALLTHROUGH */
-    case POWER_STATE_ON :
-      if (bounce.rose() or button_current_event == SLEEP_REQUEST) { // Relase
-        power_state = LED_STATE_TO_OFF;
-        button_current_event = 0;
-      }
-      break;
-
-    default :
-      break;
-  }
+  fsm_system.run_machine();
 }

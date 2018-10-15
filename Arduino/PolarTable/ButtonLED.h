@@ -8,41 +8,65 @@ extern SX1509 io;
   State
 *************************************************************/
 
-const State LED_STATE_OFF = 1;
-const State LED_STATE_ON = 2;
-const State LED_STATE_BLINK = 3;
+void on_button_led_on_enter();
+void off_button_led_enter();
+void pulse_button_led_enter();
+void pulse_button_led_on_state();
 
-static const State LED_STATE_TO_OFF = 11;
-static const State LED_STATE_TO_ON = 12;
-static const State LED_STATE_TO_BLINK = 13;
+void pulse_to_on_button_led_enter();
+void pulse_to_off_button_led_enter();
 
-static State current_led_state = LED_STATE_OFF;
-static State post_transition_state = 0;
+State state_button_led_on(&on_button_led_on_enter, NULL, NULL);
+State state_button_led_off(&off_button_led_enter, NULL, NULL);
+State state_button_led_pulse(&pulse_button_led_enter, NULL, NULL);
 
-static unsigned long delay_timer = 0;
-static unsigned long transition_time = 0;
+// New states so we can add timed transitions, but reuse use the pulse functions.
+State state_button_led_pulse_on(&pulse_button_led_enter, NULL, NULL);
+State state_button_led_pulse_off(&pulse_button_led_enter, NULL, NULL);
+
+Fsm fsm_button_led(&state_button_led_off);
+
+void on_button_led_on_enter()
+{
+  io.analogWrite(PIN_WAKE_LED, 255);
+}
+void off_button_led_enter(){
+  io.analogWrite(PIN_WAKE_LED, 0);
+}
+void off_button_led_state(){
+}
+
+void pulse_button_led_enter(){
+  int low_ms = 1000;
+  int high_ms = 1000;
+  int rise_ms = 500;
+  int fall_ms = 250;
+  io.breathe(PIN_WAKE_LED, low_ms, high_ms, rise_ms, fall_ms);
+}
 
 
 /*************************************************************
   Interface
 *************************************************************/
 
-void request_led_on(State transition = 0, int transition_time = 0) {
-  current_led_state = LED_STATE_TO_ON;
-  post_transition_state = transition;
-  transition_time = millis() + transition_time;
+void request_led_on() {
+  fsm_button_led.trigger(BUTTON_ON);
 }
 
-void request_led_off(State transition = 0, int transition_time = 0) {
-  current_led_state = LED_STATE_TO_OFF;
-  post_transition_state = transition;
-  transition_time = millis() + transition_time;
+void request_led_off() {
+  fsm_button_led.trigger(BUTTON_OFF);
 }
 
-void request_led_blink(State transition = 0, int transition_time = 0) {
-  current_led_state = LED_STATE_TO_BLINK;
-  post_transition_state = transition;
-  transition_time = millis() + transition_time;
+void request_led_pulse() {
+  fsm_button_led.trigger(BUTTON_PULSE);
+}
+
+void request_led_pulse_on() {
+  fsm_button_led.trigger(BUTTON_PULSE_ON);
+}
+
+void request_led_pulse_off() {
+  fsm_button_led.trigger(BUTTON_PULSE_OFF);
 }
 
 /*************************************************************
@@ -51,6 +75,22 @@ void request_led_blink(State transition = 0, int transition_time = 0) {
 
 void button_led_setup()
 {
+  // Off => On, On => OFF
+  fsm_button_led.add_transition(&state_button_led_off, &state_button_led_on, BUTTON_ON, NULL);  
+  fsm_button_led.add_transition(&state_button_led_on, &state_button_led_off, BUTTON_OFF, NULL);
+
+  // Off/On => Blink, Blink => Off/On
+  fsm_button_led.add_transition(&state_button_led_off, &state_button_led_pulse, BUTTON_PULSE, NULL);  
+  fsm_button_led.add_transition(&state_button_led_on, &state_button_led_pulse, BUTTON_PULSE, NULL);  
+  fsm_button_led.add_transition(&state_button_led_pulse, &state_button_led_off, BUTTON_OFF, NULL);  
+  fsm_button_led.add_transition(&state_button_led_pulse, &state_button_led_on, BUTTON_ON, NULL);  
+
+  fsm_button_led.add_transition(&state_button_led_off, &state_button_led_pulse_on, BUTTON_PULSE_ON, NULL);
+  fsm_button_led.add_timed_transition(&state_button_led_pulse_on, &state_button_led_on, 3000, NULL);
+  
+  fsm_button_led.add_transition(&state_button_led_on, &state_button_led_pulse_off, BUTTON_PULSE_OFF, NULL);  
+  fsm_button_led.add_timed_transition(&state_button_led_pulse_off, &state_button_led_off, 3000, NULL);
+    
   // Use the internal 2MHz oscillator.
   // Set LED clock to 500kHz (2MHz / (2^(3-1)):
   io.clock(INTERNAL_CLOCK_2MHZ, 3);
@@ -59,53 +99,5 @@ void button_led_setup()
 }
 
 void button_led_loop() {
-  DEBUG_PRINTLN("switching led state");
-
-  if (post_transition_state) {
-    if (transition_time > millis()) {
-      current_led_state = post_transition_state;
-      post_transition_state = 0;
-    }
-  }
-
-  switch (current_led_state) {
-
-    case LED_STATE_TO_OFF :
-      if (delay_timer == 0 or delay_timer > millis())
-      {
-        io.breathe(PIN_WAKE_LED, 1000, 0, 1000, 250);
-        io.digitalWrite(PIN_WAKE_LED, LOW);
-        current_led_state = LED_STATE_OFF;
-      }
-      break;
-
-    case LED_STATE_OFF :
-      break;
-
-    case LED_STATE_TO_ON :
-      if (delay_timer == 0 or delay_timer > millis())
-      {
-        io.breathe(PIN_WAKE_LED, 0, 1000, 1000, 250);
-        io.digitalWrite(PIN_WAKE_LED, HIGH);
-        current_led_state = LED_STATE_ON;
-      }
-      break;
-
-    case LED_STATE_ON :
-      break;
-
-    case LED_STATE_TO_BLINK :
-      if (delay_timer == 0 or delay_timer > millis())
-      {
-        io.breathe(PIN_WAKE_LED, 500, 500, 250, 250);
-        current_led_state = LED_STATE_BLINK;
-      }
-      break;
-
-    case LED_STATE_BLINK :
-      break;
-
-    default :
-      break;
-  }
+  fsm_button_led.run_machine();
 }

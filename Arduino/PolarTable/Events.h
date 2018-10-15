@@ -14,6 +14,13 @@ static const Event NULL_EVENT = 0;
 
 static const Event SLEEP_REQUEST = 10;
 static const Event WAKE_REQUEST = 11;
+static const Event SLEEP = 12;
+
+static const Event BUTTON_ON = 15;
+static const Event BUTTON_OFF = 16;
+static const Event BUTTON_PULSE = 17;
+static const Event BUTTON_PULSE_ON = 18;
+static const Event BUTTON_PULSE_OFF = 19;
 
 static const Event MOTOR_SET_THETA_POS_REQUEST = 30;
 static const Event MOTOR_SET_RADIUS_POS_REQUEST = 31;
