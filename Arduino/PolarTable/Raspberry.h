@@ -98,10 +98,12 @@ void raspberry_loop() {
       // We have new data to push out to the device.
       switch (RASP_REQ) {
         case RASP_LED_ON :
-          lighting_event(LED_ON_REQUEST);
+          // lighting_event(LED_ON_REQUEST);
+          evtManager.trigger(LIGHTING_STATE, LED_ON);
           break;
         case RASP_LED_OFF :
-          lighting_event(LED_OFF_REQUEST);
+          // lighting_event(LED_OFF_REQUEST);
+          evtManager.trigger(LIGHTING_STATE, LED_OFF);
           break;
 
         case RASP_LED_COLOR :
@@ -109,7 +111,8 @@ void raspberry_loop() {
             DEBUG_PRINT("ledColorChanged ");
             CHSV ledColor;
             memcpy(&ledColor.raw[0], &recieve_data[1], recieve_data_size - 1);
-            set_color(ledColor);
+            evtManager.trigger(LIGHTING_COLOR, &ledColor);
+            // set_color(ledColor);
             break;
           }
 

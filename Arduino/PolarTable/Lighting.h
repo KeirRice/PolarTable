@@ -3,15 +3,10 @@
 *************************************************************/
 
 #include <FastLED.h>
-#include "Events.h"
+#include "ProjectEvents.h"
 
 #define NUM_LEDS 1
 CRGB leds[NUM_LEDS];
-
-static const State2 LIGHTING_STATE_IDLE = 0;
-static const State2 LIGHTING_STATE_TO_TARGET = 1;
-static const State2 LIGHTING_STATE_TO_OFF = 2;
-State2 current_lighting_state = LIGHTING_STATE_IDLE;
 
 static const uint8_t blendRate = 50;  // How fast to blend.  Higher is slower.  [milliseconds]
 
@@ -20,24 +15,12 @@ CHSV colorTarget = CHSV(192, 255, 255); // target color
 CHSV colorCurrent = colorStart;
 CHSV incomingColorTarget;
 
-EventID active_lighting_event = 0;
-
 /*************************************************************
   Access
 *************************************************************/
 
-void set_color(CHSV &color) {
-  incomingColorTarget = color;
-  active_lighting_event = LED_COLOR_CHANGE;
-}
-
 CHSV get_color() {
   return colorTarget;
-}
-
-void lighting_event(EventID new_event)
-{
-  active_lighting_event = new_event;
 }
 
 bool blend(bool reset = false)
@@ -58,61 +41,71 @@ bool blend(bool reset = false)
   return false;
 }
 
+
+/*************************************************************
+  State Machine
+*************************************************************/
+
+void lighting_shutdown_on_enter();
+void lighting_shutdown_on_state();
+void lighting_off_on_enter();
+void lighting_blend_on_state();
+
+State state_lighting_on(NULL, NULL, NULL);
+State state_lighting_blend(NULL, &lighting_blend_on_state, NULL);
+State state_lighting_shutdown(&lighting_off_on_enter, &lighting_shutdown_on_state, NULL);
+State state_lighting_off(&lighting_off_on_enter, NULL, NULL);
+
+Fsm fsm_lighting(&state_lighting_on);
+
+void lighting_shutdown_on_enter(){
+  blend(true); // Reset blending
+  colorTarget.setHSV(0.0, 0.0, 0.0); // Black
+}
+void lighting_shutdown_on_state(){
+  if(blend()){
+    // Done
+    fsm_lighting.trigger(LED_OFF);
+  }
+}
+
+void lighting_off_on_enter(){
+  leds[0] = CHSV(0, 0, 0);
+  FastLED.show();
+}
+
+void lighting_blend_on_state(){
+  if(blend()){
+    // Done
+    fsm_lighting.trigger(LED_ON);
+  }
+}
+
+void lighting_listener(void* data){
+  fsm_lighting.trigger((int) data);
+}
+void lighting_color_listener(void* data){
+  incomingColorTarget = *(static_cast<CHSV *>(data));
+  fsm_lighting.trigger(LED_BLEND);
+}
+
 /*************************************************************
   Setup and main loop
 *************************************************************/
 
 void lighting_setup() {
   FastLED.addLeds<P9813, PIN_LED_SDIN, PIN_LED_SCIN, RGB>(leds, NUM_LEDS);
+
+  fsm_button_led.add_transition(&state_lighting_on, &state_lighting_blend, LED_BLEND, NULL);
+  fsm_button_led.add_transition(&state_lighting_blend, &state_lighting_on, LED_ON, NULL);
+  
+  fsm_button_led.add_transition(&state_lighting_on, &state_lighting_shutdown, LED_SHUTDOWN, NULL);
+  fsm_button_led.add_transition(&state_lighting_blend, &state_lighting_shutdown, LED_SHUTDOWN, NULL);
+  
+  fsm_button_led.add_transition(&state_lighting_shutdown, &state_lighting_off, LED_OFF, NULL);
+  fsm_button_led.add_transition(&state_lighting_off, &state_lighting_on, LED_ON, NULL);
+
+  evtManager.subscribe(Subscriber(LIGHTING_STATE, lighting_listener));
+  evtManager.subscribe(Subscriber(LIGHTING_COLOR, lighting_color_listener));
 }
 
-void lighting_loop() {
-  switch (active_lighting_event) {
-    case LED_COLOR_CHANGE :
-      colorStart = colorCurrent;
-      colorTarget = incomingColorTarget;
-      current_lighting_state = LIGHTING_STATE_TO_TARGET;
-      break;
-
-    case LED_OFF_REQUEST :
-      active_lighting_event = NULL_EVENT;
-      blend(true);
-      colorTarget.setHSV(0.0, 0.0, 0.0); // Black
-      current_lighting_state = LIGHTING_STATE_TO_OFF;
-      break;
-
-    case LED_ON_REQUEST :
-      active_lighting_event = NULL_EVENT;
-      blend(true);
-      colorTarget = colorCurrent;
-      current_lighting_state = LIGHTING_STATE_TO_TARGET;
-      break;
-
-    default :
-      break;
-  }
-  active_lighting_event = 0;
-
-  switch (current_lighting_state) {
-    case LIGHTING_STATE_IDLE :
-      break;
-
-    case LIGHTING_STATE_TO_TARGET :
-      EVERY_N_MILLISECONDS(blendRate) {                           // FastLED based non-blocking delay to update/display the sequence.
-        if (blend()) {
-          current_lighting_state = LIGHTING_STATE_IDLE;
-        }
-      }
-      break;
-
-    case LIGHTING_STATE_TO_OFF :
-      EVERY_N_MILLISECONDS(10) {                                  // FastLED based non-blocking delay to update/display the sequence.
-        if (blend()) {
-          current_lighting_state = LIGHTING_STATE_IDLE;
-        }
-      }
-
-    default :
-      break;
-  }
-}
