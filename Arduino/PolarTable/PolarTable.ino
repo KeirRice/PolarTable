@@ -12,14 +12,13 @@ typedef unsigned char State2;
 #include "Debug.h"
 
 #include "Pins.h"
-#include "Events.h"
 #include "Helpers.h"
 
 // Ignore warning for the libraries.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 
-#include <Eventually.h>
+#include "Event.h"
 #include <Fsm.h>
 #include <FastLED.h>
 #include <Bounce2.h>
@@ -33,8 +32,7 @@ typedef unsigned char State2;
 
 #pragma GCC diagnostic pop
 
-// EventManager evtManager;
-EvtManager evtManager;
+EventManager evtManager;
 SX1509 io;
 
 #include "WireTypes.h"
@@ -73,11 +71,8 @@ void setup()
 
 void loop()
 {
-  evtManager.loopIteration();
-  
   raspberry_loop();
   button_loop();
   encode_loop();
-  lighting_loop();
   motor_loop();
 }

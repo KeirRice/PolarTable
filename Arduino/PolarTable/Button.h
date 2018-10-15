@@ -53,8 +53,7 @@ void sleep() {
 
 
 void on_system_on_enter(){
-  // evtManager.trigger(Event("button.led", &BUTTON_PULSE_ON));
-  LEDListener().trigger((void*) &BUTTON_PULSE_ON);
+  evtManager.trigger(BUTTON_LED, &BUTTON_PULSE_ON);
 }
 void on_system_on_state(){
   if (bounce.rose()) { // OnRelease
@@ -62,7 +61,7 @@ void on_system_on_state(){
   }
 }
 void on_system_shutdown_enter(){
-  // evtManager.trigger(Event("button.led", &BUTTON_OFF));
+  evtManager.trigger(BUTTON_LED, &BUTTON_PULSE_OFF);
   
   // TODO: Send shutdown command to PI
 }
@@ -70,7 +69,7 @@ void off_system_shutdown_state(){
   // TODO: Check if Pi is down?
 }
 void on_system_off_enter(){
-  // evtManager.trigger(Event("button.led", &BUTTON_OFF));
+  evtManager.trigger(BUTTON_LED, &BUTTON_PULSE_OFF);
 }
 void off_system_off_state(){
   sleep();
