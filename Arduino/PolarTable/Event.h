@@ -10,6 +10,12 @@
 
 #include "Arduino.h"
 
+typedef char EventID;
+#define INTERVAL_SLOT_COUNT 0
+#define SUBSCRIBER_SLOT_COUNT 2
+
+#include "ProjectEvents.h"
+
 /**
  * Event structure is the basic Event
  * object that can be dispatched by the
@@ -17,11 +23,9 @@
  */
 struct Event
 {
-  Event() : label(NULL) {}
-  Event(const char *cLabel) : label(cLabel) {}
-  Event(const char *cLabel, const char *cExtra) : label(cLabel), extra(cExtra) {}
-  const char *label;
-  const char *extra;
+  Event(const EventID cLabel, const void *cExtra=0) : label(cLabel), extra(cExtra) {}
+  const EventID label;
+  const void *extra;
 };
 
 /**
@@ -40,11 +44,9 @@ struct EventTask
  */
 struct Subscriber
 {
-  Subscriber() : label(NULL), task(NULL) {}
-  Subscriber(const char *cLabel, EventTask *cTask) : label(cLabel), task(cTask) {}
-  
-  const char *label;
-  EventTask *task;
+  Subscriber(const EventID *cLabel, void (*func)(Event evt)) : label(cLabel), task(func) {}
+  const EventID *label;
+  const void (*task)(Event evt);
 };
 
 /**
@@ -53,29 +55,18 @@ struct Subscriber
  */
 struct TimedTask
 {
-  TimedTask() : ms(0), evt(NULL) , alive(false), current(0)  {}
-  TimedTask(unsigned long cMs, Event cEvt) : ms(cMs), evt(cEvt) , alive(true), current(60)  {}
+  TimedTask() : target_ms(0), evt(NULL)  {}
+  TimedTask(unsigned long t_ms, Event cEvt) : target_ms(t_ms), evt(cEvt) {}
   
   /**
    * Evaluates the state of the timed task and if
    * it's time to execute it or not. Resets the current
    * counter if it reaches the timed threshold.
    */
-  boolean eval()
-  {
-    if (current >= ms)
-    {
-      current = 0;
-      return true;
-    }
-    
-    return false;
-  }
+  boolean eval(unsigned long current_ms);
   
-  unsigned long ms;
+  const unsigned long target_ms;
   Event evt;
-  boolean alive; // State of the timed task
-  unsigned long current;
 };
 
 /**
@@ -88,17 +79,19 @@ class EventManager
   public:
     EventManager();
     void subscribe(Subscriber sub);
-    void trigger(Event evt);
+    void trigger(const Event evt);
+    void trigger(const EventID cLabel, const void *cExtra=0);
     void triggerInterval(TimedTask timed);
     void tick();
+    
   private:
-    TimedTask _interval[5]; // 5 available interval slots
-    unsigned int _intervalSize;
+    TimedTask* _interval[INTERVAL_SLOT_COUNT];
+    unsigned int _intervalCount;
     unsigned int _intervalPos;
-    Subscriber _sub[10]; // 10 available subscriber slots
-    unsigned int _subSize;
+    
+    Subscriber* _sub[SUBSCRIBER_SLOT_COUNT];
+    unsigned int _subCount;
     unsigned int _subPos;
-    unsigned long _previousMs;
 };
 
 #endif

@@ -14,10 +14,11 @@
  */
 EventManager::EventManager()
 {
-  _intervalSize = sizeof(_interval) / sizeof(TimedTask);
+  _intervalCount = sizeof(_interval) / sizeof(TimedTask);
   _intervalPos = 0;
   
-  _subSize = sizeof(_sub) / sizeof(Subscriber);
+  _subCount = sizeof(_sub) / sizeof(Subscriber);
+  _subPos = 0;
 }
 
 /**
@@ -26,9 +27,9 @@ EventManager::EventManager()
  */
 void EventManager::subscribe(Subscriber sub)
 {
-  if (_subSize >= _subPos)
+  if (_subCount >= _subPos)
   {
-    _sub[_subPos++] = sub;
+    _sub[_subPos++] = &sub;
   }
 }
 
@@ -36,16 +37,30 @@ void EventManager::subscribe(Subscriber sub)
  * Triggers a specified event which will find the applicable
  * Subscriber and execute it's EventTask
  */
-void EventManager::trigger(Event evt)
+void EventManager::trigger(const Event evt)
 {
-  for (unsigned int i = 0; i < _subSize; ++i)
+  for (unsigned int i = 0; i < _subCount; ++i)
   {
-    Subscriber *sub = &_sub[i];
+    Subscriber *sub = _sub[i];
     
-    if (strcmp(sub->label, evt.label) == 0)
+    if (sub and sub->label == evt.label)
     {
       // Execute event
-      sub->task->execute(evt);
+      (sub->task)(evt);
+    }  
+  }
+}
+
+void EventManager::trigger(const EventID cLabel, const void *cExtra)
+{
+  for (unsigned int i = 0; i < _subCount; ++i)
+  {
+    Subscriber *sub = _sub[i];
+    
+    if (sub and sub->label == cLabel)
+    {
+      // Execute event
+      (sub->task)(cExtra);
     }  
   }
 }
@@ -56,10 +71,19 @@ void EventManager::trigger(Event evt)
  */
 void EventManager::triggerInterval(TimedTask task)
 {
-  if (_intervalSize >= _intervalPos)
+  if (_intervalCount >= _intervalPos)
   {
-    _interval[_intervalPos++] = task;
+    _interval[_intervalPos++] = &task;
   }
+}
+
+
+boolean TimedTask::eval(unsigned long current_ms) {
+  if (current_ms >= target_ms and target_ms > 0)
+  {
+    return true;
+  }    
+  return false;
 }
 
 /**
@@ -72,27 +96,21 @@ void EventManager::tick()
     return;
   }
 
-  // TODO: Flip the time check so we store the target time once and just compare it to millis()
-  
   unsigned long currentMs = millis();
-  unsigned long difference = currentMs - _previousMs;
   
-  for (unsigned int i = 0; i < _intervalSize; ++i)
+  for (unsigned int i = 0; i < _intervalCount; ++i)
   {
-    TimedTask *task = &_interval[i];
+    TimedTask *task = _interval[i];
     
-    if (task->alive)
+    if (task)
     {
-      task->current = task->current + difference;
-      
-      if (task->eval())
+      if (task->eval(currentMs))
       {
         // Run the timed event when it evalutes to
         // ready.
         trigger(task->evt);
+        _interval[i] = nullptr;
       }
     }
   }
-  
-  _previousMs = currentMs;
 }
