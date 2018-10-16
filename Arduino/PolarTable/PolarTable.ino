@@ -44,7 +44,10 @@ SX1509 io;
 #include "Encoder.h"
 #include "Lighting.h"
 #include "Motors.h"
+
+#include "RaspberryManager.h"
 #include "Raspberry.h"
+
 
 extern long startMillis;
 
@@ -63,6 +66,7 @@ void setup()
     while (1);
   }
   raspberry_setup();
+  raspberry_manager_setup();
   button_setup();
   encoder_setup();
   lighting_setup();
@@ -72,6 +76,7 @@ void setup()
 void loop()
 {
   raspberry_loop();
+  raspberry_manager_loop();
   button_loop();
   lighting_loop();
   encode_loop();

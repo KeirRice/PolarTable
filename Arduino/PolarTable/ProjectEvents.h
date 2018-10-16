@@ -40,3 +40,8 @@ static const EventID LED_BLEND = 56;
 static const EventID LIGHTING_STATE = 57;
 static const EventID LIGHTING_COLOR = 58;
 
+static const EventID RASPBERRY_EVENT = 60;
+static const EventID RASPBERRY_SHUTDOWN = 61;
+static const EventID RASPBERRY_RESTART = 62;
+static const EventID RASPBERRY_STARTUP = 63;
+static const EventID RASPBERRY_HEARTBEAT = 64;

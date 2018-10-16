@@ -1,9 +1,7 @@
 /*************************************************************
-  Communicate witht he Rasberry Pi
+  Communicate with the Rasberry Pi
 *************************************************************/
-
-#include <util/atomic.h> // this library includes the ATOMIC_BLOCK macro.
-#include "Wire.h"
+#pragma once
 
 /*************************************************************
   States
@@ -40,16 +38,15 @@ volatile unsigned char recieve_buffer_size = 0;
 
 
 /*************************************************************
-  Interupts
+  Interrupts
 *************************************************************/
 
-// The controller calls us (peripheral) and tells use what data it wants.
+// The controller calls us (the peripheral) and tells use what data it wants.
 // We save that into the recieve buffer and use it for generating data for the
 // next request to sendData
 
 // Data selection by controller
 void receiveData(int byteCount) { // Wire supports max 32bytes
-  UNUSED(byteCount);
   for (recieve_buffer_size = 0; Wire.available(); ++recieve_buffer_size)
   {
     recieve_buffer[recieve_buffer_size] = Wire.read();
@@ -78,10 +75,12 @@ void raspberry_setup() {
   Wire.onRequest(sendData);
 }
 
-void raspberry_loop() {
+void raspberry_loop() {  
   // Check if there is any data waiting for us in the recieve buffer
   // If we have some new data run it quickly through the state machine, set values and trigger events.
   if (recieve_buffer_size) {
+    raspberry_heartbeat();
+    
     byte recieve_data_size = 0;
     byte recieve_data[recieve_buffer_size];
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -98,11 +97,9 @@ void raspberry_loop() {
       // We have new data to push out to the device.
       switch (RASP_REQ) {
         case RASP_LED_ON :
-          // lighting_event(LED_ON_REQUEST);
           evtManager.trigger(LIGHTING_STATE, LED_ON);
           break;
         case RASP_LED_OFF :
-          // lighting_event(LED_OFF_REQUEST);
           evtManager.trigger(LIGHTING_STATE, LED_OFF);
           break;
 
@@ -112,7 +109,6 @@ void raspberry_loop() {
             CHSV ledColor;
             memcpy(&ledColor.raw[0], &recieve_data[1], recieve_data_size - 1);
             evtManager.trigger(LIGHTING_COLOR, &ledColor);
-            // set_color(ledColor);
             break;
           }
 
@@ -133,11 +129,10 @@ void raspberry_loop() {
           }
 
         case RASP_SLEEP :
-          request_sleep();
+          evtManager.trigger(SYSTEM_EVENT, SLEEP_REQUEST);
           break;
 
         case RASP_STAYALIVE :
-          // TODO
           break;
 
         default :
