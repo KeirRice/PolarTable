@@ -40,8 +40,7 @@ TimedTask::TimedTask(unsigned long t_ms, Event *cEvt) : target_ms(t_ms), evt(cEv
 EventManager::EventManager()
 {
   _intervalCount = sizeof(_interval) / sizeof(TimedTask);
-  _intervalPos = 0;
-
+  
   _subCount = sizeof(_sub) / sizeof(Subscriber);
   _subPos = 0;
 
