@@ -4,11 +4,31 @@
 
 #pragma once
 
+/*
+ * Concatenate preprocessor tokens A and B without expanding macro definitions
+ * (however, if invoked from a macro, macro arguments are expanded).
+ */
+#define PPCAT_NX(A, B) A ## B
+
+/*
+ * Concatenate preprocessor tokens A and B after macro-expanding them.
+ */
+#define PPCAT(A, B) PPCAT_NX(A, B)
+/*
+ * Turn A into a string literal without expanding macro definitions
+ * (however, if invoked from a macro, macro arguments are expanded).
+ */
+#define STRINGIZE_NX(A) #A
+
+/*
+ * Turn A into a string literal after macro-expanding it.
+ */
+#define STRINGIZE(A) STRINGIZE_NX(A)
+
 #define DEBUG_PRINT(...) \
   do { \
     if (DEBUG){ \
-      Serial.print(F("DEBUG: ")); \
-      Serial.print(__VA_ARGS__); \
+      Serial.print(F("DEBUG: " __VA_ARGS__)); \
       Serial.flush(); \
     }\
   } while (0)
@@ -16,24 +36,21 @@
 #define DEBUG_PRINT_VAR1(a) \
   do { \
     if (DEBUG){ \
-      Serial.print(#a ":\t"); Serial.println(a); \
+      Serial.println(F(#a ":\t" STRINGIZE(a))); \
       Serial.flush(); \
     }\
   } while (0)
 #define DEBUG_PRINT_VAR2(a, b) \
   do { \
     if (DEBUG){ \
-      Serial.print(#a ":\t"); Serial.print(a); Serial.print('\t'); \
-      Serial.print(#a ":\t"); Serial.println(b); \
+      Serial.println(F(#a ":\t" STRINGIZE(a) "\t" #b ":\t" STRINGIZE(b))); \
       Serial.flush(); \
     }\
   } while (0)
 #define DEBUG_PRINT_VAR3(a, b, c) \
   do { \
     if (DEBUG){ \
-      Serial.print(#a ":\t"); Serial.print(a); Serial.print('\t'); \
-      Serial.print(#a ":\t"); Serial.print(b); Serial.print('\t'); \
-      Serial.print(#a ":\t"); Serial.println(c); \
+      Serial.println(F(#a ":\t" STRINGIZE(a) "\t" #b ":\t" STRINGIZE(b) "\t" #c ":\t" STRINGIZE(c))); \
       Serial.flush(); \
     }\
   } while (0)
@@ -44,8 +61,7 @@
 #define DEBUG_PRINTLN(...) \
   do { \
     if (DEBUG){ \
-      Serial.print(F("DEBUG: ")); \
-      Serial.println(__VA_ARGS__); \
+      Serial.println(F("DEBUG: " __VA_ARGS__)); \
       Serial.flush(); \
     }\
   } while (0)
@@ -53,7 +69,7 @@
 #define DEBUG_WHERE() \
   do { \
     if (DEBUG){ \
-      Serial.print(F("At "));  Serial.print(__FILE__); Serial.print(F(": ")); Serial.println(__LINE__); \
+      Serial.println(F("At " __FILE__ ": " STRINGIZE(__LINE__))); \
       Serial.flush(); \
     }\
   } while (0)
