@@ -18,17 +18,17 @@ typedef unsigned char State2;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 
+#include <avr/sleep.h>
+#include <stdarg.h>
+#include <util/atomic.h> // this library includes the ATOMIC_BLOCK macro.
 #include "Event.h"
 #include <Fsm.h>
 #include <FastLED.h>
 #include <Bounce2.h>
 #include "SX1509.h"
 #include "Wire.h"
-#include <stdarg.h>
-#include <avr/sleep.h>
 #include <AccelStepper.h>
 #include <MultiStepper.h>
-#include <util/atomic.h> // this library includes the ATOMIC_BLOCK macro.
 
 #pragma GCC diagnostic pop
 
