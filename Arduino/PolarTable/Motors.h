@@ -100,6 +100,7 @@ void send_state() {
   // while you're shifting bits:
   digitalWrite(PIN_SHIFT_LATCH, LOW);
 
+  // TODO: If we need to go faster we could use the SPI hardware...
   // shift the bits out:
   shiftOut(PIN_SHIFT_DATA, PIN_SHIFT_CLOCK, MSBFIRST, motor_settings);
 
