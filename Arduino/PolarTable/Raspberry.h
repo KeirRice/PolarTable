@@ -47,6 +47,7 @@ volatile unsigned char recieve_buffer_size = 0;
 
 // Data selection by controller
 void receiveData(int byteCount) { // Wire supports max 32bytes
+  UNUSED(byteCount);
   for (recieve_buffer_size = 0; Wire.available(); ++recieve_buffer_size)
   {
     recieve_buffer[recieve_buffer_size] = Wire.read();
@@ -61,6 +62,118 @@ void sendData() {
   }
 }
 
+
+void process_recieve_data(char request, byte *recieve_data, byte recieve_data_size){
+  // We have new data to push out to the device.
+  switch (request) {
+    case RASP_STAYALIVE :
+      break;
+      
+    case RASP_LED_ON :
+      evtManager.trigger(LIGHTING_STATE, LED_ON);
+      break;
+      
+    case RASP_LED_OFF :
+      evtManager.trigger(LIGHTING_STATE, LED_OFF);
+      break;
+
+    case RASP_LED_COLOR :
+      {
+        DEBUG_PRINT("ledColorChanged ");
+        char *leds[3];
+        memcpy(&leds[0], &recieve_data[1], recieve_data_size - 1);
+        evtManager.trigger(LIGHTING_COLOR, leds);
+        break;
+      }
+
+    case RASP_THETA :
+      {
+        motor theta;
+        memcpy(&theta.uBytes[0], &recieve_data[1], recieve_data_size - 1);
+        set_theta_motor_position(theta);
+        break;
+      }
+
+    case RASP_RADIUS :
+      {
+        motor radius;
+        memcpy(&radius.uBytes[0], &recieve_data[1], recieve_data_size - 1);
+        set_radius_motor_position(radius);
+        break;
+      }
+
+    case RASP_SLEEP :
+      evtManager.trigger(SYSTEM_EVENT, SLEEP_REQUEST);
+      break;
+
+    default :
+      break;
+  }
+}
+
+void process_send_data(char request){
+  static byte send_data[32];
+  static byte send_data_size = 0;
+  
+  // If we have a request for data load up the send buffer.
+  switch (request) {
+    case RASP_NULL:
+      break;
+      
+    case RASP_LED_ON :
+      send_data_size = 1;
+      send_data[0] = 1;  // true
+      break;
+
+    case RASP_LED_OFF :
+      send_data_size = 1;
+      send_data[0] = 1;  // true
+      break;
+
+    case RASP_LED_COLOR :
+    {
+      send_data_size = 3;
+      memcpy(&send_data[0], &get_color()[0], send_data_size);
+      break;
+    }
+
+    case RASP_THETA :
+    {
+      wire_packed<long> theta_out = wire_pack(321657498);
+      memcpy(&send_data[0], &theta_out.uBytes[0], theta_out.size);
+      break;
+   }
+
+    case RASP_RADIUS :
+    {
+      wire_packed<long> radius_out = wire_pack(2132498);
+      memcpy(&send_data[0], &radius_out.uBytes[0], radius_out.size);
+      break;
+    }
+
+    case RASP_STAYALIVE :
+    {
+      // TODO: This is our chance to tell the Pi to shutdown.
+      send_data_size = 1;
+      send_data[0] = 1;  // true
+      break;
+    }
+    default :
+      break;
+  }
+  // Reset the request?
+  request = RASP_NULL;
+
+  if (send_data_size) {
+    // Don't overwrite the last send_buffer message until it's sent
+    if (send_buffer_size == 0) {
+      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        memcpy(&send_buffer[0], &send_data[0], send_data_size);
+        send_buffer_size = send_data_size;
+      }
+    }
+  }
+}
 
 /*************************************************************
   Setup and loop
@@ -94,111 +207,8 @@ void raspberry_loop() {
     RASP_REQ = recieve_data[0] & (~RASP_SEND_DATA);
   
     if (!is_send){
-      // We have new data to push out to the device.
-      switch (RASP_REQ) {
-        case RASP_LED_ON :
-          evtManager.trigger(LIGHTING_STATE, LED_ON);
-          break;
-        case RASP_LED_OFF :
-          evtManager.trigger(LIGHTING_STATE, LED_OFF);
-          break;
-
-        case RASP_LED_COLOR :
-          {
-            DEBUG_PRINT("ledColorChanged ");
-            CHSV ledColor;
-            memcpy(&ledColor.raw[0], &recieve_data[1], recieve_data_size - 1);
-            evtManager.trigger(LIGHTING_COLOR, &ledColor);
-            break;
-          }
-
-        case RASP_THETA :
-          {
-            motor theta;
-            memcpy(&theta.uBytes[0], &recieve_data[1], recieve_data_size - 1);
-            set_theta_motor_position(theta);
-            break;
-          }
-
-        case RASP_RADIUS :
-          {
-            motor radius;
-            memcpy(&radius.uBytes[0], &recieve_data[1], recieve_data_size - 1);
-            set_radius_motor_position(radius);
-            break;
-          }
-
-        case RASP_SLEEP :
-          evtManager.trigger(SYSTEM_EVENT, SLEEP_REQUEST);
-          break;
-
-        case RASP_STAYALIVE :
-          break;
-
-        default :
-          break;
-      }
+      process_recieve_data(RASP_REQ, recieve_data, recieve_data_size);
     }
   }
-
-  static byte send_data[32];
-  static byte send_data_size = 0;
-  // If we have a request for data load up the send buffer.
-  switch (RASP_REQ) {
-    case RASP_NULL:
-      break;
-      
-    case RASP_LED_ON :
-      send_data_size = 1;
-      send_data[0] = 1;  // true
-      break;
-
-    case RASP_LED_OFF :
-      send_data_size = 1;
-      send_data[0] = 1;  // true
-      break;
-
-    case RASP_LED_COLOR :
-    {
-      send_data_size = 3;
-      memcpy(&send_data[0], &get_color().raw[0], send_data_size);
-      break;
-    }
-
-    case RASP_THETA :
-    {
-      wire_packed<long> theta_out = wire_pack(321657498);
-      memcpy(&send_data[0], &theta_out.uBytes[0], theta_out.size);
-      break;
-  }
-
-    case RASP_RADIUS :
-    {
-      wire_packed<long> radius_out = wire_pack(2132498);
-      memcpy(&send_data[0], &radius_out.uBytes[0], radius_out.size);
-      break;
-    }
-
-    case RASP_STAYALIVE :
-    {
-      // TODO: This is our chance to tell the Pi to shutdown.
-      send_data_size = 1;
-      send_data[0] = 1;  // true
-      break;
-    }
-    default :
-      break;
-  }
-  // Reset the request?
-  RASP_REQ = RASP_NULL;
-
-  if (send_data_size) {
-    // Don't overwrite the last send_buffer message until it's sent
-    if (send_buffer_size == 0) {
-      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        memcpy(&send_buffer[0], &send_data[0], send_data_size);
-        send_buffer_size = send_data_size;
-      }
-    }
-  }
+  process_send_data(RASP_REQ);
 }
