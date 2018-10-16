@@ -10,34 +10,31 @@ CRGB leds[NUM_LEDS];
 
 static const uint8_t blendRate = 50;  // How fast to blend.  Higher is slower.  [milliseconds]
 
-CHSV colorStart = CHSV(96, 255, 255); // starting color
-CHSV colorTarget = CHSV(192, 255, 255); // target color
-CHSV colorCurrent = colorStart;
+CHSV colorStart = CHSV(255, 255, 255); // starting color
+CHSV colorTarget = CHSV(128, 255, 255); // target color
+
 CHSV incomingColorTarget;
 
 /*************************************************************
   Access
 *************************************************************/
 
-CHSV get_color() {
-  return colorTarget;
+char* get_color() {
+  return (char*)(&leds[0]);
 }
 
 bool blend(bool reset = false)
 {
   EVERY_N_MILLISECONDS(blendRate) {
-    static uint8_t k;
+    static uint8_t k = 0;
     if ( colorCurrent.h == colorTarget.h or reset ) {  // Check if target has been reached
       k = 0;  // reset k value
       return true;
     }
-
-    colorCurrent = blend(colorStart, colorTarget, k, SHORTEST_HUES);
-    fill_solid( leds, NUM_LEDS, colorCurrent );
-    k++;
+    colorCurrent = blend(colorStart, colorTarget, k++, SHORTEST_HUES);
+    leds[0] = colorCurrent;
+    FastLED.show();  // update the display
   }
-
-  FastLED.show();  // update the display
   return false;
 }
 
@@ -46,37 +43,44 @@ bool blend(bool reset = false)
   State Machine
 *************************************************************/
 
-void lighting_shutdown_on_enter();
-void lighting_shutdown_on_state();
-void lighting_off_on_enter();
-void lighting_blend_on_state();
+void lighting_shutdown_enter();
+void lighting_shutdown_state();
+void lighting_off_enter();
+void lighting_blend_enter();
+void lighting_blend_state();
 
 State state_lighting_on(NULL, NULL, NULL);
-State state_lighting_blend(NULL, &lighting_blend_on_state, NULL);
-State state_lighting_shutdown(&lighting_off_on_enter, &lighting_shutdown_on_state, NULL);
-State state_lighting_off(&lighting_off_on_enter, NULL, NULL);
+State state_lighting_blend(&lighting_blend_enter, &lighting_blend_state, NULL);
+State state_lighting_shutdown(&lighting_off_enter, &lighting_shutdown_state, NULL);
+State state_lighting_off(&lighting_off_enter, NULL, NULL);
 
 Fsm fsm_lighting(&state_lighting_on);
 
-void lighting_shutdown_on_enter(){
-  blend(true); // Reset blending
-  colorTarget.setHSV(0.0, 0.0, 0.0); // Black
+void lighting_shutdown_enter(){
+  // Reset blending and set the target to black (AKA Off)
+  blend(true);
+  colorTarget = CHSV(0, 0, 0);
 }
-void lighting_shutdown_on_state(){
+void lighting_shutdown_state(){
   if(blend()){
     // Done
     fsm_lighting.trigger(LED_OFF);
   }
 }
 
-void lighting_off_on_enter(){
-  leds[0] = CHSV(0, 0, 0);
+void lighting_off_enter(){
+  // Set the lights to off.
+  leds[0] = CRGB::Black;
   FastLED.show();
 }
 
-void lighting_blend_on_state(){
+void lighting_blend_enter(){
+  // Reset any current blending.
+  blend(true);
+}
+void lighting_blend_state(){
+  // Run the blend until we are done and transistion to on
   if(blend()){
-    // Done
     fsm_lighting.trigger(LED_ON);
   }
 }
@@ -84,6 +88,7 @@ void lighting_blend_on_state(){
 void lighting_listener(void* data){
   fsm_lighting.trigger((int) data);
 }
+
 void lighting_color_listener(void* data){
   incomingColorTarget = *(static_cast<CHSV *>(data));
   fsm_lighting.trigger(LED_BLEND);
