@@ -88,17 +88,17 @@ void process_recieve_data(char request, byte *recieve_data, byte recieve_data_si
 
     case RASP_THETA :
       {
-        motor theta;
+        MotorPosition theta;
         memcpy(&theta.uBytes[0], &recieve_data[1], recieve_data_size - 1);
-        set_theta_motor_position(theta);
+        evtManager.trigger(MOTOR_TARGET_THETA, &theta);
         break;
       }
 
     case RASP_RADIUS :
       {
-        motor radius;
+        MotorPosition radius;
         memcpy(&radius.uBytes[0], &recieve_data[1], recieve_data_size - 1);
-        set_radius_motor_position(radius);
+        evtManager.trigger(MOTOR_TARGET_RADIUS, &radius);
         break;
       }
 

@@ -29,6 +29,13 @@ static const EventID MOTOR_SET_THETA_DIR_REQUEST = 32;
 static const EventID MOTOR_SET_RADIUS_DIR_REQUEST = 33;
 static const EventID MOTOR_SET_SETTINGS_REQUEST = 34;
 
+static const EventID MOTOR_NEW_POSITION = 35;
+static const EventID MOTOR_STOP = 36;
+static const EventID MOTOR_TARGET_THETA = 37;
+static const EventID MOTOR_TARGET_RADIUS = 38;
+static const EventID MOTOR_READY_FOR_DATA = 39;
+
+
 static const EventID LED_ON_REQUEST = 50;
 static const EventID LED_OFF_REQUEST = 51;
 static const EventID LED_COLOR_CHANGE = 52;

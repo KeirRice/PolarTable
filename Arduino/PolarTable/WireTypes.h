@@ -18,7 +18,7 @@ wire_packed<T> wire_pack(T t) {
   return r;
 }
 
-struct motor
+struct motor_pos
 {
   union {
     struct              // component-wise representation
@@ -31,4 +31,4 @@ struct motor
     char uBytes[sizeof(long long)];
   };
 };
-typedef motor Motor;
+typedef motor_pos MotorPosition;
