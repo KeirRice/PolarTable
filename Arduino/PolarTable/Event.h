@@ -12,7 +12,7 @@
 
 typedef char EventID;
 #define INTERVAL_SLOT_COUNT 0
-#define SUBSCRIBER_SLOT_COUNT 2
+#define SUBSCRIBER_SLOT_COUNT 10
 
 #include "ProjectEvents.h"
 
@@ -23,7 +23,7 @@ typedef char EventID;
  */
 struct Event
 {
-  Event(const EventID cLabel, const void *cExtra=0) : label(cLabel), extra(cExtra) {}
+  Event(const EventID cLabel, const void *cExtra=0);
   const EventID label;
   const void *extra;
 };
@@ -44,10 +44,15 @@ struct EventTask
  */
 struct Subscriber
 {
-  Subscriber(const EventID *cLabel, void (*func)(Event evt)) : label(cLabel), task(func) {}
-  const EventID *label;
-  const void (*task)(Event evt);
+  Subscriber();
+  Subscriber(const EventID cLabel, void (*callback)());
+  Subscriber(const EventID cLabel, void (*callback)(void* userData));
+  
+  const EventID label;
+  void (*callback)();
+  void (*callback_data)(void* userData);
 };
+
 
 /**
  * TimedTask is an Event that executes after a certain
@@ -55,9 +60,9 @@ struct Subscriber
  */
 struct TimedTask
 {
-  TimedTask() : target_ms(0), evt(NULL)  {}
-  TimedTask(unsigned long t_ms, Event cEvt) : target_ms(t_ms), evt(cEvt) {}
-  
+  TimedTask();
+  TimedTask(unsigned long t_ms, Event *cEvt);
+    
   /**
    * Evaluates the state of the timed task and if
    * it's time to execute it or not. Resets the current
@@ -66,7 +71,7 @@ struct TimedTask
   boolean eval(unsigned long current_ms);
   
   const unsigned long target_ms;
-  Event evt;
+  Event *evt;
 };
 
 /**
@@ -79,8 +84,11 @@ class EventManager
   public:
     EventManager();
     void subscribe(Subscriber sub);
-    void trigger(const Event evt);
-    void trigger(const EventID cLabel, const void *cExtra=0);
+    void trigger(Event *evt);
+    void trigger(const EventID cLabel);
+    void trigger(const EventID cLabel, void *cExtra=NULL);
+    void trigger(const EventID cLabel, const void *cExtra);
+    void trigger(const EventID cLabel, const EventID cExtra);
     void triggerInterval(TimedTask timed);
     void tick();
     

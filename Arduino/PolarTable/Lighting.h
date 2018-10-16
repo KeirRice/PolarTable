@@ -109,3 +109,6 @@ void lighting_setup() {
   evtManager.subscribe(Subscriber(LIGHTING_COLOR, lighting_color_listener));
 }
 
+void lighting_loop() {
+  fsm_lighting.run_machine();
+}

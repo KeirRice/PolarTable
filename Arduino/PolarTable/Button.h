@@ -53,7 +53,7 @@ void sleep() {
 
 
 void on_system_on_enter(){
-  evtManager.trigger(BUTTON_LED, &BUTTON_PULSE_ON);
+  evtManager.trigger(BUTTON_LED, BUTTON_PULSE_ON);
 }
 void on_system_on_state(){
   if (bounce.rose()) { // OnRelease
@@ -61,7 +61,7 @@ void on_system_on_state(){
   }
 }
 void on_system_shutdown_enter(){
-  evtManager.trigger(BUTTON_LED, &BUTTON_PULSE_OFF);
+  evtManager.trigger(BUTTON_LED, BUTTON_PULSE_OFF);
   
   // TODO: Send shutdown command to PI
 }
@@ -69,7 +69,7 @@ void off_system_shutdown_state(){
   // TODO: Check if Pi is down?
 }
 void on_system_off_enter(){
-  evtManager.trigger(BUTTON_LED, &BUTTON_PULSE_OFF);
+  evtManager.trigger(BUTTON_LED, BUTTON_PULSE_OFF);
 }
 void off_system_off_state(){
   sleep();
@@ -79,6 +79,10 @@ void off_system_off_state(){
 /*************************************************************
   Setup and main loop.
 *************************************************************/
+
+void system_listener(void* data){
+  fsm_system.trigger((int) data);
+}
 
 void button_setup()
 {
@@ -90,6 +94,8 @@ void button_setup()
   fsm_system.add_transition(&state_system_on, &state_system_shutdown, SLEEP_REQUEST, NULL);  
   fsm_system.add_timed_transition(&state_system_shutdown, &state_system_off, 3000, NULL);
   fsm_system.add_transition(&state_system_off, &state_system_on, WAKE_REQUEST, NULL);
+
+  evtManager.subscribe(Subscriber(SYSTEM_EVENT, system_listener));
 }
 
 void button_loop() {

@@ -73,6 +73,7 @@ void loop()
 {
   raspberry_loop();
   button_loop();
+  lighting_loop();
   encode_loop();
   motor_loop();
 }
