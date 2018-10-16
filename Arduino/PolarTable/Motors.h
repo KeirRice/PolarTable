@@ -53,19 +53,81 @@ static const State2 MOTOR_STATE_TO_IDLE = 13;
 static const State2 MOTOR_STATE_TO_SLEEP = 14;
 static const State2 MOTOR_STATE_TO_WAKE = 15;
 
-/*═════════╦═══════╦═════════╦══════════╦════════╦══════╦═══════╦══════╗
-  ║                ║ error      ║ stopped       ║ stopping        ║ moving       ║ idle     ║ sleep      ║ wake     ║
-  ╠═════════╬═══════╬═════════╬══════════╬════════╬══════╬═══════╬══════╣
-  ║ error    ║       ║         ║          ║        ║      ║       ║      ║
-  ║ stopped  ║       ║         ║        1 ║        ║    1 ║       ║    1 ║
-  ║ stopping ║       ║         ║          ║      1 ║      ║       ║      ║
-  ║ moving   ║       ║       1 ║          ║        ║      ║       ║      ║
-  ║ idle     ║       ║       1 ║          ║        ║      ║       ║      ║
-  ║ sleep    ║       ║         ║          ║        ║    1 ║       ║      ║
-  ║ wake     ║       ║         ║          ║        ║      ║     1 ║      ║
-  ╚══════════╩═══════╩═════════╩══════════╩════════╩══════╩═══════╩═════*/
+/*
++----------+-------+---------+----------+--------+------+-------+------+
+|          | error | stopped | stopping | moving | idle | sleep | wake |
++----------+-------+---------+----------+--------+------+-------+------+
+| error    |       |         |          |        |      |       |      |
+| stopped  |       |         |        1 |        |    1 |       |    1 |
+| stopping |       |         |          |      1 |      |       |      |
+| moving   |       |       1 |          |        |      |       |      |
+| idle     |       |       1 |          |        |      |       |      |
+| sleep    |       |         |          |        |    1 |       |      |
+| wake     |       |         |          |        |      |     1 |      |
++----------+-------+---------+----------+--------+------+-------+------+
+*/
 
-State2 MOTOR_STATE = MOTOR_STATE_IDLE;
+void motors_active_enter();
+void motors_active_state();
+void motors_idle_enter();
+void motors_sleep_enter();
+void motors_sleep_exit();
+
+State state_motors_active(&motors_active_enter, &motors_active_state, NULL);
+State state_motors_idle(&motors_idle_enter, NULL, NULL);
+State state_motors_sleep(&motors_sleep_enter, NULL, &motors_sleep_exit);
+State state_motors_error(NULL, NULL, NULL);
+
+Fsm fsm_motors(&state_motors_idle);
+
+fsm_motors.add_timed_transition(&state_motors_idle, &state_motors_sleep, 10000, NULL); // Sleep after 10s
+
+void motors_active_enter(){
+  motor_enable(true);
+  
+  long absolute = 0;
+  float speed = 0;
+  stepper.moveTo(absolute);
+  stepper.setSpeed(speed); // constant speed in steps per second
+  stepper.run();
+}
+
+void motors_active_state(){
+  // Pump the motor library, the stepper will move if it needs to
+  stepper.run();
+}
+
+void motors_idle_enter(){
+  motor_enable(false);
+}
+
+void motors_sleep_enter(){
+  motor_sleep(true);
+}
+void motors_sleep_exit(){
+  motor_sleep(false);
+}
+
+void motor_sleep(boolean do_sleep)
+{
+  // SLEEP active on low
+  bitWrite(motor_settings, PIN_MOTOR_SLEEPX, do_sleep ? 0 : 1);
+  bitWrite(motor_settings, PIN_MOTOR_SLEEPY, do_sleep ? 0 : 1);
+  
+  send_state();
+}
+
+void motor_enable(boolean enable)
+{
+  // ENABLE active on low
+  bitWrite(motor_settings, PIN_MOTOR_ENABLEX, enable ? 0 : 1);
+  bitWrite(motor_settings, PIN_MOTOR_ENABLEY, enable ? 0 : 1);
+  
+  send_state();
+}
+
+
+// State2 MOTOR_STATE = MOTOR_STATE_IDLE;
 
 long absolute_position_in_steps[2] = {0, 0};
 bool new_position = false;
@@ -225,38 +287,6 @@ void motor_loop()
       }
       break;
 
-    case MOTOR_STATE_TO_IDLE :
-      idleTimer = millis() + 10000;
-      MOTOR_STATE = MOTOR_STATE_IDLE;
-    /* FALL THROUGH */
-    case MOTOR_STATE_IDLE :
-      if (new_position) {
-        MOTOR_STATE = MOTOR_STATE_STOPPED;
-      }
-      if (millis() > idleTimer) {
-        MOTOR_STATE = MOTOR_STATE_TO_SLEEP;
-      }
-      break;
-
-    case MOTOR_STATE_TO_SLEEP :
-      bitWrite(motor_settings, PIN_MOTOR_SLEEPX, 0);
-      bitWrite(motor_settings, PIN_MOTOR_SLEEPY, 0);
-      MOTOR_STATE = MOTOR_STATE_SLEEP;
-    /* FALL THROUGH */
-    case MOTOR_STATE_SLEEP :
-      if (new_position) {
-        MOTOR_STATE = MOTOR_STATE_TO_WAKE;
-      }
-      break;
-
-    case MOTOR_STATE_TO_WAKE :
-      bitWrite(motor_settings, PIN_MOTOR_SLEEPX, 1);
-      bitWrite(motor_settings, PIN_MOTOR_SLEEPY, 1);
-      MOTOR_STATE = MOTOR_STATE_WAKE;
-    /* FALL THROUGH */
-    case MOTOR_STATE_WAKE :
-      MOTOR_STATE = MOTOR_STATE_TO_STOPPED;
-      break;
 
     default:
       break;
