@@ -11,8 +11,10 @@
 #include "Arduino.h"
 
 typedef char EventID;
-#define INTERVAL_SLOT_COUNT 0
+#define INTERVAL_SLOT_COUNT 5
 #define SUBSCRIBER_SLOT_COUNT 10
+
+#define MAX_LONG 2147483647
 
 #include "ProjectEvents.h"
 
@@ -62,13 +64,6 @@ struct TimedTask
 {
   TimedTask();
   TimedTask(unsigned long t_ms, Event *cEvt);
-    
-  /**
-   * Evaluates the state of the timed task and if
-   * it's time to execute it or not. Resets the current
-   * counter if it reaches the timed threshold.
-   */
-  boolean eval(unsigned long current_ms);
   
   const unsigned long target_ms;
   Event *evt;
@@ -89,13 +84,21 @@ class EventManager
     void trigger(const EventID cLabel, void *cExtra=NULL);
     void trigger(const EventID cLabel, const void *cExtra);
     void trigger(const EventID cLabel, const EventID cExtra);
-    void triggerInterval(TimedTask timed);
+    void triggerInterval(TimedTask *timed);
     void tick();
+
+    // After waking up none of our intervals make sense any more.
+    void resetIntervals();
     
   private:
+    int getFreeSlot();
+    void clearSlot(int slot);
+    
     TimedTask* _interval[INTERVAL_SLOT_COUNT];
     unsigned int _intervalCount;
-    unsigned int _intervalPos;
+
+    // Keep a cache of the next timer up so we don't need to test them all.
+    unsigned long _next_event_ms;
     
     Subscriber* _sub[SUBSCRIBER_SLOT_COUNT];
     unsigned int _subCount;

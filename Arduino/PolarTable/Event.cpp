@@ -44,6 +44,8 @@ EventManager::EventManager()
 
   _subCount = sizeof(_sub) / sizeof(Subscriber);
   _subPos = 0;
+
+  _next_event_ms = 0;
 }
 
 /**
@@ -150,21 +152,30 @@ void EventManager::trigger(const EventID cLabel, const EventID cExtra)
    Setup a timed trigger that will execute an
    event after a couple of milliseconds.
 */
-void EventManager::triggerInterval(TimedTask task)
+void EventManager::triggerInterval(TimedTask *task)
 {
-  if (_intervalCount >= _intervalPos)
-  {
-    _interval[_intervalPos++] = &task;
+  int slot = getFreeSlot();
+  if (slot != -1){
+    _interval[slot] = task;
+    _next_event_ms = min(_next_event_ms, task->target_ms);
   }
 }
 
-
-boolean TimedTask::eval(unsigned long current_ms) {
-  if (current_ms >= target_ms and target_ms > 0)
-  {
-    return true;
+int EventManager::getFreeSlot(){
+  TimedTask *task;
+  for(unsigned int i = 0; i < _intervalCount ; ++i){
+    task = _interval[0];
+    if(task == nullptr){
+      return i;
+    }
   }
-  return false;
+  return -1;
+}
+
+void EventManager::clearSlot(int slot){
+  TimedTask *task = _interval[slot];
+  delete task;
+  _interval[slot] = nullptr;
 }
 
 /**
@@ -173,25 +184,30 @@ boolean TimedTask::eval(unsigned long current_ms) {
 */
 void EventManager::tick()
 {
-  if (_intervalPos == 0) {
-    return;
-  }
+  if(_next_event_ms != 0  && _next_event_ms <= millis()){
+    unsigned long currentMs = millis();
+    TimedTask *task;
 
-  unsigned long currentMs = millis();
-
-  for (unsigned int i = 0; i < _intervalCount; ++i)
-  {
-    TimedTask *task = _interval[i];
-
-    if (task)
-    {
-      if (task->eval(currentMs))
-      {
-        // Run the timed event when it evalutes to
-        // ready.
-        trigger(task->evt);
-        _interval[i] = nullptr;
+    _next_event_ms = MAX_LONG;
+    
+    for(unsigned int i = 0; i < _intervalCount ; ++i){
+      task = _interval[i];
+      if (currentMs >= task->target_ms){
+          trigger(task->evt);
+          clearSlot(i);
+      }
+      else {
+        // Re cache our next timer.
+        _next_event_ms = min(_next_event_ms, task->target_ms);
       }
     }
+  }
+}
+
+void EventManager::resetIntervals()
+{
+  _next_event_ms = MAX_LONG;
+  for(unsigned int i = 0; i < _intervalCount ; ++i){
+    clearSlot(i);
   }
 }
