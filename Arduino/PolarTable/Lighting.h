@@ -14,6 +14,7 @@ CHSV colorStart = CHSV(255, 255, 255); // starting color
 CHSV colorTarget = CHSV(128, 255, 255); // target color
 
 CHSV incomingColorTarget;
+CHSV colorCurrent;
 
 /*************************************************************
   Access
