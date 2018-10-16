@@ -5695,9 +5695,7 @@ Note, that not all DRC settings must be set by the manufacturer. Several can be 
 <wire x1="24.638" y1="34.163" x2="22.7028875" y2="32.2278875" width="0.254" layer="16"/>
 <wire x1="22.7028875" y1="32.2278875" x2="21.082" y2="32.2278875" width="0.254" layer="16"/>
 </signal>
-<signal name="D11_RXDATA" class="4">
-<contactref element="B1" pad="D11"/>
-<wire x1="2.54" y1="25.4" x2="1.016" y2="23.876" width="0.254" layer="16"/>
+<signal name="D12_RXDATA" class="4">
 <wire x1="1.016" y1="23.876" x2="1.016" y2="9.3247875" width="0.254" layer="16"/>
 <wire x1="1.016" y1="9.3247875" x2="3.1017875" y2="7.239" width="0.254" layer="16"/>
 <via x="5.842" y="7.239" extent="1-16" drill="0.35"/>
@@ -5708,21 +5706,8 @@ Note, that not all DRC settings must be set by the manufacturer. Several can be 
 <contactref element="J10" pad="4"/>
 <wire x1="16.51" y1="7.62" x2="16.51" y2="8.8265" width="0.254" layer="1"/>
 <wire x1="16.51" y1="8.8265" x2="15.494" y2="9.8425" width="0.254" layer="1"/>
-</signal>
-<signal name="D12_SDIN" class="4">
 <contactref element="B1" pad="D12"/>
-<contactref element="J10" pad="7"/>
-<wire x1="21.59" y1="5.08" x2="21.59" y2="3.683" width="0.254" layer="16"/>
-<wire x1="2.8674" y1="2.3396" x2="5.5146" y2="2.3396" width="0.254" layer="1"/>
-<wire x1="5.5146" y1="2.3396" x2="5.715" y2="2.54" width="0.254" layer="1"/>
-<via x="5.715" y="2.54" extent="1-16" drill="0.35"/>
-<wire x1="21.59" y1="3.683" x2="20.4216" y2="2.5146" width="0.254" layer="16"/>
-<wire x1="20.4216" y1="2.5146" x2="5.9878875" y2="2.5146" width="0.254" layer="16"/>
-<wire x1="5.9878875" y1="2.5146" x2="5.9624875" y2="2.54" width="0.254" layer="16"/>
-<wire x1="5.9624875" y1="2.54" x2="5.715" y2="2.54" width="0.254" layer="16"/>
-<wire x1="2.54" y1="22.86" x2="0.9144" y2="21.2344" width="0.254" layer="1"/>
-<wire x1="0.9144" y1="4.2926" x2="2.8674" y2="2.3396" width="0.254" layer="1"/>
-<wire x1="0.9144" y1="21.2344" x2="0.9144" y2="4.2926" width="0.254" layer="1"/>
+<wire x1="1.016" y1="23.876" x2="2.54" y2="22.86" width="0" layer="19" extent="16-16"/>
 </signal>
 <signal name="D13_SCIN" class="4">
 <contactref element="B1" pad="D13"/>
@@ -6091,6 +6076,21 @@ Note, that not all DRC settings must be set by the manufacturer. Several can be 
 <wire x1="30.466825" y1="10.2334" x2="29.985175" y2="10.2334" width="0.254" layer="1"/>
 <wire x1="29.985175" y1="10.2334" x2="29.911775" y2="10.16" width="0.254" layer="1"/>
 <wire x1="29.911775" y1="10.16" x2="28.128" y2="10.16" width="0.254" layer="1"/>
+</signal>
+<signal name="D11_SDIN">
+<contactref element="B1" pad="D11"/>
+<contactref element="J10" pad="7"/>
+<wire x1="21.59" y1="5.08" x2="21.59" y2="3.683" width="0.254" layer="16"/>
+<wire x1="2.8674" y1="2.3396" x2="5.5146" y2="2.3396" width="0.254" layer="1"/>
+<wire x1="5.5146" y1="2.3396" x2="5.715" y2="2.54" width="0.254" layer="1"/>
+<via x="5.715" y="2.54" extent="1-16" drill="0.35"/>
+<wire x1="21.59" y1="3.683" x2="20.4216" y2="2.5146" width="0.254" layer="16"/>
+<wire x1="20.4216" y1="2.5146" x2="5.9878875" y2="2.5146" width="0.254" layer="16"/>
+<wire x1="5.9878875" y1="2.5146" x2="5.9624875" y2="2.54" width="0.254" layer="16"/>
+<wire x1="5.9624875" y1="2.54" x2="5.715" y2="2.54" width="0.254" layer="16"/>
+<wire x1="0.9144" y1="4.2926" x2="2.8674" y2="2.3396" width="0.254" layer="1"/>
+<wire x1="0.9144" y1="21.2344" x2="0.9144" y2="4.2926" width="0.254" layer="1"/>
+<wire x1="0.9144" y1="21.2344" x2="2.54" y2="25.4" width="0" layer="19" extent="1-1"/>
 </signal>
 </signals>
 <mfgpreviewcolors>

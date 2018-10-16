@@ -30148,28 +30148,16 @@ hard reset.</text>
 <label x="40.64" y="152.4" size="1.27" layer="95" rot="MR0" xref="yes"/>
 </segment>
 </net>
-<net name="D11_RXDATA" class="4">
-<segment>
-<pinref part="B1" gate="G$1" pin="*D11"/>
-<wire x1="45.72" y1="147.32" x2="40.64" y2="147.32" width="0.1524" layer="91"/>
-<label x="40.64" y="147.32" size="1.27" layer="95" rot="MR0" xref="yes"/>
-</segment>
+<net name="D12_RXDATA" class="4">
 <segment>
 <wire x1="342.9" y1="215.9" x2="350.52" y2="215.9" width="0.1524" layer="91"/>
 <label x="350.52" y="215.9" size="1.27" layer="95" xref="yes"/>
 <pinref part="J10" gate="G$1" pin="4"/>
 </segment>
-</net>
-<net name="D12_SDIN" class="4">
 <segment>
 <pinref part="B1" gate="G$1" pin="D12"/>
 <wire x1="45.72" y1="144.78" x2="40.64" y2="144.78" width="0.1524" layer="91"/>
 <label x="40.64" y="144.78" size="1.27" layer="95" rot="MR0" xref="yes"/>
-</segment>
-<segment>
-<wire x1="327.66" y1="210.82" x2="322.58" y2="210.82" width="0.1524" layer="91"/>
-<label x="322.58" y="210.82" size="1.27" layer="95" rot="MR0" xref="yes"/>
-<pinref part="J10" gate="G$1" pin="7"/>
 </segment>
 </net>
 <net name="D13_SCIN" class="4">
@@ -30453,6 +30441,18 @@ hard reset.</text>
 <segment>
 <pinref part="R14" gate="G$1" pin="2"/>
 <pinref part="LED2" gate="G$1" pin="A"/>
+</segment>
+</net>
+<net name="D11_SDIN" class="0">
+<segment>
+<pinref part="B1" gate="G$1" pin="*D11"/>
+<wire x1="45.72" y1="147.32" x2="40.64" y2="147.32" width="0.1524" layer="91"/>
+<label x="40.64" y="147.32" size="1.27" layer="95" rot="MR0" xref="yes"/>
+</segment>
+<segment>
+<wire x1="327.66" y1="210.82" x2="322.58" y2="210.82" width="0.1524" layer="91"/>
+<label x="322.58" y="210.82" size="1.27" layer="95" rot="MR0" xref="yes"/>
+<pinref part="J10" gate="G$1" pin="7"/>
 </segment>
 </net>
 </nets>

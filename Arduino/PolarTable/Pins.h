@@ -82,10 +82,10 @@ static const byte PIN_WAKE_LED = SX1509_B7;
 
 // LED controller
 static const PinID PIN_LED_SCIN = ARDUINO_D13;
-static const PinID PIN_LED_SDIN = ARDUINO_D12;
+static const PinID PIN_LED_SDIN = ARDUINO_D11;
 
 // Radio Module
-static const PinID PIN_RADIO_RXDATA = ARDUINO_D11;
+static const PinID PIN_RADIO_RXDATA = ARDUINO_D12;
 
 // Switches for homing and relative encoding
 static const PinID PIN_A_SWITCH = SX1509_B10;
