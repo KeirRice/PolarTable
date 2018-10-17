@@ -4,6 +4,8 @@
 
 void error_listener(void *data){
   digitalWrite(PIN_ERROR_LED, HIGH);
+
+  // TODO: Pulse the switch LED as well (If we can)
 }
 
 void error_setup(){
