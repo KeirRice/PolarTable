@@ -1,9 +1,11 @@
 #pragma once
 
-#ifdef ENABLE_SX1509
+#ifndef ENABLE_MOCK_SX1509_LIBRARY
+  
 #include <SparkFunSX1509.h> // Include SX1509 library
 
 #else
+
 # pragma message "Using mocked version of SparkFunSX1509.h"
 // If we are not using the sx1509 mock it out so we don't crash trying to use the library.
 // Header at https://github.com/sparkfun/SparkFun_SX1509_Arduino_Library/blob/master/src/SparkFunSX1509.h
@@ -44,4 +46,5 @@ byte SX1509::digitalRead(byte pin) {
   return 0;
 }
 void SX1509::breathe(byte pin, unsigned long tOn, unsigned long tOff, unsigned long rise, unsigned long fall, byte onInt = 255, byte offInt = 0, bool log = 0) {}
-#endif // ENABLE_SX1509
+
+#endif // ENABLE_MOCK_SX1509_LIBRARY

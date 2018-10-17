@@ -1,9 +1,22 @@
 /*************************************************************
   Motor control
 *************************************************************/
+#pragma once
+
+#ifdef DISABLE_MOTORS
+
+void motor_setup() {}
+void motor_loop() {}
+
+#else
 
 #include <AccelStepper.h>
 #include <MultiStepper.h>
+#include <Fsm.h>
+#include "Event.h"
+#include "ProjectEvents.h"
+
+extern EventManager evtManager;
 
 // Define some steppers and the pins the will use
 AccelStepper theta_stepper(AccelStepper::DRIVER, PIN_MOTOR_YSTEP, PIN_MOTOR_YDIR);
@@ -294,3 +307,5 @@ void motor_loop()
 {
   fsm_motors.run_machine();
 }
+
+#endif // DISABLE_MOTORS

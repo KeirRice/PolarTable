@@ -1,8 +1,14 @@
 /*************************************************************
   Manage the encoders.
 *************************************************************/
+#pragma once
 
-#ifdef ENABLE_ENCODER
+#ifdef DISABLE_ENCODER_RELATIVE
+
+void encoder_relative_setup() {}
+void encoder_relative_loop() {}
+
+#else
 
 /*************************************************************
   State variables.
@@ -103,7 +109,4 @@ void encoder_relative_loop() {
   // UpdateRelativePosition(intStatus);
 }
 
-#else
-void encoder_relative_setup() {}
-void encoder_relative_loop() {}
-#endif // ENABLE_ENCODER
+#endif // DISABLE_ENCODER_RELATIVE

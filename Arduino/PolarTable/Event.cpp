@@ -1,9 +1,9 @@
-/*
+/*************************************************************
   Event
 
   This class serves as a "callback" manager to register events
   to happen on certain triggers or after certain intervals.
-*/
+*************************************************************/
 
 #include "Event.h"
 

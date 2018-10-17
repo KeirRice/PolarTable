@@ -1,9 +1,21 @@
 /*************************************************************
   Lighting
 *************************************************************/
+#pragma once
+
+#ifdef DISABLE_LIGHTING
+
+void lighting_setup() {}
+void lighting_loop() {}
+
+#else
 
 #include <FastLED.h>
+#include <Fsm.h>
+#include "Event.h"
 #include "ProjectEvents.h"
+
+extern EventManager evtManager;
 
 #define NUM_LEDS 1
 CRGB leds[NUM_LEDS];
@@ -118,3 +130,5 @@ void lighting_setup() {
 void lighting_loop() {
   fsm_lighting.run_machine();
 }
+
+#endif // DISABLE_LIGHTING

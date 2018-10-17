@@ -1,9 +1,20 @@
 /*************************************************************
-  Communicate with the Rasberry Pi
+  Manage the Rasberry Pi state
 *************************************************************/
 #pragma once
 
+#ifdef DISABLE_RASPBERRY_MANAGER
+
+void raspberry_manager_setup() {}
+void raspberry_manager_loop() {}
+
+#else
+
 #include <Fsm.h>
+#include "Event.h"
+#include "ProjectEvents.h"
+
+extern EventManager evtManager;
 
 /*************************************************************
   Raspberry State machine
@@ -96,3 +107,5 @@ void raspberry_manager_setup() {
 void raspberry_manager_loop() {
   fsm_raspberry.run_machine();
 }
+
+#endif // DISABLE_RASPBERRY_MANAGER

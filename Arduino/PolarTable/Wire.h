@@ -1,9 +1,13 @@
 #pragma once
 
-#ifdef ENABLE_I2C_WIRE
+#ifndef ENABLE_MOCK_WIRE_LIBRARY
+
 #include <Wire.h>
 
 #else
+
+# pragma message "Using mocked version of Wire.h"
+
 class SerialWire {
   public:
 
@@ -58,4 +62,4 @@ void serialEvent() {
   Wire.onReceiveService();
 }
 
-#endif // WIRE_ENABLED
+#endif // ENABLE_MOCK_WIRE_LIBRARY

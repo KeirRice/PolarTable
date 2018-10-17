@@ -1,14 +1,13 @@
-/*
+/*************************************************************
   Event
-  
+
   This class serves as a "callback" manager to register events
   to happen on certain triggers or after certain intervals.
- */ 
- 
-#ifndef Event_h
-#define Event_h
+*************************************************************/
+#pragma once
 
 #include "Arduino.h"
+#include "ProjectEvents.h"
 
 typedef char EventID;
 #define INTERVAL_SLOT_COUNT 5
@@ -16,7 +15,6 @@ typedef char EventID;
 
 #define MAX_LONG 2147483647
 
-#include "ProjectEvents.h"
 
 /**
  * Event structure is the basic Event
@@ -105,4 +103,3 @@ class EventManager
     unsigned int _subPos;
 };
 
-#endif

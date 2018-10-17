@@ -1,8 +1,21 @@
 /*************************************************************
   Manage the wake/sleep button.
 *************************************************************/
+#pragma once
 
+#ifdef DISABLE_BUTTON
+
+void button_setup() {}
+void button_loop() {}
+
+#else
+
+#include <Fsm.h>
 #include <Bounce2.h>
+#include "Event.h"
+#include "ProjectEvents.h"
+
+extern EventManager evtManager;
 
 // Instantiate a Bounce object
 Bounce bounce = Bounce();
@@ -101,3 +114,5 @@ void button_setup()
 void button_loop() {
   fsm_system.run_machine();
 }
+
+#endif // DISABLE_BUTTON

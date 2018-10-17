@@ -3,6 +3,17 @@
 *************************************************************/
 #pragma once
 
+#ifdef DISABLE_RASPBERRY_COMS
+
+void raspberry_setup() {}
+void raspberry_loop() {}
+
+#else
+
+#include "Wire.h"
+#include "Helpers.h"
+#include <util/atomic.h> // this library includes the ATOMIC_BLOCK macro.
+
 /*************************************************************
   States
 *************************************************************/
@@ -181,7 +192,7 @@ void process_send_data(char request){
 
 void raspberry_setup() {
   // Initialize i2c as peripheral
-  Wire.begin(I2C_ADDRESS);
+  Wire.begin(ARDUINO_I2C_ADDRESS);
 
   // Define callbacks for i2c communication
   Wire.onReceive(receiveData);
@@ -212,3 +223,5 @@ void raspberry_loop() {
   }
   process_send_data(RASP_REQ);
 }
+
+#endif // DISABLE_RASPBERRY_COMS

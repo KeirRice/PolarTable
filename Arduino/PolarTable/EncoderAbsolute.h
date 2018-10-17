@@ -1,8 +1,17 @@
 /*************************************************************
   Manage the encoders.
 *************************************************************/
+#pragma once
 
-#ifdef ENABLE_ENCODER
+// Debug stubs
+#ifdef DISABLE_ENCODER_ABSOLUTE
+
+void encoder_setup() {}
+void encode_loop() {}
+
+#else
+
+#include "SX1509.h"
 
 extern SX1509 io; // Create an SX1509 object to be used throughout
 
@@ -159,14 +168,6 @@ void encoder_setup()
   // Initalize the lookup tables.
   setupAbsoluteDirectionLookup();
 
-  // Call io.begin(<address>) to initialize the SX1509. If
-  // it successfully communicates, it'll return 1.
-  if (!io.begin(SX1509_I2C_ADDRESS))
-  {
-    Serial.println("Failed to communicate.");
-    while (1) ;
-  }
-
   // The SX1509 has built-in debounce.
   char debounce_time = 2; // <time_ms> can be either 0, 1, 2, 4, 8, 16, 32, or 64 ms.
   io.debounceTime(debounce_time);
@@ -211,7 +212,4 @@ void encode_loop() {
   }
 }
 
-#else
-void encoder_setup() {}
-void encode_loop() {}
-#endif // ENABLE_ENCODER
+#endif // DISABLE_ENCODER_ABSOLUTE

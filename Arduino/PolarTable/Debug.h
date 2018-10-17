@@ -1,8 +1,21 @@
 /*************************************************************
   Debug functions that can be compiled out on release
 *************************************************************/
-
 #pragma once
+
+#define DEBUG 1
+// #define ENABLE_MOCK_WIRE_LIBRARY
+// #define ENABLE_MOCK_SX1509_LIBRARY
+
+//#define DISABLE_ENCODER_ABSOLUTE
+//#define DISABLE_ENCODER_RELATIVE
+//#define DISABLE_BUTTON
+//#define DISABLE_BUTTON_LED
+//#define DISABLE_CALIBRATION
+//#define DISABLE_LIGHTING
+//#define DISABLE_MOTORS
+//#define DISABLE_RASPBERRY_COMS
+//#define DISABLE_RASPBERRY_MANAGER
 
 /*
  * Concatenate preprocessor tokens A and B without expanding macro definitions

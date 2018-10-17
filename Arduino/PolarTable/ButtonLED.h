@@ -1,8 +1,22 @@
 /*************************************************************
   Manage the wake/sleep button.
 *************************************************************/
+#pragma once
+
+#ifdef DISABLE_BUTTON_LED
+
+void button_led_setup() {}
+void button_led_loop() {}
+
+#else
+
+#include <Fsm.h>
+#include "Event.h"
+#include "ProjectEvents.h"
+#include "SX1509.h"
 
 extern SX1509 io;
+extern EventManager evtManager;
 
 
 /*************************************************************
@@ -85,3 +99,5 @@ void button_led_setup()
 void button_led_loop() {
   fsm_button_led.run_machine();
 }
+
+#endif // DISABLE_BUTTON_LED
