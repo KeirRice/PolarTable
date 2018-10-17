@@ -63,6 +63,8 @@ static const PinID SHIFT_S7 = 7;
 
 // Interupts from the sx1509
 static const PinID PIN_SX1509_INT = ARDUINO_D2; // Active low
+// Interupts from Encoder/Switch
+static const PinID PIN_INTERUPT = ARDUINO_D3;
 
 // Shift registor for motor config
 static const PinID PIN_SHIFT_LATCH = ARDUINO_D8;  //Pin connected to latch pin (ST_CP) of 74HC595
@@ -77,8 +79,8 @@ static const PinID PIN_I2C_SDA = ARDUINO_A4;
 static const PinID PIN_I2C_SCL = ARDUINO_A5;
 
 // Wake/Sleep switch
-static const PinID PIN_WAKE_SWITCH = ARDUINO_D3;
-static const byte PIN_WAKE_LED = SX1509_B7;
+static const PinID PIN_WAKE_SWITCH = ARDUINO_A2;
+static const PinID PIN_WAKE_LED = SX1509_B7;
 
 // LED controller
 static const PinID PIN_LED_SCIN = ARDUINO_D13;
@@ -87,13 +89,15 @@ static const PinID PIN_LED_SDIN = ARDUINO_D11;
 // Radio Module
 static const PinID PIN_RADIO_RXDATA = ARDUINO_D12;
 
-// Switches for homing and relative encoding
+// Switches for homing
 static const PinID PIN_A_SWITCH = SX1509_B10;
 static const PinID PIN_B_SWITCH = SX1509_B11;
 static const PinID PIN_C_SWITCH = SX1509_B8;
 static const PinID PIN_D_SWITCH = SX1509_B9;
-static const PinID PIN_E_SWITCH = SX1509_B4;
-static const PinID PIN_F_SWITCH = SX1509_B3;
+
+// Switches for relative encoding
+static const PinID PIN_E_SWITCH = ARDUINO_A0;
+static const PinID PIN_F_SWITCH = ARDUINO_A1;
 
 // IR sensors for absolute encoding
 static const PinID PIN_G_IR = SX1509_B15;

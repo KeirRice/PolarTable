@@ -2,7 +2,7 @@
 #define ENABLE_SX1509
 #define ENABLE_I2C_WIRE
 #define TINYFSM_NOSTDLIB
-// #define ENABLE_ENCODER
+#define ENABLE_ENCODER
 #define I2C_ADDRESS 0x04
 
 const byte SX1509_I2C_ADDRESS = 0x3E;  // SX1509 I2C address (00)
@@ -43,7 +43,8 @@ SX1509 io;
 #include "ButtonLED.h"
 #include "Button.h"
 #include "Calibration.h"
-#include "Encoder.h"
+#include "EncoderAbsolute.h"
+#include "EncoderRelative.h"
 #include "Lighting.h"
 #include "Motors.h"
 
@@ -74,6 +75,7 @@ void setup()
   raspberry_manager_setup();
   button_setup();
   encoder_setup();
+  encoder_relative_setup();
   lighting_setup();
   motor_setup();
 }
@@ -85,5 +87,6 @@ void loop()
   button_loop();
   lighting_loop();
   encode_loop();
+  encoder_relative_loop();
   motor_loop();
 }
