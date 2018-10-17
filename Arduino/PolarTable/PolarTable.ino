@@ -30,6 +30,8 @@ SX1509 io;
 #include "RaspberryManager.h"
 #include "Raspberry.h"
 
+#include "Testing.h"
+
 extern long startMillis;
 
 void setup()
@@ -43,12 +45,12 @@ void setup()
   DEBUG_PRINTLN("Setup serial.");
   DEBUG_WHERE();
 
-  if (!io.begin(SX1509_I2C_ADDRESS))
-  {
-    DEBUG_PRINTLN("Failed to begin SX1509 coms.");
-    evtManager.trigger(ERROR_EVENT, ERROR_SX1509);
-    while (1);
-  }
+//  if (!io.begin(SX1509_I2C_ADDRESS))
+//  {
+//    DEBUG_PRINTLN("Failed to begin SX1509 coms.");
+//    evtManager.trigger(ERROR_EVENT, ERROR_SX1509);
+//    while (1);
+//  }
   raspberry_setup();
   raspberry_manager_setup();
   button_setup();
@@ -56,6 +58,7 @@ void setup()
   encoder_relative_setup();
   lighting_setup();
   motor_setup();
+  testing_setup();
 }
 
 void loop()
@@ -67,4 +70,5 @@ void loop()
   encode_loop();
   encoder_relative_loop();
   motor_loop();
+  testing_loop();
 }
