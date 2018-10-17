@@ -2,6 +2,7 @@
 #define ENABLE_SX1509
 #define ENABLE_I2C_WIRE
 #define TINYFSM_NOSTDLIB
+// #define ENABLE_ENCODER
 #define I2C_ADDRESS 0x04
 
 const byte SX1509_I2C_ADDRESS = 0x3E;  // SX1509 I2C address (00)

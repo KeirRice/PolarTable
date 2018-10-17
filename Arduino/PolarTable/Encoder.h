@@ -2,6 +2,8 @@
   Manage the encoders.
 *************************************************************/
 
+#ifdef ENABLE_ENCODER
+
 extern SX1509 io; // Create an SX1509 object to be used throughout
 
 /*************************************************************
@@ -282,3 +284,8 @@ void encode_loop() {
     SX1509Interrupt = false; // Clear the interupt flag
   }
 }
+
+#else
+void encoder_setup() {}
+void encode_loop() {}
+#endif // ENABLE_ENCODER
