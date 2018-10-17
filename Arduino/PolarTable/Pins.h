@@ -118,4 +118,4 @@ static const PinID PIN_MOTOR_XMS1 = SHIFT_S6;
 static const PinID PIN_MOTOR_XMS2 = SHIFT_S7;
 
 // Error Light
-static const PinID PIN_ERROR_LED = ARDUINO_A2;
+// static const PinID PIN_ERROR_LED = NULL; // LED_BUILTIN;
