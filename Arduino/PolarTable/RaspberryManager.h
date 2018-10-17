@@ -61,6 +61,9 @@ void raspberry_heartbeat(){
 void raspberry_on_state(){
   if(millis() > heartbeat_next_check){
     evtManager.trigger(RASPBERRY_EVENT, RASPBERRY_RESTART);
+    
+    DEBUG_PRINTLN("Raspberry needed a restart.");
+    evtManager.trigger(ERROR_EVENT, ERROR_RASPBERRY);
   }
 }
 

@@ -21,7 +21,6 @@ typedef unsigned char State2;
 #include <avr/sleep.h>
 #include <stdarg.h>
 #include <util/atomic.h> // this library includes the ATOMIC_BLOCK macro.
-#include "Event.h"
 #include <Fsm.h>
 #include <FastLED.h>
 #include <Bounce2.h>
@@ -32,12 +31,14 @@ typedef unsigned char State2;
 
 #pragma GCC diagnostic pop
 
+#include "Event.h"
 EventManager evtManager;
 SX1509 io;
 
 #include "WireTypes.h"
 #include "pixeltypes.h"
 
+#include "Error.h"
 #include "ButtonLED.h"
 #include "Button.h"
 #include "Calibration.h"
@@ -53,16 +54,19 @@ extern long startMillis;
 
 void setup()
 {
+  error_setup();
+  resetMillis();
+  
   if (DEBUG) {
     Serial.begin(11500);
   }
   DEBUG_PRINTLN("Setup serial.");
   DEBUG_WHERE();
 
-  resetMillis();
   if (!io.begin(SX1509_I2C_ADDRESS))
   {
     DEBUG_PRINTLN("Failed to begin SX1509 coms.");
+    evtManager.trigger(ERROR_EVENT, ERROR_SX1509);
     while (1);
   }
   raspberry_setup();

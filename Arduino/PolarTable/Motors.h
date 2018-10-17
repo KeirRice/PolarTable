@@ -106,10 +106,16 @@ boolean motor_set_target(long theta, long radius)
 }
 
 void motor_theta_event(void *data){
-  motor_set_target_theta((long) data);
+  if(!motor_set_target_theta((long) data)){
+    DEBUG_PRINTLN("Motor wasn't ready for data.");
+    evtManager.trigger(ERROR_EVENT, ERROR_MOTOR);
+  }
 }
 void motor_radius_event(void *data){
-  motor_set_target_radius((long) data);
+  if(!motor_set_target_radius((long) data)){
+    DEBUG_PRINTLN("Motor wasn't ready for data.");
+    evtManager.trigger(ERROR_EVENT, ERROR_MOTOR);
+  }
 }
 
 /*************************************************************

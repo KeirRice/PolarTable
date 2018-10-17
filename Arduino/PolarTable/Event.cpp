@@ -168,6 +168,8 @@ int EventManager::getFreeSlot(){
       return i;
     }
   }
+//  DEBUG_PRINTLN("No free timer event slots.");
+//  error_listener(ERROR_EVENT_SYSTEM); // Event system can't really use it's self...
   return -1;
 }
 
