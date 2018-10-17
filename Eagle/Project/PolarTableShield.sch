@@ -29033,6 +29033,8 @@ Source: www.kingbright.com</description>
 <part name="R13" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="1k"/>
 <part name="LED2" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIP-LED0805" package3d_urn="urn:adsk.eagle:package:15818/2"/>
 <part name="R14" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="1k"/>
+<part name="LED3" library="led" library_urn="urn:adsk.eagle:library:259" deviceset="LED" device="CHIP-LED0805" package3d_urn="urn:adsk.eagle:package:15818/2"/>
+<part name="R15" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="1k"/>
 </parts>
 <sheets>
 <sheet>
@@ -29297,6 +29299,14 @@ hard reset.</text>
 <attribute name="NAME" x="242.7986" y="41.91" size="1.778" layer="95" rot="R270"/>
 <attribute name="VALUE" x="237.998" y="41.91" size="1.778" layer="96" rot="R270"/>
 </instance>
+<instance part="LED3" gate="G$1" x="109.22" y="172.72" rot="R90">
+<attribute name="NAME" x="113.792" y="176.276" size="1.778" layer="95" rot="R180"/>
+<attribute name="VALUE" x="113.792" y="178.435" size="1.778" layer="96" rot="R180"/>
+</instance>
+<instance part="R15" gate="G$1" x="101.6" y="172.72" rot="R180">
+<attribute name="NAME" x="105.41" y="171.2214" size="1.778" layer="95" rot="R180"/>
+<attribute name="VALUE" x="105.41" y="176.022" size="1.778" layer="96" rot="R180"/>
+</instance>
 </instances>
 <busses>
 <bus name="I2C:SCL_3V,SDA_3V">
@@ -29435,6 +29445,11 @@ hard reset.</text>
 <pinref part="J5" gate="G$1" pin="4"/>
 <wire x1="342.9" y1="96.52" x2="347.98" y2="96.52" width="0.1524" layer="91"/>
 <label x="347.98" y="96.52" size="1.27" layer="95" xref="yes"/>
+</segment>
+<segment>
+<pinref part="LED3" gate="G$1" pin="C"/>
+<wire x1="114.3" y1="172.72" x2="114.3" y2="167.64" width="0.1524" layer="91"/>
+<label x="114.3" y="167.64" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="3.3V" class="3">
@@ -30419,11 +30434,6 @@ hard reset.</text>
 </net>
 <net name="A2" class="4">
 <segment>
-<pinref part="B1" gate="G$1" pin="A2"/>
-<wire x1="71.12" y1="172.72" x2="78.74" y2="172.72" width="0.1524" layer="91"/>
-<label x="78.74" y="172.72" size="1.27" layer="95" xref="yes"/>
-</segment>
-<segment>
 <pinref part="J5" gate="G$1" pin="6"/>
 <wire x1="342.9" y1="93.98" x2="347.98" y2="93.98" width="0.1524" layer="91"/>
 <label x="347.98" y="93.98" size="1.27" layer="95" xref="yes"/>
@@ -30453,6 +30463,20 @@ hard reset.</text>
 <wire x1="327.66" y1="210.82" x2="322.58" y2="210.82" width="0.1524" layer="91"/>
 <label x="322.58" y="210.82" size="1.27" layer="95" rot="MR0" xref="yes"/>
 <pinref part="J10" gate="G$1" pin="7"/>
+</segment>
+</net>
+<net name="ERROR" class="0">
+<segment>
+<pinref part="B1" gate="G$1" pin="A2"/>
+<pinref part="R15" gate="G$1" pin="2"/>
+<wire x1="71.12" y1="172.72" x2="96.52" y2="172.72" width="0.1524" layer="91"/>
+<label x="86.36" y="172.72" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="N$11" class="0">
+<segment>
+<pinref part="R15" gate="G$1" pin="1"/>
+<pinref part="LED3" gate="G$1" pin="A"/>
 </segment>
 </net>
 </nets>
