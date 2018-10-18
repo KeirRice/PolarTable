@@ -54,6 +54,7 @@ void setup()
   raspberry_setup();
   raspberry_manager_setup();
   button_setup();
+  button_led_setup();
   encoder_setup();
   encoder_relative_setup();
   lighting_setup();
@@ -66,6 +67,7 @@ void loop()
   raspberry_loop();
   raspberry_manager_loop();
   button_loop();
+  button_led_loop();
   lighting_loop();
   encode_loop();
   encoder_relative_loop();
