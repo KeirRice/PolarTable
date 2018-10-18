@@ -40,7 +40,7 @@ void setup()
   resetMillis();
   
   if (DEBUG) {
-    Serial.begin(11500);
+    Serial.begin(115200);
   }
   DEBUG_PRINTLN("Setup serial.");
   DEBUG_WHERE();
