@@ -55,6 +55,7 @@ static const EventID RASPBERRY_STARTUP = 63;
 static const EventID RASPBERRY_HEARTBEAT = 64;
 
 
+static const EventID ERROR_LED_SIGNGAL = 127;
 static const EventID ERROR_EVENT = 128;
 static const EventID ERROR_SERIAL = 129;
 static const EventID ERROR_SX1509 = 130;

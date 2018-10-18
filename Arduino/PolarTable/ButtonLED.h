@@ -39,6 +39,7 @@ State state_button_led_pulse(&pulse_button_led_enter, NULL, NULL);
 State state_button_led_pulse_on(&pulse_button_led_enter, NULL, NULL);
 State state_button_led_pulse_off(&pulse_button_led_enter, NULL, NULL);
 
+State state_button_led_error(NULL, NULL, NULL);
 Fsm fsm_button_led(&state_button_led_off);
 
 void on_button_led_on_enter()
@@ -65,6 +66,21 @@ void button_LED_listener(void* data){
   fsm_button_led.trigger((int) data);
 }
 
+void error_LED_listener(void *data){
+  byte code = (byte)data;
+  while (true) 
+  {
+    for(unsigned int i = 0; i < (sizeof(code) * 8); ++i)
+    {
+      DEBUG_PRINT_VAR(i, code);
+      digitalWrite(ARDUINO_D13, HIGH);
+      delay((code & (1 << i)) ? 1000 : 500);
+      digitalWrite(ARDUINO_D13, LOW);
+      delay(500);
+    }
+    delay(3000);
+  }
+}
 /*************************************************************
   Setup and main loop.
 *************************************************************/
@@ -72,6 +88,7 @@ void button_LED_listener(void* data){
 void button_led_setup()
 {
   evtManager.subscribe(Subscriber(BUTTON_LED, button_LED_listener));
+  evtManager.subscribe(Subscriber(ERROR_LED_SIGNGAL, error_LED_listener));
   
   // Off => On, On => OFF
   fsm_button_led.add_transition(&state_button_led_off, &state_button_led_on, BUTTON_ON, NULL);  
