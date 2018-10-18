@@ -4,32 +4,35 @@
 #pragma once
 
 #define DEBUG 1
+
+#ifndef DEBUG
+#define NDEBUG
+#endif // DEBUG
+#include <assert.h>
+
 // #define ENABLE_MOCK_WIRE_LIBRARY
 // #define ENABLE_MOCK_SX1509_LIBRARY
 // #define ENABLE_TESTING
 
-#define DISABLE_ENCODER_ABSOLUTE
-#define DISABLE_ENCODER_RELATIVE
+//#define DISABLE_ENCODER_ABSOLUTE
+//#define DISABLE_ENCODER_RELATIVE
 //#define DISABLE_BUTTON
 //#define DISABLE_BUTTON_LED
 //#define DISABLE_CALIBRATION
-#define DISABLE_LIGHTING
-#define DISABLE_MOTORS
-#define DISABLE_RASPBERRY_COMS
-#define DISABLE_RASPBERRY_MANAGER
-
-
-
+//#define DISABLE_LIGHTING
+//#define DISABLE_MOTORS
+//#define DISABLE_RASPBERRY_COMS
+//#define DISABLE_RASPBERRY_MANAGER
 
 // Convert a byte to text we can print
-char* print_byte(byte code)
+void print_byte(byte code)
 {
   char binstr[(sizeof(code) * 8) - 1] = {(char) '0'};
   for(unsigned int i = (sizeof(code) * 8); i > 0 ; --i)
   {
-    binstr[i-1] = (char) (code & (1 << i-1)) ? '1' : '0';
+    binstr[i-1] = (char) (code & (1 << (i - 1))) ? '1' : '0';
   }
-  return binstr;
+  Serial.print(binstr);
 }
 
 /*
@@ -110,4 +113,3 @@ char* print_byte(byte code)
 
 #define GET_MACRO(_1, _2, _3, NAME, ...) NAME
 #define DEBUG_PRINT_VAR(...) GET_MACRO(__VA_ARGS__, DEBUG_PRINT_VAR3, DEBUG_PRINT_VAR2, DEBUG_PRINT_VAR1)(__VA_ARGS__)
-
