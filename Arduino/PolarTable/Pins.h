@@ -19,15 +19,23 @@ static const PinID ARDUINO_D10 = 10;
 static const PinID ARDUINO_D11 = 11;
 static const PinID ARDUINO_D12 = 12;
 static const PinID ARDUINO_D13 = 13;
-static const PinID ARDUINO_D14 = 14;
-static const PinID ARDUINO_D15 = 15;
 
-static const PinID ARDUINO_A0 = A0;
-static const PinID ARDUINO_A1 = A1;
-static const PinID ARDUINO_A2 = A2;
-static const PinID ARDUINO_A3 = A3;
-static const PinID ARDUINO_A4 = A4;
-static const PinID ARDUINO_A5 = A5;
+
+// Analog pins
+static const PinID ARDUINO_A0 = A0; // ARDUINO_D14
+static const PinID ARDUINO_A1 = A1; // ARDUINO_D15
+static const PinID ARDUINO_A2 = A2; // ARDUINO_D16
+static const PinID ARDUINO_A3 = A3; // ARDUINO_D17
+static const PinID ARDUINO_A4 = A4; // ARDUINO_D18
+static const PinID ARDUINO_A5 = A5; // ARDUINO_D19
+// Analog pins as Digital
+static const PinID ARDUINO_D14 = 14; // ARDUINO_A0
+static const PinID ARDUINO_D15 = 15; // ARDUINO_A1
+static const PinID ARDUINO_D16 = 16; // ARDUINO_A2
+static const PinID ARDUINO_D17 = 17; // ARDUINO_A3
+static const PinID ARDUINO_D18 = 18; // ARDUINO_A4
+static const PinID ARDUINO_D19 = 19; // ARDUINO_A5
+
 
 static const PinID SX1509_B0 = 0;
 static const PinID SX1509_B1 = 1;
@@ -66,9 +74,9 @@ static const PinID PIN_SX1509_INT = ARDUINO_D2; // Active low
 static const PinID PIN_INTERUPT = ARDUINO_D3;
 
 // Shift registor for motor config
-static const PinID PIN_SHIFT_LATCH = ARDUINO_D8;  //Pin connected to latch pin (ST_CP) of 74HC595
-static const PinID PIN_SHIFT_DATA = ARDUINO_D9;  //Pin connected to Data in (DS) of 74HC595
-static const PinID PIN_SHIFT_CLOCK = ARDUINO_D10;  //Pin connected to clock pin (SH_CP) of 74HC595
+static const PinID PIN_SHIFT_DATA = ARDUINO_D14;  //Pin connected to Data in (DS) of 74HC595
+static const PinID PIN_SHIFT_CLOCK = ARDUINO_D15;  //Pin connected to clock pin (SH_CP) of 74HC595
+static const PinID PIN_SHIFT_LATCH = ARDUINO_D16;  //Pin connected to latch pin (ST_CP) of 74HC595
 
 // Pull high to cut the power to the Raspberry Pi
 static const PinID PIN_PI_POWER = ARDUINO_A3;
@@ -78,7 +86,7 @@ static const PinID PIN_I2C_SDA = ARDUINO_A4;
 static const PinID PIN_I2C_SCL = ARDUINO_A5;
 
 // Wake/Sleep switch
-static const PinID PIN_WAKE_SWITCH = ARDUINO_A2;
+static const PinID PIN_WAKE_SWITCH = ARDUINO_D10;
 static const PinID PIN_WAKE_LED = SX1509_B7;
 
 // LED controller
@@ -95,8 +103,9 @@ static const PinID PIN_C_SWITCH = SX1509_B8;
 static const PinID PIN_D_SWITCH = SX1509_B9;
 
 // Switches for relative encoding
-static const PinID PIN_E_SWITCH = ARDUINO_A0;
-static const PinID PIN_F_SWITCH = ARDUINO_A1;
+static const PinID PIN_E_SWITCH = ARDUINO_D8;
+static const PinID PIN_F_SWITCH = ARDUINO_D9;
+static const PinID PIN_EF_SWITCH_INT = ARDUINO_D3;
 
 // IR sensors for absolute encoding
 static const PinID PIN_G_IR = SX1509_B15;

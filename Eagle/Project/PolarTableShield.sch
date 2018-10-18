@@ -4136,24 +4136,24 @@ CONN_06x2
 <text x="-8.89" y="-25.654" size="1.778" layer="96" font="vector" align="top-left">&gt;Value</text>
 <pin name="RX" x="12.7" y="17.78" visible="pin" length="short" rot="R180"/>
 <pin name="TX" x="12.7" y="15.24" visible="pin" length="short" rot="R180"/>
-<pin name="D2" x="12.7" y="10.16" visible="pin" length="short" rot="R180"/>
-<pin name="*D3" x="12.7" y="7.62" visible="pin" length="short" rot="R180"/>
-<pin name="D4" x="12.7" y="5.08" visible="pin" length="short" rot="R180"/>
-<pin name="*D5" x="12.7" y="2.54" visible="pin" length="short" rot="R180"/>
-<pin name="*D6" x="12.7" y="0" visible="pin" length="short" rot="R180"/>
-<pin name="D7" x="12.7" y="-2.54" visible="pin" length="short" rot="R180"/>
-<pin name="D8" x="12.7" y="-5.08" visible="pin" length="short" rot="R180"/>
-<pin name="*D9" x="12.7" y="-7.62" visible="pin" length="short" rot="R180"/>
-<pin name="*D10" x="12.7" y="-10.16" visible="pin" length="short" rot="R180"/>
-<pin name="*D11" x="12.7" y="-12.7" visible="pin" length="short" rot="R180"/>
-<pin name="D12" x="12.7" y="-15.24" visible="pin" length="short" rot="R180"/>
-<pin name="D13" x="12.7" y="-17.78" visible="pin" length="short" rot="R180"/>
-<pin name="A0" x="-12.7" y="17.78" visible="pin" length="short"/>
-<pin name="A1" x="-12.7" y="15.24" visible="pin" length="short"/>
-<pin name="A2" x="-12.7" y="12.7" visible="pin" length="short"/>
-<pin name="A3" x="-12.7" y="10.16" visible="pin" length="short"/>
-<pin name="A4" x="-12.7" y="7.62" visible="pin" length="short"/>
-<pin name="A5" x="-12.7" y="5.08" visible="pin" length="short"/>
+<pin name="D2" x="12.7" y="10.16" visible="pin" length="short" swaplevel="1" rot="R180"/>
+<pin name="*D3" x="12.7" y="7.62" visible="pin" length="short" swaplevel="1" rot="R180"/>
+<pin name="D4" x="12.7" y="5.08" visible="pin" length="short" swaplevel="1" rot="R180"/>
+<pin name="*D5" x="12.7" y="2.54" visible="pin" length="short" swaplevel="1" rot="R180"/>
+<pin name="*D6" x="12.7" y="0" visible="pin" length="short" swaplevel="1" rot="R180"/>
+<pin name="D7" x="12.7" y="-2.54" visible="pin" length="short" swaplevel="1" rot="R180"/>
+<pin name="D8" x="12.7" y="-5.08" visible="pin" length="short" swaplevel="1" rot="R180"/>
+<pin name="*D9" x="12.7" y="-7.62" visible="pin" length="short" swaplevel="1" rot="R180"/>
+<pin name="*D10" x="12.7" y="-10.16" visible="pin" length="short" swaplevel="1" rot="R180"/>
+<pin name="*D11" x="12.7" y="-12.7" visible="pin" length="short" swaplevel="1" rot="R180"/>
+<pin name="D12" x="12.7" y="-15.24" visible="pin" length="short" swaplevel="1" rot="R180"/>
+<pin name="D13" x="12.7" y="-17.78" visible="pin" length="short" swaplevel="1" rot="R180"/>
+<pin name="A0" x="-12.7" y="17.78" visible="pin" length="short" swaplevel="1"/>
+<pin name="A1" x="-12.7" y="15.24" visible="pin" length="short" swaplevel="1"/>
+<pin name="A2" x="-12.7" y="12.7" visible="pin" length="short" swaplevel="1"/>
+<pin name="A3" x="-12.7" y="10.16" visible="pin" length="short" swaplevel="1"/>
+<pin name="A4" x="-12.7" y="7.62" visible="pin" length="short" swaplevel="1"/>
+<pin name="A5" x="-12.7" y="5.08" visible="pin" length="short" swaplevel="1"/>
 <pin name="VIN" x="-12.7" y="-7.62" visible="pin" length="short"/>
 <pin name="RES" x="-12.7" y="-5.08" visible="pin" length="short"/>
 <pin name="5V" x="-12.7" y="-10.16" visible="pin" length="short"/>
@@ -29118,7 +29118,7 @@ Source: http://www.semiconductors.philips.com/acrobat_download/datasheets/74HC_H
 </class>
 </classes>
 <parts>
-<part name="B1" library="keir_library" deviceset="ARDUINO_UNO_R3_SHIELD" device="NOLABELS" package3d_urn="urn:adsk.eagle:package:37324/1" value=""/>
+<part name="B1" library="keir_library" deviceset="ARDUINO_UNO_R3_SHIELD" device="NOLABELS" package3d_urn="urn:adsk.eagle:package:37324/1" value="ARDUINO_UNO_R3_SHIELDNOLABELS"/>
 <part name="J1" library="SparkFun-Connectors" library_urn="urn:adsk.eagle:library:513" deviceset="POWER_JACK" device="PTH_BREAD" package3d_urn="urn:adsk.eagle:package:38228/1" value="Pi Power Jack"/>
 <part name="J2" library="keir_library" deviceset="CONN_03" device="1X03_2.54MM_RA_FEMALE" package3d_urn="urn:adsk.eagle:package:38063/1" value="Header - Right angled, female"/>
 <part name="J3" library="keir_library" deviceset="CONN_04" device="1X04_1.24MM_RA_MALE" value="Pi Connection"/>
@@ -29129,7 +29129,7 @@ Source: http://www.semiconductors.philips.com/acrobat_download/datasheets/74HC_H
 <part name="J10" library="keir_library" deviceset="CONN_04X2" device="2X4_1.24MM_RA_MALE" package3d_urn="urn:adsk.eagle:package:38103/1" value="LED + Radio"/>
 <part name="Q1" library="transistor-npn" library_urn="urn:adsk.eagle:library:398" deviceset="BC337*" device="" package3d_urn="urn:adsk.eagle:package:28523/2"/>
 <part name="R1" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="1k"/>
-<part name="B2" library="keir_library" deviceset="ARDUINO_UNO_R3_SHIELD" device="NOLABELS" package3d_urn="urn:adsk.eagle:package:37324/1" value=""/>
+<part name="B2" library="keir_library" deviceset="ARDUINO_UNO_R3_SHIELD" device="NOLABELS" package3d_urn="urn:adsk.eagle:package:37324/1" value="ARDUINO_UNO_R3_SHIELDNOLABELS"/>
 <part name="C4" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="C-EU" device="C0805" package3d_urn="urn:adsk.eagle:package:23617/2" value="100nF"/>
 <part name="C5" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="C-EU" device="C0805" package3d_urn="urn:adsk.eagle:package:23617/2" value="330uF"/>
 <part name="R2" library="rcl" library_urn="urn:adsk.eagle:library:334" deviceset="R-EU_" device="M0805" package3d_urn="urn:adsk.eagle:package:23556/1" value="22.1k"/>
@@ -29241,7 +29241,6 @@ control of Pi Power
 from Arduino</text>
 <text x="127" y="177.8" size="1.9304" layer="95" font="vector">Open JP3 to disable
 hard reset.</text>
-<text x="96.52" y="152.4" size="1.9304" layer="95" font="vector">WIP: OR gate for interupts</text>
 </plain>
 <instances>
 <instance part="B1" gate="G$1" x="58.42" y="160.02" rot="MR0">
@@ -29817,7 +29816,7 @@ hard reset.</text>
 <label x="347.98" y="86.36" size="1.27" layer="95" xref="yes"/>
 </segment>
 </net>
-<net name="A2_WAKE_SW" class="4">
+<net name="WAKE_SW" class="4">
 <segment>
 <label x="322.58" y="215.9" size="1.27" layer="95" rot="MR0" xref="yes"/>
 <pinref part="J10" gate="G$1" pin="3"/>
@@ -29829,9 +29828,9 @@ hard reset.</text>
 <pinref part="JP3" gate="G$1" pin="1"/>
 </segment>
 <segment>
-<label x="78.74" y="172.72" size="1.27" layer="95" rot="MR180" xref="yes"/>
-<pinref part="B1" gate="G$1" pin="A2"/>
-<wire x1="78.74" y1="172.72" x2="71.12" y2="172.72" width="0.1524" layer="91"/>
+<label x="40.64" y="149.86" size="1.27" layer="95" rot="MR0" xref="yes"/>
+<pinref part="B1" gate="G$1" pin="*D10"/>
+<wire x1="40.64" y1="149.86" x2="45.72" y2="149.86" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <wire x1="-50.8" y1="165.1" x2="-10.16" y2="165.1" width="0.1524" layer="91"/>
@@ -30143,9 +30142,9 @@ hard reset.</text>
 <wire x1="27.94" y1="76.2" x2="22.86" y2="76.2" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="B1" gate="G$1" pin="*D10"/>
-<wire x1="45.72" y1="149.86" x2="40.64" y2="149.86" width="0.1524" layer="91"/>
-<label x="40.64" y="149.86" size="1.27" layer="95" rot="MR0" xref="yes"/>
+<pinref part="B1" gate="G$1" pin="A1"/>
+<wire x1="71.12" y1="175.26" x2="78.74" y2="175.26" width="0.1524" layer="91"/>
+<label x="78.74" y="175.26" size="1.27" layer="95" rot="MR180" xref="yes"/>
 </segment>
 </net>
 <net name="XSTEP" class="4">
@@ -30270,9 +30269,9 @@ hard reset.</text>
 <wire x1="27.94" y1="81.28" x2="22.86" y2="81.28" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="B1" gate="G$1" pin="D8"/>
-<wire x1="45.72" y1="154.94" x2="40.64" y2="154.94" width="0.1524" layer="91"/>
-<label x="40.64" y="154.94" size="1.27" layer="95" rot="MR0" xref="yes"/>
+<pinref part="B1" gate="G$1" pin="A2"/>
+<wire x1="71.12" y1="172.72" x2="78.74" y2="172.72" width="0.1524" layer="91"/>
+<label x="78.74" y="172.72" size="1.27" layer="95" rot="MR180" xref="yes"/>
 </segment>
 </net>
 <net name="DATA" class="4">
@@ -30282,12 +30281,12 @@ hard reset.</text>
 <wire x1="27.94" y1="78.74" x2="22.86" y2="78.74" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="B1" gate="G$1" pin="*D9"/>
-<wire x1="45.72" y1="152.4" x2="40.64" y2="152.4" width="0.1524" layer="91"/>
-<label x="40.64" y="152.4" size="1.27" layer="95" rot="MR0" xref="yes"/>
+<pinref part="B1" gate="G$1" pin="A0"/>
+<wire x1="71.12" y1="177.8" x2="78.74" y2="177.8" width="0.1524" layer="91"/>
+<label x="78.74" y="177.8" size="1.27" layer="95" rot="MR180" xref="yes"/>
 </segment>
 </net>
-<net name="D12_RXDATA" class="4">
+<net name="RXDATA" class="4">
 <segment>
 <wire x1="342.9" y1="215.9" x2="350.52" y2="215.9" width="0.1524" layer="91"/>
 <label x="350.52" y="215.9" size="1.27" layer="95" xref="yes"/>
@@ -30299,7 +30298,7 @@ hard reset.</text>
 <label x="40.64" y="144.78" size="1.27" layer="95" rot="MR0" xref="yes"/>
 </segment>
 </net>
-<net name="D13_SCIN" class="4">
+<net name="SCIN" class="4">
 <segment>
 <pinref part="B1" gate="G$1" pin="D13"/>
 <wire x1="45.72" y1="142.24" x2="40.64" y2="142.24" width="0.1524" layer="91"/>
@@ -30532,11 +30531,11 @@ hard reset.</text>
 <junction x="218.44" y="127"/>
 </segment>
 </net>
-<net name="A0_SW_E" class="4">
+<net name="SW_E" class="4">
 <segment>
-<pinref part="B1" gate="G$1" pin="A0"/>
-<wire x1="71.12" y1="177.8" x2="78.74" y2="177.8" width="0.1524" layer="91"/>
-<label x="78.74" y="177.8" size="1.27" layer="95" xref="yes"/>
+<pinref part="B1" gate="G$1" pin="D8"/>
+<wire x1="45.72" y1="154.94" x2="40.64" y2="154.94" width="0.1524" layer="91"/>
+<label x="40.64" y="154.94" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 <segment>
 <pinref part="J8" gate="G$1" pin="3"/>
@@ -30549,11 +30548,11 @@ hard reset.</text>
 <label x="-55.88" y="180.34" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="A1_SW_F" class="4">
+<net name="SW_F" class="4">
 <segment>
-<pinref part="B1" gate="G$1" pin="A1"/>
-<wire x1="71.12" y1="175.26" x2="78.74" y2="175.26" width="0.1524" layer="91"/>
-<label x="78.74" y="175.26" size="1.27" layer="95" xref="yes"/>
+<pinref part="B1" gate="G$1" pin="*D9"/>
+<wire x1="45.72" y1="152.4" x2="40.64" y2="152.4" width="0.1524" layer="91"/>
+<label x="40.64" y="152.4" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 <segment>
 <pinref part="J8" gate="G$1" pin="4"/>
@@ -30587,7 +30586,7 @@ hard reset.</text>
 <pinref part="LED2" gate="G$1" pin="A"/>
 </segment>
 </net>
-<net name="D11_SDIN" class="0">
+<net name="SDIN" class="0">
 <segment>
 <pinref part="B1" gate="G$1" pin="*D11"/>
 <wire x1="45.72" y1="147.32" x2="40.64" y2="147.32" width="0.1524" layer="91"/>
