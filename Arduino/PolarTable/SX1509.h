@@ -2,7 +2,7 @@
 
 #ifndef ENABLE_MOCK_SX1509_LIBRARY
   
-#include <SparkFunSX1509.h> // Include SX1509 library
+#include "SparkFunSX1509.h" // Include SX1509 library
 
 #else
 
