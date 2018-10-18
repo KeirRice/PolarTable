@@ -40,15 +40,40 @@ State state_button_led_pulse_on(&pulse_button_led_enter, NULL, NULL);
 State state_button_led_pulse_off(&pulse_button_led_enter, NULL, NULL);
 
 State state_button_led_error(NULL, NULL, NULL);
+
 Fsm fsm_button_led(&state_button_led_off);
+
+void fade_in()
+{
+  io.breathe(PIN_WAKE_LED,    //pin
+    0,  // tOn , time on ms, needs to be 0 for static mode
+    1,  // tOff, time off ms, need to be != 0 for static mode
+    8000, // fade in, raise time in ms
+    0 // fade out fall time in ms
+    );
+  io.digitalWrite(SX1509_B13, 0); // turn led on, it will slowly fade in
+}
+
+void fade_out()
+{
+  io.breathe(PIN_WAKE_LED,    //pin
+    0,  // tOn , time on ms, needs to be 0 for static mode
+    1,  // tOff, time off ms, need to be != 0 for static mode
+    8000, // fade out, fall time / speed ms
+    0 // fade out fall time in ms
+  );
+  io.digitalWrite(SX1509_B13, 1); // turn led off, it will slowly fade out
+}
 
 void on_button_led_on_enter()
 {
   io.analogWrite(PIN_WAKE_LED, 255);
 }
+
 void off_button_led_enter(){
   io.analogWrite(PIN_WAKE_LED, 0);
 }
+
 void pulse_button_led_enter(){
   int low_ms = 1000;
   int high_ms = 1000;
@@ -56,6 +81,7 @@ void pulse_button_led_enter(){
   int fall_ms = 250;
   io.breathe(PIN_WAKE_LED, low_ms, high_ms, rise_ms, fall_ms);
 }
+
 
 
 /*************************************************************
@@ -87,12 +113,13 @@ void error_LED_listener(void *data){
 
 void button_led_setup()
 {
+  DEBUG_WHERE();
   evtManager.subscribe(Subscriber(BUTTON_LED, button_LED_listener));
   evtManager.subscribe(Subscriber(ERROR_LED_SIGNGAL, error_LED_listener));
   
   // Off => On, On => OFF
-  fsm_button_led.add_transition(&state_button_led_off, &state_button_led_on, BUTTON_ON, NULL);  
-  fsm_button_led.add_transition(&state_button_led_on, &state_button_led_off, BUTTON_OFF, NULL);
+  fsm_button_led.add_transition(&state_button_led_off, &state_button_led_on, BUTTON_ON, &fade_in);  
+  fsm_button_led.add_transition(&state_button_led_on, &state_button_led_off, BUTTON_OFF, &fade_out);
 
   // Off/On => Blink, Blink => Off/On
   fsm_button_led.add_transition(&state_button_led_off, &state_button_led_pulse, BUTTON_PULSE, NULL);  
