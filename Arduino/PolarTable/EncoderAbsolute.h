@@ -20,7 +20,7 @@ extern SX1509 io; // Create an SX1509 object to be used throughout
 *************************************************************/
 
 // Masks
-static const byte ABSOLUTE_PIN_MASK = (1 << (uint) PIN_G_IR) | (1 << (uint) PIN_H_IR) | (1 << (uint) PIN_I_IR) | (1 << (uint) PIN_J_IR);
+static const byte ABSOLUTE_PIN_MASK = (byte)((1 << PIN_G_IR) | (1 << PIN_H_IR) | (1 << PIN_I_IR) | (1 << PIN_J_IR));
 
 /*************************************************************
   State variables.

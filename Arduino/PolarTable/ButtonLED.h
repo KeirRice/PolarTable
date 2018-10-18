@@ -83,7 +83,6 @@ void pulse_button_led_enter(){
 }
 
 
-
 /*************************************************************
   Event Dispatch
 *************************************************************/
@@ -93,7 +92,7 @@ void button_LED_listener(void* data){
 }
 
 void error_LED_listener(void *data){
-  byte code = (byte)data;
+  int code = (int)data;
   while (true) 
   {
     for(unsigned int i = 0; i < (sizeof(code) * 8); ++i)
