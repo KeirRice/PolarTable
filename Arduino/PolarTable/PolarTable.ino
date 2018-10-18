@@ -59,7 +59,8 @@ void setup()
   encoder_relative_setup();
   lighting_setup();
   motor_setup();
-  testing_setup();
+  // testing_setup();
+  DEBUG_WHERE();
 }
 
 void loop()
@@ -72,5 +73,7 @@ void loop()
   encode_loop();
   encoder_relative_loop();
   motor_loop();
-  testing_loop();
 }
+
+
+
