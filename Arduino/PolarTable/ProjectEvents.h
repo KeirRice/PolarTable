@@ -62,3 +62,4 @@ static const EventID ERROR_SX1509 = 130;
 static const EventID ERROR_MOTOR = 131;
 static const EventID ERROR_RASPBERRY = 132;
 static const EventID ERROR_EVENT_SYSTEM = 133;
+static const EventID ERROR_RELATIVE_ENCODER = 134;
