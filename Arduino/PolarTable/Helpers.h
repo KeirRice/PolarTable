@@ -8,6 +8,11 @@
 
 #define UNUSED(x) (void)(x)
 
+template <typename T> inline constexpr
+int sign(T x) {
+    return (T(0) < x) - (x < T(0));
+}
+
 long startMillis = 0;
 
 void(* resetFunc) (void) = 0; //declare reset function @ address 0
