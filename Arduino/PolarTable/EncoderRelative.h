@@ -28,8 +28,8 @@ void encoder_relative_loop() {}
   State variables.
 *************************************************************/
 
-static const byte port_read_mask = B00000011; // ARDUINO_D9, ARDUINO_D8
-static const byte lower_nibble_mask = B00001111; // Only keep the four lowest bits
+static const byte relative_lower_nibble_mask = B00001111; // Only keep the four lowest bits
+static const byte relative_port_read_mask = B00000011; // ARDUINO_D9, ARDUINO_D8
 
 static volatile byte relative_encoder_state;
 static volatile signed char relative_direction_buffer = 1;
@@ -79,7 +79,6 @@ void SetHomePosition() {
 }
 
 long GetRelativePosition() {
-  // Reset current steps to 0
   return relative_steps;
 }
 
@@ -105,8 +104,8 @@ void relativeISR(){
   // Clear the last state high bits, keeping only bits 1 & 2
   // Shift the last state up to bits 3 & 4
   // OR togeather the old and new data into their correct bit locations
-  relative_encoder_state = (relative_encoder_state << 2) | (PINB & port_read_mask);
-  byte new_direction = relativeDirectionLookup[relative_encoder_state & lower_nibble_mask];
+  relative_encoder_state = (relative_encoder_state << 2) | (PINB & relative_port_read_mask);
+  byte new_direction = relativeDirectionLookup[relative_encoder_state & relative_lower_nibble_mask];
   if (new_direction == 2){
     // Don't do anything for errors
     relative_error_flag = true;
