@@ -5,6 +5,8 @@
 
 typedef byte PinID;
 
+// Arduino
+// PORTD
 static const PinID ARDUINO_D0 = 0;
 static const PinID ARDUINO_D1 = 1;
 static const PinID ARDUINO_D2 = 2;
@@ -13,30 +15,23 @@ static const PinID ARDUINO_D4 = 4;
 static const PinID ARDUINO_D5 = 5;
 static const PinID ARDUINO_D6 = 6;
 static const PinID ARDUINO_D7 = 7;
+// PORTB
 static const PinID ARDUINO_D8 = 8;
 static const PinID ARDUINO_D9 = 9;
 static const PinID ARDUINO_D10 = 10;
 static const PinID ARDUINO_D11 = 11;
 static const PinID ARDUINO_D12 = 12;
 static const PinID ARDUINO_D13 = 13;
+// PORTC // Analog pins
+static const PinID ARDUINO_D14 = 14; static const PinID ARDUINO_A0 = A0;
+static const PinID ARDUINO_D15 = 15; static const PinID ARDUINO_A1 = A1;
+static const PinID ARDUINO_D16 = 16; static const PinID ARDUINO_A2 = A2;
+static const PinID ARDUINO_D17 = 17; static const PinID ARDUINO_A3 = A3;
+static const PinID ARDUINO_D18 = 18; static const PinID ARDUINO_A4 = A4;
+static const PinID ARDUINO_D19 = 19; static const PinID ARDUINO_A5 = A5;
 
-
-// Analog pins
-static const PinID ARDUINO_A0 = A0; // ARDUINO_D14
-static const PinID ARDUINO_A1 = A1; // ARDUINO_D15
-static const PinID ARDUINO_A2 = A2; // ARDUINO_D16
-static const PinID ARDUINO_A3 = A3; // ARDUINO_D17
-static const PinID ARDUINO_A4 = A4; // ARDUINO_D18
-static const PinID ARDUINO_A5 = A5; // ARDUINO_D19
-// Analog pins as Digital
-static const PinID ARDUINO_D14 = 14; // ARDUINO_A0
-static const PinID ARDUINO_D15 = 15; // ARDUINO_A1
-static const PinID ARDUINO_D16 = 16; // ARDUINO_A2
-static const PinID ARDUINO_D17 = 17; // ARDUINO_A3
-static const PinID ARDUINO_D18 = 18; // ARDUINO_A4
-static const PinID ARDUINO_D19 = 19; // ARDUINO_A5
-
-
+// SX1509
+// BANK A
 static const PinID SX1509_B0 = 0;
 static const PinID SX1509_B1 = 1;
 static const PinID SX1509_B2 = 2;
@@ -45,6 +40,7 @@ static const PinID SX1509_B4 = 4;
 static const PinID SX1509_B5 = 5;
 static const PinID SX1509_B6 = 6;
 static const PinID SX1509_B7 = 7;
+// BANK B
 static const PinID SX1509_B8 = 8;
 static const PinID SX1509_B9 = 9;
 static const PinID SX1509_B10 = 10;
