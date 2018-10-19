@@ -12,15 +12,9 @@ void encode_loop() {}
 #else
 
 #include "SX1509.h"
+#define REG_DATA_B 0x10 // From sx1509_register.h
 
 extern SX1509 io; // Create an SX1509 object to be used throughout
-
-/*************************************************************
-  Pin assignmets
-*************************************************************/
-
-// Masks
-static const byte ABSOLUTE_PIN_MASK = (byte)((1 << PIN_G_IR) | (1 << PIN_H_IR) | (1 << PIN_I_IR) | (1 << PIN_J_IR));
 
 /*************************************************************
   State variables.
@@ -29,13 +23,30 @@ static const byte ABSOLUTE_PIN_MASK = (byte)((1 << PIN_G_IR) | (1 << PIN_H_IR) |
 // Global variables:
 volatile bool SX1509Interrupt = false; // Track Interrupts in ISR
 
+// Masks
+static const byte absolute_port_read_mask = B00001111; // Only keep the four lowest bits
+static const byte absolute_lower_nibble_mask = B00001111; // Only keep the four lowest bits
+
+const unsigned char absolute_position_mask = B00001111;
+const unsigned char previous_absolute_position_mask = B11110000;
+
+const char absolute_position_table[16] = {0, 15, 7, 8, 3, 12, 4, 11, 1, 14, 6, 9, 2, 13, 5, 10};
+
 // Encoder state packed into a byte so we can use it as an index into the direction array.
-// bits 0-3 == current values
-// bits 4-7 == previous values
-static byte absoluteEncoderState;
-static long long int position;
-static long steps = 0;
-static char direction = 1;
+// bits 7-4 == previous values
+// bits 3-0 == current values
+
+static byte absolute_encoder_state;
+static char absolute_position;
+
+
+/*************************************************************
+  Interface
+*************************************************************/
+
+long GetAbsolutePosition() {
+  return absolute_position;
+}
 
 
 /*************************************************************
@@ -111,51 +122,54 @@ void setupAbsoluteDirectionLookup() {
   absoluteDirectionLookup[15][14] = 1;
   absoluteDirectionLookup[15][15] = 0;
 }
-const char absolutePositionLookup[16] = {0, 15, 7, 8, 3, 12, 4, 11, 1, 14, 6, 9, 2, 13, 5, 10};
 
-const unsigned int absoluteDirectionLookupRowMask = 15 << 4;
-const unsigned int absoluteDirectionLookupColumnMask = 15;
 
 /*************************************************************
   Functions
 *************************************************************/
 
-void UpdateAbsolutePosition(unsigned int intStatus)
+void UpdateAbsolutePosition()
 {
-  if (intStatus & ABSOLUTE_PIN_MASK)
-  {
-    // TODO: 
-    absoluteEncoderState = (absoluteEncoderState << 4) |
-                           (io.digitalRead(PIN_G_IR) |
-                            (io.digitalRead(PIN_H_IR) << 1) |
-                            (io.digitalRead(PIN_I_IR) << 2) |
-                            (io.digitalRead(PIN_J_IR) << 3));
+  // byte previous_absolute_position_index = absolute_encoder_state & absolute_lower_nibble_mask;
+  
+  // Read the input data state of Bank B
+  // Mask out the data keeping only pins 11-8
+  // Shift the last data we got left four bits
+  // OR the values togeather
+  absolute_encoder_state = (absolute_encoder_state << 4) | (io.readByte(REG_DATA_B) & absolute_port_read_mask);
 
-    byte row = absoluteEncoderState & absoluteDirectionLookupRowMask;
-    byte column = absoluteEncoderState & absoluteDirectionLookupColumnMask;
-    byte lookup = absoluteDirectionLookup[row][column];
-    position = absolutePositionLookup[column];
-    if (lookup == 2) {
-      //error
-      Serial.println("We jumped positions");
-    }
-    // else if (lookup == 0){
-    //   // no change
-    // }
-    else {
-      // Serial.println(p("We moved to position %d", position));
-      direction = lookup;
-      steps += lookup;
-    }
-  }
+  // Clear the iterrupt flag.
+  // TODO: Add a function to the SX1509 library to clear without reading.
+  io.interruptSource();
+  
+  byte absolute_position_index = absolute_encoder_state & absolute_lower_nibble_mask;
+  absolute_position = absolute_position_table[absolute_position_index];
+
+//  byte absolute_direction = absoluteDirectionLookup[previous_absolute_position_index][absolute_position_index];
+//  switch (absolute_direction){
+//    case 0:
+//      // No change
+//      break;
+//    case 2:
+//      // Error
+//      DEBUG_PRINTLN("Absolute position error.");
+//      break;
+//    default:
+//      DEBUG_PRINT_VAR("We moved to ", absolute_position));
+//      break;
+//  }
 }
+
+/*************************************************************
+  Interupt
+*************************************************************/
 
 void encoderISR()
 {
-  SX1509Interrupt = true; // Set the SX1509Interrupts flag
   // We can't do I2C communication in an Arduino ISR. The best
   // we can do is set a flag, to tell the loop() to check next
   // time through.
+  SX1509Interrupt = true; // Set the SX1509Interrupts flag
 }
 
 
@@ -163,13 +177,19 @@ void encoderISR()
   Setup and main loop.
 *************************************************************/
 
-void encoder_setup()
+void encoder_absolute_setup()
 {
+  // Check the pins as we are hardcoded to them in the port_read_mask and UpdateAbsolutePosition.
+  assert(PIN_G_IR == SX1509_B8);
+  assert(PIN_H_IR == SX1509_B9);
+  assert(PIN_I_IR == SX1509_B10);
+  assert(PIN_J_IR == SX1509_B11);
+  
   // Initalize the lookup tables.
-  setupAbsoluteDirectionLookup();
+  // setupAbsoluteDirectionLookup();
 
   // The SX1509 has built-in debounce.
-  char debounce_time = 2; // <time_ms> can be either 0, 1, 2, 4, 8, 16, 32, or 64 ms.
+  char debounce_time = 4; // <time_ms> can be either 0, 1, 2, 4, 8, 16, 32, or 64 ms.
   io.debounceTime(debounce_time);
 
   // Use io.pinMode(<pin>, <mode>) to set our absolute encoder switches
@@ -178,17 +198,14 @@ void encoder_setup()
   io.pinMode(PIN_I_IR, INPUT_PULLUP);
   io.pinMode(PIN_J_IR, INPUT_PULLUP);
 
+  // Prime our values
+  UpdateAbsolutePosition(); 
+
+  // Interupts on
   io.enableInterrupt(PIN_G_IR, CHANGE);
   io.enableInterrupt(PIN_H_IR, CHANGE);
   io.enableInterrupt(PIN_I_IR, CHANGE);
   io.enableInterrupt(PIN_J_IR, CHANGE);
-
-  absoluteEncoderState =
-    (io.digitalRead(PIN_G_IR) |
-     (io.digitalRead(PIN_H_IR) << 1) |
-     (io.digitalRead(PIN_I_IR) << 2) |
-     (io.digitalRead(PIN_J_IR) << 3));
-  absoluteEncoderState = (absoluteEncoderState << 4) | absoluteEncoderState;
 
   // Don't forget to configure your Arduino pins! Set the
   // Arduino's interrupt input to INPUT_PULLUP. The SX1509's
@@ -196,19 +213,15 @@ void encoder_setup()
   pinMode(PIN_SX1509_INT, INPUT_PULLUP);
 
   // Attach an Arduino interrupt to the interrupt pin. Call
-  // the encodeInterupt function, whenever the pin goes from HIGH to
-  // LOW.
+  // the encodeInterupt function, whenever the pin goes from HIGH to LOW.
   attachInterrupt(digitalPinToInterrupt(PIN_SX1509_INT), encoderISR, FALLING);
 }
 
-void encode_loop() {
+void encoder_absolute_loop() {
   if (SX1509Interrupt) // If the encoderISR was executed called
   {
-    // read io.interruptSource() find out which pin generated
-    // an interrupt and clear the SX1509's interrupt output.
-    unsigned int intStatus = io.interruptSource();
-    UpdateAbsolutePosition(intStatus);
-    SX1509Interrupt = false; // Clear the interupt flag
+    UpdateAbsolutePosition();
+    SX1509Interrupt = false;
   }
 }
 
