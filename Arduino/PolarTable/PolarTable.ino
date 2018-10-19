@@ -29,6 +29,7 @@ SX1509 io;
 
 #include "RaspberryManager.h"
 #include "Raspberry.h"
+#include "UI.h"
 
 #include "Testing.h"
 
@@ -51,6 +52,7 @@ void setup()
 //    evtManager.trigger(ERROR_EVENT, ERROR_SX1509);
 //    while (1);
 //  }
+  ui_setup();
   raspberry_setup();
   raspberry_manager_setup();
   button_setup();
@@ -65,6 +67,7 @@ void setup()
 
 void loop()
 {
+  ui_loop();
   raspberry_loop();
   raspberry_manager_loop();
   button_loop();
