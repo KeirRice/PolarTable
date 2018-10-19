@@ -55,7 +55,6 @@ private:	// These private functions are not available to Arduino sketches.
 // Misc variables:
 	unsigned long _clkX;
 // Read Functions:
-	byte readByte(byte registerAddress);
 	unsigned int readWord(byte registerAddress);
 	void readBytes(byte firstRegisterAddress, byte * destination, byte length);
 // Write functions:
@@ -144,7 +143,17 @@ public:
 // -----------------------------------------------------------------------------
 	byte digitalRead(byte pin);
 	byte readPin(byte pin); // Legacy - use digitalRead
-	
+
+// -----------------------------------------------------------------------------
+// readByte(byte registerAddress): This function reads the value of a register.
+//
+//  Inputs:
+//    - pin: The SX1509 register to be read. For example REG_DATA_A or REG_DATA_B
+//  Outputs:
+//    This function returns a byte where each bit is the state of a pin.
+// -----------------------------------------------------------------------------
+  byte readByte(byte registerAddress);
+  
 // -----------------------------------------------------------------------------
 // ledDriverInit(byte pin, byte freq, bool log): This function initializes LED 
 //		driving on a pin. It must be called if you want to use the pwm or blink 
