@@ -12,9 +12,10 @@ typedef char EventID;
 static const EventID NULL_EVENT = 0;
 
 static const EventID SYSTEM_EVENT = 5;
-static const EventID SLEEP_REQUEST = 10;
-static const EventID WAKE_REQUEST = 11;
-static const EventID SLEEP = 12;
+// System statemachine states.
+static const EventID SYSTEM_SLEEP = 10;
+static const EventID SYSTEM_WAKE = 11;
+
 
 static const EventID BUTTON_LED = 14;
 

@@ -114,7 +114,7 @@ void process_recieve_data(char request, byte *recieve_data, byte recieve_data_si
       }
 
     case RASP_SLEEP :
-      evtManager.trigger(SYSTEM_EVENT, SLEEP_REQUEST);
+      evtManager.trigger(SYSTEM_EVENT, SYSTEM_SLEEP);
       break;
 
     default :

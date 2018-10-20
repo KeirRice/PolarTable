@@ -20,22 +20,26 @@ extern EventManager evtManager;
 // Instantiate a Bounce object
 Bounce bounce = Bounce();
 
+bool just_woke = false;
+
 /*************************************************************
   State
 *************************************************************/
 
-void on_system_on_enter();
-void on_system_on_state();
-void on_system_shutdown_enter();
-void off_system_shutdown_state();
-void on_system_off_enter();
-void off_system_off_state();
+void system_on_enter();
+void system_on_state();
+void system_shutdown_enter();
+void system_shutdown_state();
+void system_off_enter();
+void system_off_state();
+void system_waking_enter();
 
 void on_trans_system_on_system_shutdown();
 
-State state_system_on(&on_system_on_enter, &on_system_on_state, NULL);
-State state_system_shutdown(&on_system_shutdown_enter, &off_system_shutdown_state, NULL);
-State state_system_off(&on_system_off_enter, &off_system_off_state, NULL);
+State state_system_on(&system_on_enter, &system_on_state, NULL);
+State state_system_shutdown(&system_shutdown_enter, &system_shutdown_state, NULL);
+State state_system_off(&system_off_enter, &system_off_state, NULL);
+State state_system_wake(&system_waking_enter, NULL, NULL);
 
 Fsm fsm_system(&state_system_on);
 
@@ -45,48 +49,56 @@ Fsm fsm_system(&state_system_on);
 *************************************************************/
 
 void request_sleep() {
-  fsm_system.trigger(SLEEP_REQUEST);
+  fsm_system.trigger(SYSTEM_SLEEP);
 }
 
 /*************************************************************
   Functions
 *************************************************************/
 
-void wake() {
-  // Restart out millis counter as it wasn't running while alseep
-  resetMillis();
+/* WAKING */
+void system_waking_enter(){
+  just_woke = true;
 }
 
-void sleep() {
-  DEBUG_PRINTLN("going to sleep");
-  // TODO: Shutdown the SX1509 and the motor drivers and the LEDs
-  sleepNow();     // sleep function called here
-  wake(); // Called after we are woken
-}
-
-
-void on_system_on_enter(){
+/* ON */
+void system_on_enter(){
   evtManager.trigger(BUTTON_LED, BUTTON_PULSE_ON);
 }
-void on_system_on_state(){
+
+void system_on_state(){
+  bounce.update();
   if (bounce.rose()) { // OnRelease
-    fsm_system.trigger(SLEEP_REQUEST);
+    // We need to ignore the first release after we wake as it is part of
+    // the same press-release pair that woke us up.
+    if(just_woke){
+      just_woke = false;
+    }
+    else {
+      fsm_system.trigger(SYSTEM_SLEEP);
+    }
   }
 }
-void on_system_shutdown_enter(){
+
+/* SHUTDOWN */
+void system_shutdown_enter(){
   evtManager.trigger(BUTTON_LED, BUTTON_PULSE_OFF);
-  
   // TODO: Send shutdown command to PI
 }
-void off_system_shutdown_state(){
+void system_shutdown_state(){
   // TODO: Check if Pi is down?
 }
-void on_system_off_enter(){
+
+/* OFF */
+void system_off_enter(){
   evtManager.trigger(BUTTON_LED, BUTTON_PULSE_OFF);
 }
-void off_system_off_state(){
-  sleep();
-  fsm_system.trigger(WAKE_REQUEST);
+
+void system_off_state(){
+  DEBUG_PRINTLN("Sleeping.");
+  sleepNow();
+  DEBUG_PRINTLN("Waking.");
+  fsm_system.trigger(SYSTEM_WAKE);
 }
 
 /*************************************************************
@@ -99,14 +111,20 @@ void system_listener(void* data){
 
 void button_setup()
 {
+  pinMode(PIN_INTERUPT, INPUT);
+  
   pinMode(PIN_WAKE_SWITCH, INPUT_PULLUP);
+  // delay(5);
+    
   char debounce_time = 5; // Milliseconds
   bounce.interval(debounce_time);
   bounce.attach(PIN_WAKE_SWITCH);
 
-  fsm_system.add_transition(&state_system_on, &state_system_shutdown, SLEEP_REQUEST, NULL);  
+  fsm_system.add_transition(&state_system_on, &state_system_shutdown, SYSTEM_SLEEP, NULL);  
   fsm_system.add_timed_transition(&state_system_shutdown, &state_system_off, 3000, NULL);
-  fsm_system.add_transition(&state_system_off, &state_system_on, WAKE_REQUEST, NULL);
+  
+  fsm_system.add_transition(&state_system_off, &state_system_wake, SYSTEM_WAKE, NULL);
+  fsm_system.add_timed_transition(&state_system_wake, &state_system_on, 100, NULL);
 
   evtManager.subscribe(Subscriber(SYSTEM_EVENT, system_listener));
 }
