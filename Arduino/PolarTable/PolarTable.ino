@@ -41,17 +41,18 @@ void setup()
   resetMillis();
   
   if (DEBUG) {
-    Serial.begin(115200);
+    Serial.begin(19200);
   }
   DEBUG_PRINTLN("Setup serial.");
   DEBUG_WHERE();
 
-//  if (!io.begin(SX1509_I2C_ADDRESS))
-//  {
-//    DEBUG_PRINTLN("Failed to begin SX1509 coms.");
-//    evtManager.trigger(ERROR_EVENT, ERROR_SX1509);
-//    while (1);
-//  }
+  if (!io.begin(SX1509_I2C_ADDRESS))
+  {
+    DEBUG_PRINTLN("Failed to begin SX1509 coms.");
+    evtManager.trigger(ERROR_EVENT, ERROR_SX1509);
+    while (1);
+  }
+  
   ui_setup();
   raspberry_setup();
   raspberry_manager_setup();
