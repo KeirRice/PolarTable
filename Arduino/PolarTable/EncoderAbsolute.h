@@ -6,8 +6,8 @@
 // Debug stubs
 #ifdef DISABLE_ENCODER_ABSOLUTE
 
-void encoder_setup() {}
-void encode_loop() {}
+void encoder_absolute_setup() {}
+void encoder_absolute_loop() {}
 
 #else
 
