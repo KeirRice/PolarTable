@@ -70,9 +70,9 @@ static const PinID PIN_SX1509_INT = ARDUINO_D2; // Active low
 static const PinID PIN_INTERUPT = ARDUINO_D3;
 
 // Shift registor for motor config
-static const PinID PIN_SHIFT_DATA = ARDUINO_D14;  //Pin connected to Data in (DS) of 74HC595
-static const PinID PIN_SHIFT_CLOCK = ARDUINO_D15;  //Pin connected to clock pin (SH_CP) of 74HC595
-static const PinID PIN_SHIFT_LATCH = ARDUINO_D16;  //Pin connected to latch pin (ST_CP) of 74HC595
+static const PinID PIN_SHIFT_DATA = ARDUINO_D14;  // (A0) Pin connected to Data in (DS) of 74HC595
+static const PinID PIN_SHIFT_CLOCK = ARDUINO_D15;  // (A1) Pin connected to clock pin (SH_CP) of 74HC595
+static const PinID PIN_SHIFT_LATCH = ARDUINO_D16;  // (A2) Pin connected to latch pin (ST_CP) of 74HC595
 
 // Pull high to cut the power to the Raspberry Pi
 static const PinID PIN_PI_POWER = ARDUINO_A3;
