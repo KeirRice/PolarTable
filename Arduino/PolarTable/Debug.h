@@ -1,13 +1,16 @@
 /*************************************************************
   Debug functions that can be compiled out on release
 *************************************************************/
-#pragma once
+#ifndef _DEBUG_H
+#define _DEBUG_H
 
 #define DEBUG 1
 
 #ifndef DEBUG
 #define NDEBUG
 #endif // DEBUG
+
+#include "Arduino.h"
 #include <assert.h>
 
 // #define ENABLE_MOCK_WIRE_LIBRARY
@@ -76,7 +79,9 @@ void print_byte(byte code)
 #define DEBUG_WHERE() \
   do { \
     if (DEBUG){ \
-      Serial.println(F("At " __FILE__ ": " STRINGIZE(__LINE__))); \
+      Serial.print(F("At "));\
+      Serial.print(__func__);\
+      Serial.println(F(" in " __FILE__ ": " STRINGIZE(__LINE__))); \
       Serial.flush(); \
     }\
   } while (0)
@@ -114,3 +119,5 @@ void print_byte(byte code)
 
 #define GET_MACRO(_1, _2, _3, NAME, ...) NAME
 #define DEBUG_PRINT_VAR(...) GET_MACRO(__VA_ARGS__, DEBUG_PRINT_VAR3, DEBUG_PRINT_VAR2, DEBUG_PRINT_VAR1)(__VA_ARGS__)
+
+#endif // _DEBUG_H
