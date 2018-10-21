@@ -24,9 +24,7 @@ typedef byte EventID;
 struct Event
 {
   Event(const EventID cLabel, const void *cExtra=0);
-  Event(const EventID cLabel, const EventID value);
   const EventID label;
-  const EventID event;
   const void *extra;
 };
 
