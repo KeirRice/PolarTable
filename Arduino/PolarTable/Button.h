@@ -63,7 +63,7 @@ void system_waking_enter(){
 
 /* ON */
 void system_on_enter(){
-  evtManager.trigger(BUTTON_LED, BUTTON_PULSE_ON);
+  evtManager.trigger(BUTTON_LED, BUTTON_ON);
 }
 
 void system_on_state(){
@@ -82,7 +82,7 @@ void system_on_state(){
 
 /* SHUTDOWN */
 void system_shutdown_enter(){
-  evtManager.trigger(BUTTON_LED, BUTTON_PULSE_OFF);
+  evtManager.trigger(BUTTON_LED, BUTTON_PULSE);
   // TODO: Send shutdown command to PI
 }
 void system_shutdown_state(){
@@ -91,7 +91,7 @@ void system_shutdown_state(){
 
 /* OFF */
 void system_off_enter(){
-  evtManager.trigger(BUTTON_LED, BUTTON_PULSE_OFF);
+  evtManager.trigger(BUTTON_LED, BUTTON_OFF);
 }
 
 void system_off_state(){
@@ -105,16 +105,10 @@ void system_off_state(){
   Setup and main loop.
 *************************************************************/
 
-void system_listener(void* data){
-  fsm_system.trigger((int) data);
-}
-
 void button_setup()
 {
   pinMode(PIN_INTERUPT, INPUT);
-  
   pinMode(PIN_WAKE_SWITCH, INPUT_PULLUP);
-  // delay(5);
     
   char debounce_time = 5; // Milliseconds
   bounce.interval(debounce_time);
@@ -126,7 +120,9 @@ void button_setup()
   fsm_system.add_transition(&state_system_off, &state_system_wake, SYSTEM_WAKE, NULL);
   fsm_system.add_timed_transition(&state_system_wake, &state_system_on, 100, NULL);
 
-  evtManager.subscribe(Subscriber(SYSTEM_EVENT, system_listener));
+  // Create the bridge from the event system to the system fsm.
+  struct FsmEventDriver system_event_listner = FsmEventDriver(&fsm_system);
+  evtManager.subscribe(Subscriber(SYSTEM_EVENT, &system_event_listner));
 }
 
 void button_loop() {

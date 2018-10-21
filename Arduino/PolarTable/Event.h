@@ -9,7 +9,7 @@
 #include "Arduino.h"
 #include "ProjectEvents.h"
 
-typedef char EventID;
+typedef byte EventID;
 #define INTERVAL_SLOT_COUNT 5
 #define SUBSCRIBER_SLOT_COUNT 10
 
@@ -24,7 +24,9 @@ typedef char EventID;
 struct Event
 {
   Event(const EventID cLabel, const void *cExtra=0);
+  Event(const EventID cLabel, const EventID value);
   const EventID label;
+  const EventID event;
   const void *extra;
 };
 
@@ -34,8 +36,20 @@ struct Event
  */
 struct EventTask
 {
-  virtual void execute(Event evt) = 0;
+  virtual void execute(Event *evt) = 0;
 };
+
+
+struct EventListener : public EventTask
+{
+  using EventTask::execute;
+  
+  void execute(Event *evt){
+    // fsm_system.trigger((int)*(evt->extra));
+  }
+
+};
+
 
 /**
  * The Subscriber is the object that
@@ -45,12 +59,10 @@ struct EventTask
 struct Subscriber
 {
   Subscriber();
-  Subscriber(const EventID cLabel, void (*callback)());
-  Subscriber(const EventID cLabel, void (*callback)(void* userData));
+  Subscriber(const EventID cLabel, EventTask *task);
   
   const EventID label;
-  void (*callback)();
-  void (*callback_data)(void* userData);
+  EventTask *task;
 };
 
 

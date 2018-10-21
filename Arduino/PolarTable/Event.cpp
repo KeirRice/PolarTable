@@ -12,16 +12,18 @@
    object that can be dispatched by the
    manager.
 */
-Event::Event(const EventID cLabel, const void *cExtra) : label(cLabel), extra(cExtra) {}
+Event::Event(const EventID cLabel, const void *cExtra /*=0*/) : label(cLabel), extra(cExtra), event(0) {}
+Event::Event(const EventID cLabel, const EventID event) : label(cLabel), extra(0), event(event) {}
+
 
 /**
    The Subscriber is the object that
    encapsulates the Event it's listening for
    and the EventTask to be executed.
 */
-Subscriber::Subscriber() : label(0), callback(NULL), callback_data(NULL) {}
-Subscriber::Subscriber(const EventID cLabel, void (*callback)()): label(cLabel), callback(callback), callback_data(NULL) {}
-Subscriber::Subscriber(const EventID cLabel, void (*callback)(void* userData)): label(cLabel), callback(NULL), callback_data(callback) {}
+Subscriber::Subscriber() : label(0), task(NULL) {}
+Subscriber::Subscriber(const EventID cLabel, EventTask *task): label(cLabel), task(task) {}
+
 
 
 /**
@@ -73,78 +75,33 @@ void EventManager::trigger(Event *evt)
     if (sub and sub->label == label)
     {
       // Execute event
-      (sub->callback_data)(evt);
+      (sub->task->execute)(evt);
     }
   }
 }
 
 void EventManager::trigger(const EventID cLabel)
 {
-  for (unsigned int i = 0; i < _subCount; ++i)
-  {
-    Subscriber *sub = _sub[i];
-    if (sub and sub->label == cLabel)
-    {
-      (sub->callback)(); 
-    }
-  }
+  Event evt = Event(cLabel);
+  EventManager::trigger(&evt);
 }
 
 void EventManager::trigger(const EventID cLabel, void *cExtra)
 {
-  for (unsigned int i = 0; i < _subCount; ++i)
-  {
-    Subscriber *sub = _sub[i];
-
-    if (sub and sub->label == cLabel)
-    {
-      // Execute event
-      if(sub->callback_data){
-        (sub->callback_data)(&cExtra);        
-      }
-      else {
-        (sub->callback)(); 
-      }
-    }
-  }
+  Event evt = Event(cLabel, cExtra);
+  EventManager::trigger(&evt);
 }
 
 void EventManager::trigger(const EventID cLabel, const void *cExtra)
 {
-  for (unsigned int i = 0; i < _subCount; ++i)
-  {
-    Subscriber *sub = _sub[i];
-
-    if (sub and sub->label == cLabel)
-    {
-      // Execute event
-      if(sub->callback_data){
-        (sub->callback_data)(&cExtra);        
-      }
-      else {
-        (sub->callback)(); 
-      }
-    }
-  }
+  Event evt = Event(cLabel, cExtra);
+  EventManager::trigger(&evt);
 }
 
-void EventManager::trigger(const EventID cLabel, const EventID cExtra)
+void EventManager::trigger(const EventID cLabel, const EventID fsm_event)
 {
-  for (unsigned int i = 0; i < _subCount; ++i)
-  {
-    Subscriber *sub = _sub[i];
-
-    if (sub and sub->label == cLabel)
-    {
-      // Execute event
-      if(sub->callback_data){
-        (sub->callback_data)(&cExtra);        
-      }
-      else {
-        (sub->callback)(); 
-      }
-    }
-  }
+  Event evt = Event(cLabel, (int)fsm_event);
+  EventManager::trigger(&evt);
 }
 
 /**

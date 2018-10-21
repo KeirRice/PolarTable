@@ -1,4 +1,3 @@
-
 #include "Debug.h"
 
 const byte ARDUINO_I2C_ADDRESS = 0x04;
@@ -16,6 +15,23 @@ EventManager evtManager;
 
 #include "SX1509.h"
 SX1509 io;
+#include <Fsm.h>
+
+struct FsmEventDriver : public EventTask
+{
+  Fsm *fsm;
+  FsmEventDriver();
+  FsmEventDriver(Fsm *statemachine) : fsm(statemachine) {}
+
+  using EventTask::execute;
+  
+  void execute(Event *evt)
+  {
+    DEBUG_WHERE();
+    fsm->trigger(evt->event);
+  }
+};
+
 
 #include "WireTypes.h"
 #include "Error.h"
@@ -34,6 +50,7 @@ SX1509 io;
 #include "Testing.h"
 
 extern long startMillis;
+
 
 void setup()
 {

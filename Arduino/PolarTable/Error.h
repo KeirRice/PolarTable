@@ -1,6 +1,7 @@
 /*************************************************************
   Error LED
 *************************************************************/
+#pragma once
 
 void error_listener(void *data){
   UNUSED(data);
@@ -9,8 +10,23 @@ void error_listener(void *data){
   // TODO: Pulse the switch LED as well (If we can)
 }
 
+
+struct ErrorEventListener : public EventTask
+{
+  ErrorEventListener();
+  
+  using EventTask::execute;
+  
+  void execute(Event *evt)
+  {
+    error_listener((byte) evt->extra);
+  }
+};
+ErrorEventListener::ErrorEventListener(){}
+
 void error_setup(){
   // pinMode(PIN_ERROR_LED, OUTPUT);
   // digitalWrite(PIN_ERROR_LED, LOW);  
-  evtManager.subscribe(Subscriber(ERROR_EVENT, error_listener));  
+  // evtManager.subscribe(Subscriber(ERROR_EVENT, error_listener));  
 }
+
