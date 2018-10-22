@@ -2,24 +2,24 @@ EAGLE AutoRouter Statistics:
 
 Job           : C:/Users/krice/Google Drive/PolarTable/Eagle/Project/PolarTableShield.brd
 
-Start at      : 11:38:08 (10/9/2018)
-End at        : 11:38:14 (10/9/2018)
-Elapsed time  : 00:00:03
+Start at      : 16:48:01 (10/19/2018)
+End at        : 16:48:22 (10/19/2018)
+Elapsed time  : 00:00:07
 
-Signals       :    68   RoutingGrid: 19.685 mil  Layers: 2
-Connections   :   141   predefined:  47 ( 0 Vias )
+Signals       :    80   RoutingGrid: 9.84252 mil  Layers: 2
+Connections   :   182   predefined:  50 ( 0 Vias )
 
-Router memory :   242780
+Router memory :   805608
 
-Passname          :    Busses     Route Optimize1 Optimize2 Optimize3 Optimize4
+Passname          :     Route Optimize1 Optimize2 Optimize3 Optimize4
 
-Time per pass     :  00:00:00  00:00:01  00:00:00  00:00:01  00:00:00  00:00:01
-Number of Ripups  :         0         2         0         0         0         0
-max. Level        :         0         1         0         0         0         0
-max. Total        :         0         1         0         0         0         0
+Time per pass     :  00:00:03  00:00:01  00:00:01  00:00:01  00:00:01
+Number of Ripups  :         3         0         0         0         0
+max. Level        :         1         0         0         0         0
+max. Total        :         3         0         0         0         0
 
-Routed            :        21        90        90        90        90        90
-Vias              :         0       102        47        39        38        38
-Resolution        :    48.2 %    97.2 %    97.2 %    97.2 %    97.2 %    97.2 %
+Routed            :       118       118       118       118       118
+Vias              :       127        80        78        74        74
+Resolution        :    92.3 %    92.3 %    92.3 %    92.3 %    92.3 %
 
-Final             : 92.2% finished. Polygons may have fallen apart.
+Final             : 87.4% finished. Polygons may have fallen apart.
