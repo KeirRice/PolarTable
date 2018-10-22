@@ -63,7 +63,7 @@ void system_waking_enter(){
 
 /* ON */
 void system_on_enter(){
-  evtManager.trigger(BUTTON_LED, BUTTON_ON);
+  evtManager.trigger(BUTTON_LED, BUTTON_PULSE_ON);
 }
 
 void system_on_state(){
@@ -84,6 +84,7 @@ void system_on_state(){
 void system_shutdown_enter(){
   evtManager.trigger(BUTTON_LED, BUTTON_PULSE);
   // TODO: Send shutdown command to PI
+  delay(3000);
 }
 void system_shutdown_state(){
   // TODO: Check if Pi is down?
@@ -92,6 +93,7 @@ void system_shutdown_state(){
 /* OFF */
 void system_off_enter(){
   evtManager.trigger(BUTTON_LED, BUTTON_OFF);
+  delay(5);
 }
 
 void system_off_state(){

@@ -12,8 +12,7 @@
    object that can be dispatched by the
    manager.
 */
-Event::Event(const EventID cLabel, const void *cExtra /*=0*/) : label(cLabel), extra(cExtra), event(0) {}
-Event::Event(const EventID cLabel, const EventID event) : label(cLabel), extra(0), event(event) {}
+Event::Event(const EventID cLabel, const void *cExtra /*=0*/) : label(cLabel), extra(cExtra) {}
 
 
 /**
@@ -100,7 +99,7 @@ void EventManager::trigger(const EventID cLabel, const void *cExtra)
 
 void EventManager::trigger(const EventID cLabel, const EventID fsm_event)
 {
-  Event evt = Event(cLabel, (int)fsm_event);
+  Event evt = Event(cLabel, (void*)&fsm_event);
   EventManager::trigger(&evt);
 }
 

@@ -28,19 +28,20 @@ void on_led_enter();
 void off_led_enter();
 void pulse_led_enter();
 void pulse_led_state();
+void pulse_led_exit();
 void pulse_on_led_enter();
 void pulse_off_led_enter();
 
 State state_led_on(&on_led_enter, NULL, NULL);
 State state_led_off(&off_led_enter, NULL, NULL);
-State state_led_pulse(&pulse_led_enter, NULL, NULL);
+State state_led_pulse(&pulse_led_enter, NULL, &pulse_led_exit);
 State state_button_led_error(NULL, NULL, NULL);
 
 // New states so we can add timed transitions, but reuse use the pulse functions.
-State state_button_led_pulse_on(&pulse_on_led_enter, NULL, NULL);
-State state_button_led_pulse_off(&pulse_off_led_enter, NULL, NULL);
+State state_led_pulse_on(&pulse_on_led_enter, NULL, NULL);
+State state_led_pulse_off(&pulse_off_led_enter, NULL, NULL);
 
-Fsm fsm_button_led(&state_led_off);
+Fsm fsm_button_led(&state_led_on);
 
 void on_led_enter()
 {
@@ -63,6 +64,11 @@ void pulse_led_enter(){
 //  int fall_ms = 250;
 //  io.breathe(PIN_WAKE_LED, low_ms, high_ms, rise_ms, fall_ms);
 }
+
+void pulse_led_exit(){
+  io.setupBlink(PIN_WAKE_LED, 0, 0, 255);
+}
+
 void pulse_led_state(){}
 void pulse_on_led_enter(){}
 void pulse_off_led_enter(){}
@@ -99,13 +105,7 @@ void fade_out()
   Event Dispatch
 *************************************************************/
 
-//void button_LED_listener(EventID event){
-//  DEBUG_WHERE();
-//  DEBUG_PRINT_VAR(event);
-//  fsm_button_led.trigger(event);
-//}
-
-void error_LED_listener(void *data){
+void error_LED(void *data){
   int code = (int)data;
   while (true) 
   {
@@ -133,20 +133,20 @@ void button_led_setup()
   // io.ledDriverInit(PIN_WAKE_LED);
   
   // Off => On, On => OFF
-  fsm_button_led.add_transition(&state_led_off, &state_led_on, BUTTON_ON, NULL);  // &fade_in
-  fsm_button_led.add_transition(&state_led_on, &state_led_off, BUTTON_OFF, NULL); // &fade_out
+  fsm_button_led.add_transition(&state_led_off, &state_led_on, BUTTON_ON, NULL); // , &fade_in
+  fsm_button_led.add_transition(&state_led_on, &state_led_off, BUTTON_OFF, NULL); // , &fade_out
 
-//  // Off/On => Blink, Blink => Off/On
-//  fsm_button_led.add_transition(&state_button_led_off, &state_button_led_pulse, BUTTON_PULSE, NULL);  
-//  fsm_button_led.add_transition(&state_button_led_on, &state_button_led_pulse, BUTTON_PULSE, NULL);  
-//  fsm_button_led.add_transition(&state_button_led_pulse, &state_button_led_off, BUTTON_OFF, NULL);  
-//  fsm_button_led.add_transition(&state_button_led_pulse, &state_button_led_on, BUTTON_ON, NULL);  
-//
-//  fsm_button_led.add_transition(&state_button_led_off, &state_button_led_pulse_on, BUTTON_PULSE_ON, NULL);
-//  fsm_button_led.add_timed_transition(&state_button_led_pulse_on, &state_button_led_on, 3000, NULL);
-//  
-//  fsm_button_led.add_transition(&state_button_led_on, &state_button_led_pulse_off, BUTTON_PULSE_OFF, NULL);  
-//  fsm_button_led.add_timed_transition(&state_button_led_pulse_off, &state_button_led_off, 3000, NULL);
+  // Off/On => Blink, Blink => Off/On
+  fsm_button_led.add_transition(&state_led_off, &state_led_pulse, BUTTON_PULSE, NULL);  
+  fsm_button_led.add_transition(&state_led_on, &state_led_pulse, BUTTON_PULSE, NULL);  
+  fsm_button_led.add_transition(&state_led_pulse, &state_led_off, BUTTON_OFF, NULL);  
+  fsm_button_led.add_transition(&state_led_pulse, &state_led_on, BUTTON_ON, NULL);  
+
+  fsm_button_led.add_transition(&state_led_off, &state_led_pulse_on, BUTTON_PULSE_ON, NULL);
+  fsm_button_led.add_timed_transition(&state_led_pulse_on, &state_led_on, 3000, NULL);
+  
+  fsm_button_led.add_transition(&state_led_on, &state_led_pulse_off, BUTTON_PULSE_OFF, NULL);  
+  fsm_button_led.add_timed_transition(&state_led_pulse_off, &state_led_off, 3000, NULL);
 
   // Create the bridge from the event system to the button LED fsm
   struct FsmEventDriver button_LED_listener = FsmEventDriver(&fsm_button_led);
