@@ -11,6 +11,8 @@ void error_listener(void *data){
 }
 
 
+void error_LED(void *data); // Foward declear, the body is in ButtonLED
+
 struct ErrorEventListener : public EventTask
 {
   ErrorEventListener();
@@ -19,7 +21,7 @@ struct ErrorEventListener : public EventTask
   
   void execute(Event *evt)
   {
-    error_listener((byte) evt->extra);
+    error_LED(evt->extra);
   }
 };
 ErrorEventListener::ErrorEventListener(){}
