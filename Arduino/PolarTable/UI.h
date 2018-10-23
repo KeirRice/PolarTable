@@ -5,8 +5,8 @@
 
 #ifndef ENABLE_SERIAL_UI
 
-ui_setup(){}
-ui_loop(){}
+void ui_setup(){}
+void ui_loop(){}
 
 #else
 

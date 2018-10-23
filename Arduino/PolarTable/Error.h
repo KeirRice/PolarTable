@@ -11,7 +11,7 @@ void error_listener(void *data){
 }
 
 
-void error_LED(void *data); // Foward declear, the body is in ButtonLED
+void error_LED(int code); // Foward declare, the body is in ButtonLED
 
 struct ErrorEventListener : public EventTask
 {
@@ -21,7 +21,7 @@ struct ErrorEventListener : public EventTask
   
   void execute(Event *evt)
   {
-    error_LED(evt->extra);
+    error_LED(*(int*)evt->extra);
   }
 };
 ErrorEventListener::ErrorEventListener(){}
@@ -31,4 +31,3 @@ void error_setup(){
   // digitalWrite(PIN_ERROR_LED, LOW);  
   // evtManager.subscribe(Subscriber(ERROR_EVENT, error_listener));  
 }
-

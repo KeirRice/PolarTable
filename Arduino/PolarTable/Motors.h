@@ -131,6 +131,34 @@ void motor_radius_event(void *data){
   }
 }
 
+struct MotorEventDriver : public EventTask
+{
+  EventID motor;
+  MotorEventDriver();
+  MotorEventDriver(EventID motor) : motor(motor) {}
+
+  using EventTask::execute;
+  
+  void execute(Event *evt)
+  {
+    if (motor == MOTOR_TARGET_THETA){
+      if(!motor_set_target_theta(*(long*)evt->extra)){
+        DEBUG_PRINTLN("Motor wasn't ready for data.");
+        evtManager.trigger(ERROR_EVENT, ERROR_MOTOR);
+      }
+    }
+    else if (motor == MOTOR_TARGET_RADIUS){
+      if(!motor_set_target_radius(*(long*)evt->extra)){
+        DEBUG_PRINTLN("Motor wasn't ready for data.");
+        evtManager.trigger(ERROR_EVENT, ERROR_MOTOR);
+      }
+    }
+    else {
+      DEBUG_PRINTLN("Failed to set motor data.");
+    }
+  }
+};
+
 /*************************************************************
   Functions
 *************************************************************/
@@ -268,8 +296,10 @@ void motors_sleep_exit(){
 *************************************************************/
 
 void motor_setup() {
-  evtManager.subscribe(Subscriber(MOTOR_TARGET_THETA, motor_theta_event));
-  evtManager.subscribe(Subscriber(MOTOR_TARGET_RADIUS, motor_radius_event));
+  struct MotorEventDriver theta_event_listner = MotorEventDriver(MOTOR_TARGET_THETA);
+  evtManager.subscribe(Subscriber(MOTOR_TARGET_THETA, &theta_event_listner));
+  struct MotorEventDriver radius_event_listner = MotorEventDriver(MOTOR_TARGET_RADIUS);
+  evtManager.subscribe(Subscriber(MOTOR_TARGET_RADIUS, &radius_event_listner));
   
   build_transitions();
   

@@ -107,6 +107,22 @@ void lighting_color_listener(void* data){
   fsm_lighting.trigger(LED_BLEND);
 }
 
+struct LightingEventDriver : public FsmEventDriver
+{
+  Fsm *fsm;
+  LightingEventDriver();
+  LightingEventDriver(Fsm *statemachine) : fsm(statemachine) {}
+
+  using EventTask::execute;
+  
+  void execute(Event *evt)
+  {
+    incomingColorTarget = (*(CHSV*)evt->extra);
+    fsm->trigger(LED_BLEND);
+  }
+};
+
+
 /*************************************************************
   Setup and main loop
 *************************************************************/
@@ -123,8 +139,11 @@ void lighting_setup() {
   fsm_button_led.add_transition(&state_lighting_shutdown, &state_lighting_off, LED_OFF, NULL);
   fsm_button_led.add_transition(&state_lighting_off, &state_lighting_on, LED_ON, NULL);
 
-  evtManager.subscribe(Subscriber(LIGHTING_STATE, lighting_listener));
-  evtManager.subscribe(Subscriber(LIGHTING_COLOR, lighting_color_listener));
+  // Create the bridge from the event system to the system fsm.
+  struct FsmEventDriver lighting_event_listner = FsmEventDriver(&fsm_system);
+  evtManager.subscribe(Subscriber(LIGHTING_STATE, &lighting_event_listner));
+  struct LightingEventDriver lighting_color_event_listner = LightingEventDriver(&fsm_system);
+  evtManager.subscribe(Subscriber(LIGHTING_COLOR, &lighting_color_event_listner));
 }
 
 void lighting_loop() {

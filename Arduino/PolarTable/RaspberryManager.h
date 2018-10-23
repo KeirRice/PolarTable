@@ -99,9 +99,12 @@ void raspberry_manager_setup() {
   fsm_raspberry.add_transition(&state_raspberry_on, &state_raspberry_restart, RASPBERRY_RESTART, NULL);
   fsm_raspberry.add_transition(&state_raspberry_shutdown, &state_raspberry_restart, RASPBERRY_RESTART, NULL);
   fsm_raspberry.add_transition(&state_raspberry_off, &state_raspberry_restart, RASPBERRY_RESTART, NULL);
+
   
-  evtManager.subscribe(Subscriber(RASPBERRY_EVENT, raspberry_listener));
-  evtManager.subscribe(Subscriber(RASPBERRY_HEARTBEAT, raspberry_heartbeat));
+  // Create the bridge from the event system to the raspberry fsm.
+  struct FsmEventDriver raspberry_event_listner = FsmEventDriver(&fsm_raspberry);
+  evtManager.subscribe(Subscriber(RASPBERRY_EVENT, &raspberry_event_listner ));
+  // evtManager.subscribe(Subscriber(RASPBERRY_HEARTBEAT, raspberry_heartbeat));
 }
 
 void raspberry_manager_loop() {

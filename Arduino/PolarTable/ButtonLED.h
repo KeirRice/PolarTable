@@ -105,8 +105,7 @@ void fade_out()
   Event Dispatch
 *************************************************************/
 
-void error_LED(void *data){
-  int code = (int)data;
+void error_LED(int code){
   while (true) 
   {
     for(unsigned int i = 0; i < (sizeof(code) * 8); ++i)
