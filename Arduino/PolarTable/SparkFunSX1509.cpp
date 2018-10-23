@@ -27,6 +27,8 @@ Distributed as-is; no warranty is given.
 #include "SparkFunSX1509.h"
 #include "util/sx1509_registers.h"
 
+#define unsigned_constrain(amt,low,high) ((amt)>(high)?(high):(amt))
+
 SX1509::SX1509()
 {
 	_clkX = 0;
@@ -281,8 +283,7 @@ void SX1509::blink(byte pin, unsigned long tOn, unsigned long tOff, byte onInten
 
 void SX1509::breathe(byte pin, unsigned long tOn, unsigned long tOff, unsigned long rise, unsigned long fall, byte onInt, byte offInt, bool log)
 {
-	offInt = constrain(offInt, 0, 7);
-	
+  offInt = unsigned_constrain(offInt, 0, 7);
 	byte onReg = calculateLEDTRegister(tOn);
 	byte offReg = calculateLEDTRegister(tOff);
 	
@@ -509,7 +510,7 @@ void SX1509::debounceTime(byte time)
 			break;
 		}
 	}
-	configValue = constrain(configValue, 0, 7);
+	configValue = unsigned_constrain(configValue, 0, 7);
 	
 	debounceConfig(configValue);
 }
