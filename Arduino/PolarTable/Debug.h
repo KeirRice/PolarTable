@@ -53,12 +53,12 @@ void print_byte(byte code)
  * Turn A into a string literal without expanding macro definitions
  * (however, if invoked from a macro, macro arguments are expanded).
  */
-#define STRINGIZE_NX(A) #A
+#define STRINGISE_NX(A) #A
 
 /*
  * Turn A into a string literal after macro-expanding it.
  */
-#define STRINGIZE(A) STRINGIZE_NX(A)
+#define STRINGISE(A) STRINGISE_NX(A)
 
 #define DEBUG_PRINT(...) \
   do { \
@@ -81,7 +81,7 @@ void print_byte(byte code)
     if (DEBUG){ \
       Serial.print(F("At "));\
       Serial.print(__func__);\
-      Serial.println(F(" in " __FILE__ ": " STRINGIZE(__LINE__))); \
+      Serial.println(F(" in " __FILE__ ": " STRINGISE(__LINE__))); \
       Serial.flush(); \
     }\
   } while (0)

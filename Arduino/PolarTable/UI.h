@@ -17,6 +17,21 @@ void ui_loop(){}
   Setup
 *************************************************************/
 
+/*
+Greating
+
+RASP_LED_ON = 1;
+RASP_LED_OFF = 2;
+RASP_LED_COLOR = 3;
+
+RASP_THETA = 5;
+RASP_RADIUS = 6;
+
+RASP_SLEEP = 21;
+RASP_WAKE = 22;
+
+*/
+
 // serial_baud_rate -- connect to device at this baud rate, using druid
 #define serial_baud_rate      115200
 
@@ -83,7 +98,6 @@ namespace Main {
     MySUI.println(F("Super basic example... manage and track a click counter"));
     MySUI.print(F("The counter is currently at:"));
     MySUI.println(MyTracked.ClickCount);
-  
   }
   
   void doIncrementClicks() {
@@ -129,16 +143,14 @@ bool SetupSerialUI() {
   MySUI.setReadTerminator(serial_input_terminator);
 
   // Add variable state tracking
-  MySUI.trackState(
-    SUI_STR("ClickCount"),
-    &(MyTracked.ClickCount));
+  MySUI.trackState(SUI_STR("ClickCount"), &(MyTracked.ClickCount));
 
   // a few error messages we hopefully won't need
   SUI_FLASHSTRING CouldntCreateMenuErr = F("Could not create menu?");
   SUI_FLASHSTRING CouldntAddItemErr = F("Could not add item?");
 
   // get top level menu, to start adding items
-  SUI::Menu * topMenu = MySUI.topLevelMenu();
+  SUI::Menu *topMenu = MySUI.topLevelMenu();
   if (! topMenu ) {
     // well, that can't be good...
     MySUI.returnError(F("Very badness in sEriALui!1"));
@@ -146,18 +158,12 @@ bool SetupSerialUI() {
   }
 
   /* *** Main *** */
-  if ( ! topMenu->addCommand(
-         SUI_STR("details"),
-         Main::doDetails,
-         SUI_STR("Program deets"))) {
+  if ( ! topMenu->addCommand(SUI_STR("details"), Main::doDetails, SUI_STR("Program deets"))) {
     MySUI.returnError(CouldntAddItemErr);
     return false;
   }
 
-  if ( ! topMenu->addCommand(
-         SUI_STR("Increment Clicks"),
-         Main::doIncrementClicks,
-         SUI_STR("increment the click counter"))) {
+  if ( ! topMenu->addCommand(SUI_STR("Increment Clicks"), Main::doIncrementClicks, SUI_STR("increment the click counter"))) {
     MySUI.returnError(CouldntAddItemErr);
     return false;
   }

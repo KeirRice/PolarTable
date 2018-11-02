@@ -52,6 +52,16 @@ volatile unsigned char recieve_buffer_size = 0;
   Interrupts
 *************************************************************/
 
+void inject_test_data(const byte incomming, int incomming_size){
+  noInterrupts();
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    memcpy((void*) &recieve_buffer, (void*) &incomming, min(incomming_size, 32));
+  }
+  recieve_buffer_size = incomming_size;
+  interrupts();
+}
+
+
 // The controller calls us (the peripheral) and tells use what data it wants.
 // We save that into the recieve buffer and use it for generating data for the
 // next request to sendData
