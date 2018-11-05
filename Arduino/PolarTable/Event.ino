@@ -6,7 +6,7 @@
 *************************************************************/
 
 #include "Event.h"
-
+ 
 /**
    Event structure is the basic Event
    object that can be dispatched by the
@@ -71,7 +71,7 @@ void EventManager::trigger(Event *evt)
   {
     Subscriber *sub = _sub[i];
 
-    if (sub and sub->label == label)
+    if (sub and sub->label & label)
     {
       // Execute event
       (sub->task->execute)(evt);

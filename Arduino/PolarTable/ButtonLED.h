@@ -149,7 +149,7 @@ void button_led_setup()
 
   // Create the bridge from the event system to the button LED fsm
   struct FsmEventDriver button_LED_listener = FsmEventDriver(&fsm_button_led);
-  evtManager.subscribe(Subscriber(BUTTON_LED, &button_LED_listener));
+  evtManager.subscribe(Subscriber(BUTTON, &button_LED_listener));
 
   struct ErrorEventListener error_event_listener = ErrorEventListener();
   evtManager.subscribe(Subscriber(ERROR_LED_SIGNAL, &error_event_listener));

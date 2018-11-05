@@ -8,6 +8,7 @@ typedef unsigned char State2;
 
 #include "Pins.h"
 #include "ProjectEvents.h"
+
 #include "Helpers.h"
 
 #include "Event.h"
@@ -95,3 +96,5 @@ void loop()
   encoder_absolute_loop();
   motor_loop();
 }
+//void setup(){}
+//void loop(){}

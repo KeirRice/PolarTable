@@ -91,11 +91,11 @@ void process_recieve_data(char request, byte *recieve_data, byte recieve_data_si
       break;
       
     case RASP_LED_ON :
-      evtManager.trigger(LIGHTING_STATE, LED_ON);
+      evtManager.trigger(LIGHTING_TURN_ON);
       break;
       
     case RASP_LED_OFF :
-      evtManager.trigger(LIGHTING_STATE, LED_OFF);
+      evtManager.trigger(LIGHTING_TURN_OFF);
       break;
 
     case RASP_LED_COLOR :
@@ -103,7 +103,7 @@ void process_recieve_data(char request, byte *recieve_data, byte recieve_data_si
         DEBUG_PRINT("ledColorChanged ");
         char *leds[3];
         memcpy(&leds[0], &recieve_data[1], recieve_data_size - 1);
-        evtManager.trigger(LIGHTING_COLOR, leds);
+        evtManager.trigger(LIGHTING_BLEND, leds);
         break;
       }
 
@@ -124,7 +124,7 @@ void process_recieve_data(char request, byte *recieve_data, byte recieve_data_si
       }
 
     case RASP_SLEEP :
-      evtManager.trigger(SYSTEM_EVENT, SYSTEM_SLEEP);
+      evtManager.trigger(SYSTEM_SLEEP_ACTION);
       break;
 
     default :

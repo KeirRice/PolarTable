@@ -7,9 +7,8 @@
 #pragma once
 
 #include "Arduino.h"
-#include "ProjectEvents.h"
+#include "EventTypes.h"
 
-typedef byte EventID;
 #define INTERVAL_SLOT_COUNT 5
 #define SUBSCRIBER_SLOT_COUNT 10
 
@@ -89,7 +88,7 @@ class EventManager
     void subscribe(Subscriber sub);
     void trigger(Event *evt);
     void trigger(const EventID cLabel);
-    void trigger(const EventID cLabel, void *cExtra=NULL);
+    void trigger(const EventID cLabel, void *cExtra);
     void trigger(const EventID cLabel, const void *cExtra);
     void trigger(const EventID cLabel, const EventID cExtra);
     void triggerInterval(TimedTask *timed);

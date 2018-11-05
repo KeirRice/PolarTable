@@ -48,10 +48,6 @@ Fsm fsm_system(&state_system_on);
   Interface
 *************************************************************/
 
-void request_sleep() {
-  fsm_system.trigger(SYSTEM_SLEEP);
-}
-
 /*************************************************************
   Functions
 *************************************************************/
@@ -63,7 +59,7 @@ void system_waking_enter(){
 
 /* ON */
 void system_on_enter(){
-  evtManager.trigger(BUTTON_LED, BUTTON_PULSE_ON);
+  evtManager.trigger(BUTTON_PULSE_ON);
 }
 
 void system_on_state(){
@@ -75,14 +71,14 @@ void system_on_state(){
       just_woke = false;
     }
     else {
-      fsm_system.trigger(SYSTEM_SLEEP);
+      fsm_system.trigger(SYSTEM_SLEEP_ACTION);
     }
   }
 }
 
 /* SHUTDOWN */
 void system_shutdown_enter(){
-  evtManager.trigger(BUTTON_LED, BUTTON_PULSE);
+  evtManager.trigger(BUTTON_PULSE);
   // TODO: Send shutdown command to PI
   delay(3000);
 }
@@ -92,7 +88,7 @@ void system_shutdown_state(){
 
 /* OFF */
 void system_off_enter(){
-  evtManager.trigger(BUTTON_LED, BUTTON_OFF);
+  evtManager.trigger(BUTTON_OFF);
   delay(5);
 }
 
@@ -100,7 +96,7 @@ void system_off_state(){
   DEBUG_PRINTLN("Sleeping.");
   sleepNow();
   DEBUG_PRINTLN("Waking.");
-  fsm_system.trigger(SYSTEM_WAKE);
+  fsm_system.trigger(SYSTEM_WAKE_ACTION);
 }
 
 /*************************************************************
@@ -116,15 +112,15 @@ void button_setup()
   bounce.interval(debounce_time);
   bounce.attach(PIN_WAKE_SWITCH);
 
-  fsm_system.add_transition(&state_system_on, &state_system_shutdown, SYSTEM_SLEEP, NULL);  
+  fsm_system.add_transition(&state_system_on, &state_system_shutdown, SYSTEM_SLEEP_ACTION, NULL);  
   fsm_system.add_timed_transition(&state_system_shutdown, &state_system_off, 3000, NULL);
   
-  fsm_system.add_transition(&state_system_off, &state_system_wake, SYSTEM_WAKE, NULL);
+  fsm_system.add_transition(&state_system_off, &state_system_wake, SYSTEM_WAKE_ACTION, NULL);
   fsm_system.add_timed_transition(&state_system_wake, &state_system_on, 100, NULL);
 
   // Create the bridge from the event system to the system fsm.
   struct FsmEventDriver system_event_listner = FsmEventDriver(&fsm_system);
-  evtManager.subscribe(Subscriber(SYSTEM_EVENT, &system_event_listner));
+  evtManager.subscribe(Subscriber(SYSTEM, &system_event_listner));
 }
 
 void button_loop() {

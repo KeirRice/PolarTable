@@ -77,7 +77,7 @@ void lighting_shutdown_enter(){
 void lighting_shutdown_state(){
   if(blend()){
     // Done
-    fsm_lighting.trigger(LED_OFF);
+    fsm_lighting.trigger(LIGHTING_OFF);
   }
 }
 
@@ -90,21 +90,13 @@ void lighting_off_enter(){
 void lighting_blend_enter(){
   // Reset any current blending.
   blend(true);
+  colorTarget = incomingColorTarget;
 }
 void lighting_blend_state(){
   // Run the blend until we are done and transistion to on
   if(blend()){
-    fsm_lighting.trigger(LED_ON);
+    fsm_lighting.trigger(LIGHTING_ON);
   }
-}
-
-void lighting_listener(void* data){
-  fsm_lighting.trigger((int) data);
-}
-
-void lighting_color_listener(void* data){
-  incomingColorTarget = *(static_cast<CHSV *>(data));
-  fsm_lighting.trigger(LED_BLEND);
 }
 
 struct LightingEventDriver : public FsmEventDriver
@@ -117,8 +109,13 @@ struct LightingEventDriver : public FsmEventDriver
   
   void execute(Event *evt)
   {
-    incomingColorTarget = (*(CHSV*)evt->extra);
-    fsm->trigger(LED_BLEND);
+    if(evt->label == LIGHTING_BLEND){
+      incomingColorTarget = (*(CHSV*)evt->extra);
+      fsm->trigger(LIGHTING_BLEND);
+    }
+    else {
+      fsm->trigger(*(int*)evt->extra);
+    }
   }
 };
 
@@ -130,20 +127,19 @@ struct LightingEventDriver : public FsmEventDriver
 void lighting_setup() {
   FastLED.addLeds<P9813, PIN_LED_SDIN, PIN_LED_SCIN, RGB>(leds, NUM_LEDS);
 
-  fsm_button_led.add_transition(&state_lighting_on, &state_lighting_blend, LED_BLEND, NULL);
-  fsm_button_led.add_transition(&state_lighting_blend, &state_lighting_on, LED_ON, NULL);
+  fsm_button_led.add_transition(&state_lighting_on, &state_lighting_blend, LIGHTING_BLEND, NULL);
+  fsm_button_led.add_transition(&state_lighting_blend, &state_lighting_blend, LIGHTING_BLEND, NULL);
+  fsm_button_led.add_transition(&state_lighting_blend, &state_lighting_on, LIGHTING_ON, NULL);
   
-  fsm_button_led.add_transition(&state_lighting_on, &state_lighting_shutdown, LED_SHUTDOWN, NULL);
-  fsm_button_led.add_transition(&state_lighting_blend, &state_lighting_shutdown, LED_SHUTDOWN, NULL);
+  fsm_button_led.add_transition(&state_lighting_on, &state_lighting_shutdown, LIGHTING_TURN_OFF, NULL);
+  fsm_button_led.add_transition(&state_lighting_blend, &state_lighting_shutdown, LIGHTING_TURN_OFF, NULL);
   
-  fsm_button_led.add_transition(&state_lighting_shutdown, &state_lighting_off, LED_OFF, NULL);
-  fsm_button_led.add_transition(&state_lighting_off, &state_lighting_on, LED_ON, NULL);
+  fsm_button_led.add_transition(&state_lighting_shutdown, &state_lighting_off, LIGHTING_OFF, NULL);
+  fsm_button_led.add_transition(&state_lighting_off, &state_lighting_on, LIGHTING_TURN_ON, NULL);
 
   // Create the bridge from the event system to the system fsm.
-  struct FsmEventDriver lighting_event_listner = FsmEventDriver(&fsm_system);
-  evtManager.subscribe(Subscriber(LIGHTING_STATE, &lighting_event_listner));
   struct LightingEventDriver lighting_color_event_listner = LightingEventDriver(&fsm_system);
-  evtManager.subscribe(Subscriber(LIGHTING_COLOR, &lighting_color_event_listner));
+  evtManager.subscribe(Subscriber(LIGHTING, &lighting_color_event_listner));
 }
 
 void lighting_loop() {
