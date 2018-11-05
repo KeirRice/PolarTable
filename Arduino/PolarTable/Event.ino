@@ -67,14 +67,25 @@ void EventManager::subscribe(Subscriber sub)
 void EventManager::trigger(Event *evt)
 {
   const EventID label = evt->label;
+  int system_label = (label & (~system_id_mask));
+  
   for (unsigned int i = 0; i < _subCount; ++i)
   {
     Subscriber *sub = _sub[i];
-
-    if (sub and sub->label & label)
+    if (sub)
     {
-      // Execute event
-      (sub->task->execute)(evt);
+      if (sub->label == label)
+      {
+        // Execute event
+        (sub->task->execute)(evt);
+      }
+      else {
+        bool sub_wants_system_labels = (sub->label & (~system_id_mask)) == 0;
+        if(sub_wants_system_labels and system_label == label){
+          // Execute event
+          (sub->task->execute)(evt);            
+        }
+      }    
     }
   }
 }

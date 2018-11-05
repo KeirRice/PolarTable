@@ -9,6 +9,11 @@
 // StateID - 8
 // SystemID - 9 to 15
 
+int event_id_mask =   0b0000000001111111;
+int action_id_mask =  0b0000000010000000;
+int state_id_mask =   0b0000000100000000;
+int system_id_mask =  0b1111111000000000;
+
 // EventID
 //  * Group
 //  * Action
