@@ -3,15 +3,21 @@
 *************************************************************/
 #pragma once
 
-void error_listener(void *data){
-  UNUSED(data);
-  // digitalWrite(PIN_ERROR_LED, HIGH);
 
-  // TODO: Pulse the switch LED as well (If we can)
+void error_LED(int code){
+  while (true) 
+  {
+    for(unsigned int i = 0; i < (sizeof(code) * 8); ++i)
+    {
+      DEBUG_PRINT_VAR(i, code);
+      digitalWrite(PIN_ERROR_LED, HIGH);
+      delay((code & (1 << i)) ? 1000 : 500);
+      digitalWrite(PIN_ERROR_LED, LOW);
+      delay(500);
+    }
+    delay(3000);
+  }
 }
-
-
-void error_LED(int code); // Foward declare, the body is in ButtonLED
 
 struct ErrorEventListener : public EventTask
 {
@@ -27,7 +33,6 @@ struct ErrorEventListener : public EventTask
 ErrorEventListener::ErrorEventListener(){}
 
 void error_setup(){
-  // pinMode(PIN_ERROR_LED, OUTPUT);
-  // digitalWrite(PIN_ERROR_LED, LOW);  
-  // evtManager.subscribe(Subscriber(ERROR_EVENT, error_listener));  
+  ErrorEventListener error_event_listner = ErrorEventListener();
+  evtManager.subscribe(Subscriber(ERROR_EVENT, &error_event_listner));
 }

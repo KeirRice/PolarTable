@@ -100,25 +100,6 @@ void fade_out()
 }
 
 
-
-/*************************************************************
-  Event Dispatch
-*************************************************************/
-
-void error_LED(int code){
-  while (true) 
-  {
-    for(unsigned int i = 0; i < (sizeof(code) * 8); ++i)
-    {
-      DEBUG_PRINT_VAR(i, code);
-      digitalWrite(ARDUINO_D13, HIGH);
-      delay((code & (1 << i)) ? 1000 : 500);
-      digitalWrite(ARDUINO_D13, LOW);
-      delay(500);
-    }
-    delay(3000);
-  }
-}
 /*************************************************************
   Setup and main loop.
 *************************************************************/
