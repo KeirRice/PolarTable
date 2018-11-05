@@ -12,8 +12,7 @@ ActionID SLEEP(event_id_counter++);
 ActionID WAKE(event_id_counter++);
 ActionID PULSE(event_id_counter++);
 ActionID STOP(event_id_counter++);
-ActionID SETPOSITION(event_id_counter++);
-ActionID SETDIRECTION(event_id_counter++);
+ActionID MOVE(event_id_counter++);
 ActionID SETSTATE(event_id_counter++);
 ActionID SETCOLOR(event_id_counter++);
 ActionID BLEND(event_id_counter++);
@@ -36,8 +35,10 @@ StateID ON(event_id_counter++);
 StateID ASLEEP(event_id_counter++);
 StateID AWAKE(event_id_counter++);
 StateID PULSING(event_id_counter++);
-StateID STOPPED(event_id_counter++);
 StateID BLENDING(event_id_counter++);
+StateID STOPPED(event_id_counter++);
+StateID MOVING(event_id_counter++);
+StateID READY(event_id_counter++);
 
 
 /*************************************************************
@@ -55,17 +56,18 @@ static const EventID BUTTON_PULSE = BUTTON | PULSE;
 static const EventID BUTTON_PULSE_ON = BUTTON | PULSE_ON;
 static const EventID BUTTON_PULSE_OFF = BUTTON | PULSE_OFF;
 
+static const EventID MOTOR_STOP = MOVEMENT | STOP;
+static const EventID MOTOR_STOPPED = MOVEMENT | STOPPED;
+static const EventID MOTOR_MOVE = MOVEMENT | MOVE;
+static const EventID MOTOR_READY = MOVEMENT | READY;
+
 static const EventID MOTOR_SET_THETA_POS_REQUEST = SystemID(30); // action
 static const EventID MOTOR_SET_RADIUS_POS_REQUEST = SystemID(31); // action
 static const EventID MOTOR_SET_THETA_DIR_REQUEST = SystemID(32); // action
 static const EventID MOTOR_SET_RADIUS_DIR_REQUEST = SystemID(33); // action
 static const EventID MOTOR_SET_SETTINGS_REQUEST = SystemID(34); // action
-
-static const EventID MOTOR_NEW_POSITION = SystemID(35); // action
-static const EventID MOTOR_STOP = SystemID(36); // state/action
 static const EventID MOTOR_TARGET_THETA = SystemID(37); // action
 static const EventID MOTOR_TARGET_RADIUS = SystemID(38); // action
-static const EventID MOTOR_READY_FOR_DATA = SystemID(39); // state
 
 
 // Lighting Actions
@@ -89,7 +91,7 @@ static const EventID ERROR_LED_SIGNAL = SystemID(127); // event group
 static const EventID ERROR_EVENT = SystemID(128);
 static const EventID ERROR_SERIAL = SystemID(129);
 static const EventID ERROR_SX1509 = SystemID(130);
-static const EventID ERROR_MOTOR = SystemID(131);
+static const EventID ERROR_MOTOR = ERROR | MOVEMENT;
 static const EventID ERROR_RASPBERRY = SystemID(132);
 static const EventID ERROR_EVENT_SYSTEM = SystemID(133);
 static const EventID ERROR_REL_DIRECTION = ERROR | REL_DIRECTION;

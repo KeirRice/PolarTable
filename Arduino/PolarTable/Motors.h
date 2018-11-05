@@ -15,6 +15,7 @@ void motor_loop() {}
 #include <Fsm.h>
 #include "Event.h"
 #include "ProjectEvents.h"
+#include "MotorsSettings.h"
 
 extern EventManager evtManager;
 
@@ -35,26 +36,12 @@ AccelStepper *steppers[2] = {
 static const int THETA = 0;
 static const int RADIUS = 1;
 
-// static const char sleepXMask = 1 << PIN_MOTOR_SLEEPX;
-// static const char enXMask = 1 << PIN_MOTOR_ENABLEX;
-// static const char sleepYMask = 1 << PIN_MOTOR_SLEEPY;
-// static const char enYMask = 1 << PIN_MOTOR_ENABLEY;
-// static const char yMSMask = B11 << PIN_MOTOR_YMS1; // 3 == b11
-// static const char xMSMask = B11 << PIN_MOTOR_XMS1; // 3 == b11
-
-static const byte FULL_STEP = B00;
-static const byte HALF_STEP = B10;
-static const byte QUARTER_STEP = B01;
-static const byte EIGHTH_STEP = B11;
-
-unsigned char motor_settings = 0;
-
 /*************************************************************
   Steps
 *************************************************************/
 
 struct Steps {
-  // absolute
+  // Absolute
   MotorPosition (*steps_target)[2];
   // long steps_previous[2] = {0, 0};
   boolean theta_ready = true;
@@ -138,62 +125,41 @@ struct MotorEventDriver : public EventTask
   MotorEventDriver(EventID motor) : motor(motor) {}
 
   using EventTask::execute;
+ 
+  void execute(Event *evt);
+};
+
+struct MotorThetaEventDriver : public MotorEventDriver
+{
+  MotorThetaEventDriver();
+  MotorThetaEventDriver(EventID motor) : MotorEventDriver(motor) {}
+
+  using MotorEventDriver::execute;
   
   void execute(Event *evt)
   {
-    if (motor == MOTOR_TARGET_THETA){
-      if(!motor_set_target_theta(*(long*)evt->extra)){
-        DEBUG_PRINTLN("Motor wasn't ready for data.");
-        evtManager.trigger(ERROR_EVENT, ERROR_MOTOR);
-      }
-    }
-    else if (motor == MOTOR_TARGET_RADIUS){
-      if(!motor_set_target_radius(*(long*)evt->extra)){
-        DEBUG_PRINTLN("Motor wasn't ready for data.");
-        evtManager.trigger(ERROR_EVENT, ERROR_MOTOR);
-      }
-    }
-    else {
-      DEBUG_PRINTLN("Failed to set motor data.");
+    if(!motor_set_target_theta(*(long*)evt->extra)){
+      DEBUG_PRINTLN("Motor wasn't ready for data.");
+      evtManager.trigger(ERROR_MOTOR);
     }
   }
 };
 
-/*************************************************************
-  Functions
-*************************************************************/
-
-void send_state() {
-  // turn off the output so the pins don't light up
-  // while you're shifting bits:
-  digitalWrite(PIN_SHIFT_LATCH, LOW);
-
-  // TODO: If we need to go faster we could use the SPI hardware...
-  // shift the bits out:
-  shiftOut(PIN_SHIFT_DATA, PIN_SHIFT_CLOCK, MSBFIRST, motor_settings);
-
-  // turn on the output so the LEDs can light up:
-  digitalWrite(PIN_SHIFT_LATCH, HIGH);
-}
-
-void motor_sleep(boolean do_sleep)
+struct MotorRadiusEventDriver : public MotorEventDriver
 {
-  // SLEEP active on low
-  bitWrite(motor_settings, PIN_MOTOR_SLEEPX, do_sleep ? 0 : 1);
-  bitWrite(motor_settings, PIN_MOTOR_SLEEPY, do_sleep ? 0 : 1);
-  
-  send_state();
-}
+  MotorRadiusEventDriver();
+  MotorRadiusEventDriver(EventID motor) : MotorEventDriver(motor) {}
 
-void motor_enable(boolean enable)
-{
-  // ENABLE active on low
-  bitWrite(motor_settings, PIN_MOTOR_ENABLEX, enable ? 0 : 1);
-  bitWrite(motor_settings, PIN_MOTOR_ENABLEY, enable ? 0 : 1);
+  using MotorEventDriver::execute;
   
-  send_state();
-}
-
+  void execute(Event *evt)
+  {
+    if(!motor_set_target_radius(*(long*)evt->extra)){
+      DEBUG_PRINTLN("Motor wasn't ready for data.");
+      evtManager.trigger(ERROR_MOTOR);
+    }
+  }
+};
 /*************************************************************
   State
 *************************************************************/
@@ -217,11 +183,11 @@ State state_motors_sleep(&motors_sleep_enter, NULL, &motors_sleep_exit);
 Fsm fsm_motors(&state_motors_wake);
 
 void build_transitions(){
-  // Short timmed event to enable the wake command to propergate
+  // Short timmed event to enable the wake command to propagate
   fsm_motors.add_timed_transition(&state_motors_wake, &state_motors_active, 5, NULL);
 
   // Active stays active if there are new positions.
-  fsm_motors.add_transition(&state_motors_active, &state_motors_active, MOTOR_NEW_POSITION, NULL);
+  fsm_motors.add_transition(&state_motors_active, &state_motors_active, MOTOR_MOVE, NULL);
   
   // Stop the motor
   fsm_motors.add_transition(&state_motors_active, &state_motors_stop, MOTOR_STOP, NULL);
@@ -229,14 +195,13 @@ void build_transitions(){
   fsm_motors.add_timed_transition(&state_motors_idle, &state_motors_sleep, 10000, NULL);
   
   // New position lets go
-  fsm_motors.add_transition(&state_motors_stop, &state_motors_wake, MOTOR_NEW_POSITION, NULL);
-  fsm_motors.add_transition(&state_motors_idle, &state_motors_wake, MOTOR_NEW_POSITION, NULL);
-  fsm_motors.add_transition(&state_motors_sleep, &state_motors_wake, MOTOR_NEW_POSITION, NULL);
+  fsm_motors.add_transition(&state_motors_stop, &state_motors_wake, MOTOR_MOVE, NULL);
+  fsm_motors.add_transition(&state_motors_idle, &state_motors_wake, MOTOR_MOVE, NULL);
+  fsm_motors.add_transition(&state_motors_sleep, &state_motors_wake, MOTOR_MOVE, NULL);
 }
 
 void motors_wake_enter(){
-  motor_sleep(false);
-  motor_enable(true);
+  motor_wake_and_enable();
 }
 
 void motors_active_enter(){
@@ -245,7 +210,7 @@ void motors_active_enter(){
     // If we have a new position lets move to it.
     stepper.moveTo((long*) motor_steps.get_steps());
     
-    evtManager.trigger(MOTOR_READY_FOR_DATA, (void*) NULL);
+    evtManager.trigger(MOTOR_READY, (void*) NULL);
     
     stepper.run();
   }
@@ -260,7 +225,7 @@ void motors_active_state(){
   {    
     if(motor_steps.ready_to_read()){
       // A new position has been set while we were moving.
-      fsm_motors.trigger(MOTOR_NEW_POSITION);        
+      fsm_motors.trigger(MOTOR_MOVE);        
     }
     else {
       // We are where we need to be, we can stop now.
@@ -295,10 +260,10 @@ void motors_sleep_exit(){
   Setup and Main loop
 *************************************************************/
 
-void motor_setup() {
-  struct MotorEventDriver theta_event_listner = MotorEventDriver(MOTOR_TARGET_THETA);
+void motor_setup() {  
+  struct MotorEventDriver theta_event_listner = MotorThetaEventDriver(MOTOR_TARGET_THETA);
   evtManager.subscribe(Subscriber(MOTOR_TARGET_THETA, &theta_event_listner));
-  struct MotorEventDriver radius_event_listner = MotorEventDriver(MOTOR_TARGET_RADIUS);
+  struct MotorEventDriver radius_event_listner = MotorRadiusEventDriver(MOTOR_TARGET_RADIUS);
   evtManager.subscribe(Subscriber(MOTOR_TARGET_RADIUS, &radius_event_listner));
   
   build_transitions();
@@ -314,23 +279,7 @@ void motor_setup() {
   stepper.addStepper(theta_stepper);
   stepper.addStepper(radius_stepper);
 
-  /* We use a shift register for the motor settings. */
-  // Set pins to output because they are addressed in the main loop
-  pinMode(PIN_SHIFT_LATCH, OUTPUT);
-  pinMode(PIN_SHIFT_DATA, OUTPUT);
-  pinMode(PIN_SHIFT_CLOCK, OUTPUT);
-
-  // Full steps
-  bitsWrite(motor_settings, PIN_MOTOR_XMS1, FULL_STEP, 2);
-  bitsWrite(motor_settings, PIN_MOTOR_YMS1, FULL_STEP, 2);
-
-  // Enable (Sleep is active low)
-  bitWrite(motor_settings, PIN_MOTOR_ENABLEX, 1);
-  bitWrite(motor_settings, PIN_MOTOR_ENABLEY, 1);
-
-  // Turn off sleep (Sleep is active low)
-  bitWrite(motor_settings, PIN_MOTOR_SLEEPX, 1);
-  bitWrite(motor_settings, PIN_MOTOR_SLEEPY, 1);
+  motor_settings_setup();
 }
 
 void motor_loop()
