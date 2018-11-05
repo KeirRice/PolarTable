@@ -25,12 +25,16 @@ void raspberry_on_state();
 void raspberry_shutdown_enter();
 void raspberry_shutdown_exit();
 void raspberry_startup_enter();
+void raspberry_heartbeat_enter();
 
-State state_raspberry_on(&raspberry_heartbeat, &raspberry_on_state, NULL);
-State state_raspberry_shutdown(&raspberry_shutdown_enter, NULL, &raspberry_shutdown_exit);
+State state_raspberry_on(NULL, &raspberry_on_state, NULL);
 State state_raspberry_off(NULL, NULL, NULL);
+
 State state_raspberry_startup(&raspberry_startup_enter, NULL, NULL);
+State state_raspberry_shutdown(&raspberry_shutdown_enter, NULL, &raspberry_shutdown_exit);
 State state_raspberry_restart(&raspberry_shutdown_enter, NULL, &raspberry_shutdown_exit);
+
+State state_raspberry_heartbeat(&raspberry_heartbeat_enter, NULL, NULL);
 
 Fsm fsm_raspberry(&state_raspberry_on);
 
@@ -59,6 +63,11 @@ void raspberry_shutdown_exit(){
   set_raspberry_power(false);
 }
 
+void raspberry_heartbeat_enter(){
+  raspberry_heartbeat();
+  evtManager.trigger(RASPBERRY_ON);
+}
+
 /*************************************************************
   Heartbeat
 *************************************************************/
@@ -71,10 +80,7 @@ void raspberry_heartbeat(){
 
 void raspberry_on_state(){
   if(millis() > heartbeat_next_check){
-    evtManager.trigger(RASPBERRY_EVENT, RASPBERRY_RESTART);
-    
-    DEBUG_PRINTLN("Raspberry needed a restart.");
-    evtManager.trigger(ERROR_EVENT, ERROR_RASPBERRY);
+    evtManager.trigger(RASPBERRY_RESTART);
   }
 }
 
@@ -91,6 +97,10 @@ void raspberry_manager_setup() {
   fsm_raspberry.add_timed_transition(&state_raspberry_shutdown, &state_raspberry_off, 3000, NULL);
   fsm_raspberry.add_transition(&state_raspberry_off, &state_raspberry_startup, RASPBERRY_STARTUP, NULL);
   fsm_raspberry.add_timed_transition(&state_raspberry_startup, &state_raspberry_on, 3000, NULL);
+
+  // 
+  fsm_raspberry.add_transition(&state_raspberry_on, &state_raspberry_heartbeat, RASPBERRY_HEARTBEAT, NULL);
+  fsm_raspberry.add_transition(&state_raspberry_heartbeat, &state_raspberry_on, RASPBERRY_ON, NULL);
   
   // Restart state
   fsm_raspberry.add_timed_transition(&state_raspberry_restart, &state_raspberry_startup, 3000, NULL);
@@ -99,12 +109,10 @@ void raspberry_manager_setup() {
   fsm_raspberry.add_transition(&state_raspberry_on, &state_raspberry_restart, RASPBERRY_RESTART, NULL);
   fsm_raspberry.add_transition(&state_raspberry_shutdown, &state_raspberry_restart, RASPBERRY_RESTART, NULL);
   fsm_raspberry.add_transition(&state_raspberry_off, &state_raspberry_restart, RASPBERRY_RESTART, NULL);
-
   
   // Create the bridge from the event system to the raspberry fsm.
   struct FsmEventDriver raspberry_event_listner = FsmEventDriver(&fsm_raspberry);
-  evtManager.subscribe(Subscriber(RASPBERRY_EVENT, &raspberry_event_listner ));
-  // evtManager.subscribe(Subscriber(RASPBERRY_HEARTBEAT, raspberry_heartbeat));
+  evtManager.subscribe(Subscriber(RASPBERRY, &raspberry_event_listner ));
 }
 
 void raspberry_manager_loop() {

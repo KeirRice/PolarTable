@@ -8,6 +8,7 @@ static int event_id_counter = 0;
 
 ActionID SHUTDOWN(event_id_counter++);
 ActionID POWERON(event_id_counter++);
+ActionID RESTART(event_id_counter++);
 ActionID SLEEP(event_id_counter++);
 ActionID WAKE(event_id_counter++);
 ActionID PULSE(event_id_counter++);
@@ -77,14 +78,13 @@ static const EventID LIGHTING_BLEND = LIGHTING | BLEND;
 // Lighting States
 static const EventID LIGHTING_ON = LIGHTING | ON;
 static const EventID LIGHTING_OFF = LIGHTING | OFF;
+static const EventID LIGHTING_COLOR = LIGHTING | STATE;
 
-static const EventID LIGHTING_COLOR = LIGHTING | STATE; // ?
-
-static const EventID RASPBERRY_EVENT = SystemID(60); // event group
-static const EventID RASPBERRY_SHUTDOWN = SystemID(61); // action
-static const EventID RASPBERRY_RESTART = SystemID(62); // action
-static const EventID RASPBERRY_STARTUP = SystemID(63); // action
-static const EventID RASPBERRY_HEARTBEAT = SystemID(64); // action
+static const EventID RASPBERRY_STARTUP = PRASPBERRY | POWERON;
+static const EventID RASPBERRY_SHUTDOWN = RASPBERRY | SHUTDOWN;
+static const EventID RASPBERRY_RESTART = RASPBERRY | RESTART;
+static const EventID RASPBERRY_HEARTBEAT = RASPBERRY | PULSE;
+static const EventID RASPBERRY_ON = RASPBERRY | ON;
 
 
 static const EventID ERROR_LED_SIGNAL = SystemID(127); // event group

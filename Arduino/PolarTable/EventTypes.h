@@ -79,3 +79,4 @@ SystemID LIGHTING = SystemID(system_id_base << 4);
 SystemID BUTTON = SystemID(system_id_base << 5);
 SystemID COMMUNICATION = SystemID(system_id_base << 6);
 SystemID ERROR = SystemID(system_id_base << 7);
+SystemID RASPBERRY = SystemID(system_id_base << 8);
