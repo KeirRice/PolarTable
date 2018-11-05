@@ -18,17 +18,17 @@ static const PinID ARDUINO_D7 = 7;
 // PORTB
 static const PinID ARDUINO_D8 = 8;
 static const PinID ARDUINO_D9 = 9;
-static const PinID ARDUINO_D10 = 10;
-static const PinID ARDUINO_D11 = 11;
-static const PinID ARDUINO_D12 = 12;
-static const PinID ARDUINO_D13 = 13;
+static const PinID ARDUINO_D10 = 10; static const PinID ARDUINO_SPI_SELECT = ARDUINO_D10;
+static const PinID ARDUINO_D11 = 11; static const PinID ARDUINO_SPI_MOSI = ARDUINO_D11;
+static const PinID ARDUINO_D12 = 12; static const PinID ARDUINO_SPI_MISO = ARDUINO_D12;
+static const PinID ARDUINO_D13 = 13; static const PinID ARDUINO_SPI_CLOCK = ARDUINO_D13;
 // PORTC // Analog pins
 static const PinID ARDUINO_D14 = 14; static const PinID ARDUINO_A0 = A0;
 static const PinID ARDUINO_D15 = 15; static const PinID ARDUINO_A1 = A1;
 static const PinID ARDUINO_D16 = 16; static const PinID ARDUINO_A2 = A2;
 static const PinID ARDUINO_D17 = 17; static const PinID ARDUINO_A3 = A3;
-static const PinID ARDUINO_D18 = 18; static const PinID ARDUINO_A4 = A4;
-static const PinID ARDUINO_D19 = 19; static const PinID ARDUINO_A5 = A5;
+static const PinID ARDUINO_D18 = 18; static const PinID ARDUINO_A4 = A4; static const PinID ARDUINO_I2C_SDA = ARDUINO_A4;
+static const PinID ARDUINO_D19 = 19; static const PinID ARDUINO_A5 = A5; static const PinID ARDUINO_I2C_SCL = ARDUINO_A5;
 
 // SX1509
 // BANK A
@@ -70,7 +70,7 @@ static const PinID PIN_SX1509_INT = ARDUINO_D2; // Active low
 static const PinID PIN_INTERUPT = ARDUINO_D3;
 
 // Shift registor for motor config
-static const PinID PIN_SHIFT_DATA = ARDUINO_D14;  // (A0) Pin connected to Data in (DS) of 74HC595
+static const PinID PIN_SHIFT_DATA = ARDUINO_D14;   // (A0) Pin connected to Data in (DS) of 74HC595
 static const PinID PIN_SHIFT_CLOCK = ARDUINO_D15;  // (A1) Pin connected to clock pin (SH_CP) of 74HC595
 static const PinID PIN_SHIFT_LATCH = ARDUINO_D16;  // (A2) Pin connected to latch pin (ST_CP) of 74HC595
 
@@ -78,16 +78,16 @@ static const PinID PIN_SHIFT_LATCH = ARDUINO_D16;  // (A2) Pin connected to latc
 static const PinID PIN_PI_POWER = ARDUINO_A3;
 
 // I2C bus
-static const PinID PIN_I2C_SDA = ARDUINO_A4;
-static const PinID PIN_I2C_SCL = ARDUINO_A5;
+static const PinID PIN_I2C_SDA = ARDUINO_I2C_SDA;
+static const PinID PIN_I2C_SCL = ARDUINO_I2C_SCL;
 
 // Wake/Sleep switch
 static const PinID PIN_WAKE_SWITCH = ARDUINO_D10;
 static const PinID PIN_WAKE_LED = SX1509_B7;
 
 // LED controller
-static const PinID PIN_LED_SCIN = ARDUINO_D13;
-static const PinID PIN_LED_SDIN = ARDUINO_D11;
+static const PinID PIN_LED_SCIN = ARDUINO_SPI_CLOCK;
+static const PinID PIN_LED_SDIN = ARDUINO_SPI_MOSI;
 
 // Radio Module
 static const PinID PIN_RADIO_RXDATA = ARDUINO_D12;
@@ -126,4 +126,4 @@ static const PinID PIN_MOTOR_XMS1 = SHIFT_S6;
 static const PinID PIN_MOTOR_XMS2 = SHIFT_S7;
 
 // Error Light
-// static const PinID PIN_ERROR_LED = NULL; // LED_BUILTIN;
+static const PinID PIN_ERROR_LED = ARDUINO_D13;
