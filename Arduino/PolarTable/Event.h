@@ -41,7 +41,7 @@ struct EventListener : public EventTask
 {
   using EventTask::execute;
   
-  void execute(Event *evt){
+  void execute(Event /* *evt */){
     // fsm_system.trigger((int)*(evt->extra));
   }
 
@@ -111,4 +111,3 @@ class EventManager
     unsigned int _subCount;
     unsigned int _subPos;
 };
-
