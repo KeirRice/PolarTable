@@ -9,8 +9,8 @@
 
   The idea is that the interupts should spin really fast and just grab all
   data including bounces. The loop will be slower and the data should have
-  setteled a bit.  
-    
+  setteled a bit.
+
 *************************************************************/
 #pragma once
 
@@ -28,8 +28,8 @@ void encoder_relative_loop() {}
   State variables.
 *************************************************************/
 
-static const byte relative_lower_nibble_mask = B00001111; // Only keep the four lowest bits
-static const byte relative_port_read_mask = B00000011; // ARDUINO_D9, ARDUINO_D8
+static const byte relative_lower_nibble_mask = 0b00001111;  // Only keep the four lowest bits
+static const byte relative_port_read_mask = 0b00000011;     // ARDUINO_D9, ARDUINO_D8
 
 static volatile byte relative_encoder_state;
 static volatile signed char relative_direction_buffer = 1;
@@ -70,15 +70,15 @@ static const signed char relativeDirectionLookup[16] = {
   Functions
 *************************************************************/
 
-void SetHomePosition() {
+void set_home_position() {
   // Reset current steps to 0
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
     relative_steps_buffer = 0;
-      relative_steps = 0;
-  }  
+    relative_steps = 0;
+  }
 }
 
-long GetRelativePosition() {
+long get_relative_position() {
   return relative_steps;
 }
 
@@ -87,16 +87,16 @@ long GetRelativePosition() {
   Interupt
 *************************************************************/
 
-void relativeISR(){
+void relativeISR() {
   /*
-  PORTB maps to Arduino digital pins 8 to 13 The two high bits (6 & 7) map to the crystal pins and are not usable
-  DDRB - The Port B Data Direction Register - read/write
-  PORTB - The Port B Data Register - read/write
-  PINB - The Port B Input Pins Register - read only
+    PORTB maps to Arduino digital pins 8 to 13 The two high bits (6 & 7) map to the crystal pins and are not usable
+    DDRB - The Port B Data Direction Register - read/write
+    PORTB - The Port B Data Register - read/write
+    PINB - The Port B Input Pins Register - read only
 
-  PIN_E_SWITCH == ARDUINO_D8;
-  PIN_F_SWITCH == ARDUINO_D9;
-  */ 
+    PIN_E_SWITCH == ARDUINO_D8;
+    PIN_F_SWITCH == ARDUINO_D9;
+  */
 
   // Read directly from the PINB port
   // Mask off just pins D9 (bit 2) and D10 (bit 3)
@@ -106,7 +106,7 @@ void relativeISR(){
   // OR togeather the old and new data into their correct bit locations
   relative_encoder_state = (relative_encoder_state << 2) | (PINB & relative_port_read_mask);
   byte new_direction = relativeDirectionLookup[relative_encoder_state & relative_lower_nibble_mask];
-  if (new_direction == 2){
+  if (new_direction == 2) {
     // Don't do anything for errors
     relative_error_flag = true;
   }
@@ -119,7 +119,7 @@ void relativeISR(){
   Internal calls
 *************************************************************/
 
-void sync_interupt_counts(){
+void sync_interupt_counts() {
   // Sync the values across the gap
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
     relative_steps += relative_steps_buffer;
@@ -128,9 +128,9 @@ void sync_interupt_counts(){
   }
 }
 
-boolean encoder_error(boolean reset_flag=true){
-  // Sync the values across the gap
-  if(relative_error_flag){
+boolean encoder_error(boolean reset_flag = true) {
+  // Check for encoder errors
+  if (relative_error_flag) {
     relative_error_flag = !reset_flag;
     return true;
   }
@@ -146,7 +146,7 @@ void encoder_relative_setup()
   // Check the pins as relativeISR is hardcoded to them.
   assert(PIN_E_SWITCH == ARDUINO_D8);
   assert(PIN_F_SWITCH == ARDUINO_D9);
-  
+
   // Use io.pinMode(<pin>, <mode>) to set our relative encoder switches
   pinMode(PIN_E_SWITCH, INPUT_PULLUP);
   pinMode(PIN_F_SWITCH, INPUT_PULLUP);
@@ -159,8 +159,8 @@ void encoder_relative_setup()
 
 void encoder_relative_loop() {
   sync_interupt_counts();
-  if(encoder_error()){
-    evtManager.trigger(ERROR_EVENT, ERROR_RELATIVE_ENCODER);
+  if (encoder_error()) {
+    evtManager.trigger(ERROR_REL_DIRECTION);
   }
 }
 

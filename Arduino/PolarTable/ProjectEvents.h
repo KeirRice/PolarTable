@@ -24,6 +24,13 @@ ActionID TURN_OFF(event_id_counter++);
 ActionID PULSE_ON(event_id_counter++);
 ActionID PULSE_OFF(event_id_counter++);
 
+ActionID POSITION(event_id_counter++);
+ActionID REL_POSITION(event_id_counter++);
+ActionID ABS_POSITION(event_id_counter++);
+ActionID DIRECTION(event_id_counter++);
+ActionID REL_DIRECTION(event_id_counter++);
+ActionID ABS_DIRECTION(event_id_counter++);
+
 StateID OFF(event_id_counter++);
 StateID ON(event_id_counter++);
 StateID ASLEEP(event_id_counter++);
@@ -85,4 +92,4 @@ static const EventID ERROR_SX1509 = SystemID(130);
 static const EventID ERROR_MOTOR = SystemID(131);
 static const EventID ERROR_RASPBERRY = SystemID(132);
 static const EventID ERROR_EVENT_SYSTEM = SystemID(133);
-static const EventID ERROR_RELATIVE_ENCODER = SystemID(134);
+static const EventID ERROR_REL_DIRECTION = ERROR | REL_DIRECTION;
