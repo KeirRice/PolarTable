@@ -213,7 +213,7 @@ void raspberry_loop() {
   // Check if there is any data waiting for us in the recieve buffer
   // If we have some new data run it quickly through the state machine, set values and trigger events.
   if (recieve_buffer_size) {
-    raspberry_heartbeat();
+    evtManager.trigger(RASPBERRY_HEARTBEAT);
 
     byte recieve_data_size = 0;
     byte recieve_data[recieve_buffer_size];

@@ -14,7 +14,7 @@ typedef unsigned char State2;
 #include "Event.h"
 EventManager evtManager;
 
-#include "SX1509.h"
+#include "SparkFunSX1509.h"
 SX1509 io;
 #include <Fsm.h>
 
@@ -28,7 +28,7 @@ struct FsmEventDriver : public EventTask
   
   void execute(Event *evt)
   {
-    DEBUG_PRINT_VAR("FsmEventDriver ", *(EventID*)evt->extra);
+    // DEBUG_PRINT_VAR("FsmEventDriver ", *(EventID*)evt->extra);
     fsm->trigger(*(EventID*)evt->extra);
   }
 };

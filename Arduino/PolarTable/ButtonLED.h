@@ -14,7 +14,7 @@ void button_led_loop() {}
 #include "Event.h"
 #include "Error.h"
 #include "ProjectEvents.h"
-#include "SX1509.h"
+#include "SparkFunSX1509.h"
 
 extern SX1509 io;
 extern EventManager evtManager;

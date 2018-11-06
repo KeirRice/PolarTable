@@ -11,7 +11,7 @@ void encoder_absolute_loop() {}
 
 #else
 
-#include "SX1509.h"
+#include "SparkFunSX1509.h"
 #define REG_DATA_B 0x10 // From sx1509_register.h
 
 extern SX1509 io; // Create an SX1509 object to be used throughout

@@ -198,7 +198,7 @@ byte SX1509::digitalRead(byte pin)
 	return readPin(pin);
 }
 
-void SX1509::ledDriverInit(byte pin, byte freq /*= 1*/, bool log /*= false*/)
+void SX1509::ledDriverInit(byte pin, byte /*freq = 1*/, bool log /*= false*/)
 {
 	unsigned int tempWord;
 	byte tempByte;
@@ -738,8 +738,6 @@ unsigned int SX1509::readWord(byte registerAddress)
 //	- No return value.
 void SX1509::readBytes(byte firstRegisterAddress, byte * destination, byte length)
 {
-	byte readValue;
-
 	Wire.beginTransmission(deviceAddress);
 	Wire.write(firstRegisterAddress);
 	Wire.endTransmission();

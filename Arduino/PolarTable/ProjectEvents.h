@@ -3,55 +3,58 @@
 *************************************************************/
 #pragma once
 
-
 #include <Flash.h>
 #include "EventTypes.h"
 
-static int event_id_counter = 0;
+// BuildSystem uses one (high) bit per entry so these values can be ORed and masked.
+BuildSystem(SystemID, GLOBAL);
+BuildSystem(SystemID, SYSTEM);
+BuildSystem(SystemID, MOVEMENT);
+BuildSystem(SystemID, REL_MOVEMENT);
+BuildSystem(SystemID, ABS_MOVEMENT);
+BuildSystem(SystemID, MOTOR);
+BuildSystem(SystemID, MOTOR_THETA);
+BuildSystem(SystemID, MOTOR_RADIUS);
+BuildSystem(SystemID, LIGHTING);
+BuildSystem(SystemID, BUTTON);
+BuildSystem(SystemID, COMMUNICATION);
+BuildSystem(SystemID, ERROR);
+BuildSystem(SystemID, RASPBERRY);
 
-#if DEBUG == 1
-#define BuildAction(a) \
-  FLASH_STRING(prog_##a, #a); \
-  ActionID a(event_id_counter++, prog_##a); 
-#else
-#define BuildAction(a) a(event_id_counter++)
-#endif // DEBUG
+// BuildEvents are just sequencial ids, they will be unique, but don't do bit wise opperations on them.
+BuildEvent(ActionID, SHUTDOWN);
+BuildEvent(ActionID, POWERON);
+BuildEvent(ActionID, RESTART);
+BuildEvent(ActionID, SLEEP);
+BuildEvent(ActionID, WAKE);
+BuildEvent(ActionID, PULSE);
+BuildEvent(ActionID, STOP);
+BuildEvent(ActionID, MOVE);
+BuildEvent(ActionID, SETSTATE);
+BuildEvent(ActionID, SETCOLOR);
+BuildEvent(ActionID, BLEND);
+BuildEvent(ActionID, SEND);
+BuildEvent(ActionID, RECEIVE);
+BuildEvent(ActionID, TURN_ON);
+BuildEvent(ActionID, TURN_OFF);
+BuildEvent(ActionID, PULSE_ON);
+BuildEvent(ActionID, PULSE_OFF);
+BuildEvent(ActionID, POSITION);
+BuildEvent(ActionID, REL_POSITION);
+BuildEvent(ActionID, ABS_POSITION);
+BuildEvent(ActionID, DIRECTION);
+BuildEvent(ActionID, REL_DIRECTION);
+BuildEvent(ActionID, ABS_DIRECTION);
 
-
-
-BuildAction(SHUTDOWN);
-BuildAction(POWERON);
-BuildAction(RESTART);
-BuildAction(SLEEP);
-BuildAction(WAKE);
-BuildAction(PULSE);
-BuildAction(STOP);
-BuildAction(MOVE);
-BuildAction(SETSTATE);
-BuildAction(SETCOLOR);
-BuildAction(BLEND);
-BuildAction(SEND);
-BuildAction(RECEIVE);
-BuildAction(TURN_ON);
-BuildAction(TURN_OFF);
-BuildAction(PULSE_ON);
-BuildAction(PULSE_OFF);
-BuildAction(POSITION);
-BuildAction(REL_POSITION);
-BuildAction(ABS_POSITION);
-BuildAction(DIRECTION);
-BuildAction(REL_DIRECTION);
-BuildAction(ABS_DIRECTION);
-
-StateID OFF(event_id_counter++);
-StateID ON(event_id_counter++);
-StateID ASLEEP(event_id_counter++);
-StateID AWAKE(event_id_counter++);
-StateID PULSING(event_id_counter++);
-StateID BLENDING(event_id_counter++);
-StateID STOPPED(event_id_counter++);
-StateID MOVING(event_id_counter++);
-StateID READY(event_id_counter++);
+BuildEvent(StateID, OFF);
+BuildEvent(StateID, ON);
+BuildEvent(StateID, ASLEEP);
+BuildEvent(StateID, AWAKE);
+BuildEvent(StateID, PULSING);
+BuildEvent(StateID, BLENDING);
+BuildEvent(StateID, STOPPED);
+BuildEvent(StateID, MOVING);
+BuildEvent(StateID, READY);
 
 
 /*************************************************************
