@@ -86,6 +86,7 @@ void print_byte(byte code)
     }\
   } while (0)
 
+
 #define DEBUG_PRINT_VAR1(a) \
   do { \
     if (DEBUG){ \
@@ -119,5 +120,39 @@ void print_byte(byte code)
 
 #define GET_MACRO(_1, _2, _3, NAME, ...) NAME
 #define DEBUG_PRINT_VAR(...) GET_MACRO(__VA_ARGS__, DEBUG_PRINT_VAR3, DEBUG_PRINT_VAR2, DEBUG_PRINT_VAR1)(__VA_ARGS__)
+
+
+#define DEBUG_PRINT_EVENT_VAR1(a) \
+  do { \
+    if (DEBUG){ \
+      Serial.print(F(#a ":\t")); \
+      Serial.println((const char*) a); \
+      Serial.flush(); \
+    }\
+  } while (0)
+#define DEBUG_PRINT_EVENT_VAR2(a, b) \
+  do { \
+    if (DEBUG){ \
+      Serial.print(F(#a ":\t")); \
+      Serial.print((const char*) a); \
+      Serial.print(F("\t" #b ":\t")); \
+      Serial.println((const char*) b); \
+      Serial.flush(); \
+    }\
+  } while (0)
+#define DEBUG_PRINT_EVENT_VAR3(a, b, c) \
+  do { \
+    if (DEBUG){ \
+      Serial.print(F(#a ":\t")); \
+      Serial.print((const char*) a); \
+      Serial.print(F("\t" #b ":\t")); \
+      Serial.print((const char*) b); \
+      Serial.print(F("\t" #c ":\t")); \
+      Serial.println((const char*) c); \
+      Serial.flush(); \
+    }\
+  } while (0)
+
+#define DEBUG_PRINT_EVENT(...) GET_MACRO(__VA_ARGS__, DEBUG_PRINT_EVENT_VAR3, DEBUG_PRINT_EVENT_VAR2, DEBUG_PRINT_EVENT_VAR1)(__VA_ARGS__)
 
 #endif // _DEBUG_H

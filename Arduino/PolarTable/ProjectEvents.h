@@ -6,30 +6,36 @@
 
 static int event_id_counter = 0;
 
-ActionID SHUTDOWN(event_id_counter++);
-ActionID POWERON(event_id_counter++);
-ActionID RESTART(event_id_counter++);
-ActionID SLEEP(event_id_counter++);
-ActionID WAKE(event_id_counter++);
-ActionID PULSE(event_id_counter++);
-ActionID STOP(event_id_counter++);
-ActionID MOVE(event_id_counter++);
-ActionID SETSTATE(event_id_counter++);
-ActionID SETCOLOR(event_id_counter++);
-ActionID BLEND(event_id_counter++);
-ActionID SEND(event_id_counter++);
-ActionID RECEIVE(event_id_counter++);
-ActionID TURN_ON(event_id_counter++);
-ActionID TURN_OFF(event_id_counter++);
-ActionID PULSE_ON(event_id_counter++);
-ActionID PULSE_OFF(event_id_counter++);
+#if DEBUG == 1
+#define BuildAction(a) a(event_id_counter++, (char*) #a)
+#else
+#define BuildAction(a) a(event_id_counter++)
+#endif // DEBUG
 
-ActionID POSITION(event_id_counter++);
-ActionID REL_POSITION(event_id_counter++);
-ActionID ABS_POSITION(event_id_counter++);
-ActionID DIRECTION(event_id_counter++);
-ActionID REL_DIRECTION(event_id_counter++);
-ActionID ABS_DIRECTION(event_id_counter++);
+ActionID BuildAction(SHUTDOWN);
+ActionID BuildAction(POWERON);
+ActionID BuildAction(RESTART);
+ActionID BuildAction(SLEEP);
+ActionID BuildAction(WAKE);
+ActionID BuildAction(PULSE);
+ActionID BuildAction(STOP);
+ActionID BuildAction(MOVE);
+ActionID BuildAction(SETSTATE);
+ActionID BuildAction(SETCOLOR);
+ActionID BuildAction(BLEND);
+ActionID BuildAction(SEND);
+ActionID BuildAction(RECEIVE);
+ActionID BuildAction(TURN_ON);
+ActionID BuildAction(TURN_OFF);
+ActionID BuildAction(PULSE_ON);
+ActionID BuildAction(PULSE_OFF);
+
+ActionID BuildAction(POSITION);
+ActionID BuildAction(REL_POSITION);
+ActionID BuildAction(ABS_POSITION);
+ActionID BuildAction(DIRECTION);
+ActionID BuildAction(REL_DIRECTION);
+ActionID BuildAction(ABS_DIRECTION);
 
 StateID OFF(event_id_counter++);
 StateID ON(event_id_counter++);
@@ -61,14 +67,8 @@ static const EventID MOTOR_STOP = MOVEMENT | STOP;
 static const EventID MOTOR_STOPPED = MOVEMENT | STOPPED;
 static const EventID MOTOR_MOVE = MOVEMENT | MOVE;
 static const EventID MOTOR_READY = MOVEMENT | READY;
-
-static const EventID MOTOR_SET_THETA_POS_REQUEST = SystemID(30); // action
-static const EventID MOTOR_SET_RADIUS_POS_REQUEST = SystemID(31); // action
-static const EventID MOTOR_SET_THETA_DIR_REQUEST = SystemID(32); // action
-static const EventID MOTOR_SET_RADIUS_DIR_REQUEST = SystemID(33); // action
-static const EventID MOTOR_SET_SETTINGS_REQUEST = SystemID(34); // action
-static const EventID MOTOR_TARGET_THETA = SystemID(37); // action
-static const EventID MOTOR_TARGET_RADIUS = SystemID(38); // action
+static const EventID MOTOR_TARGET_THETA = MOTOR_THETA | POSITION;
+static const EventID MOTOR_TARGET_RADIUS = MOTOR_RADIUS | POSITION;
 
 
 // Lighting Actions
@@ -80,7 +80,7 @@ static const EventID LIGHTING_ON = LIGHTING | ON;
 static const EventID LIGHTING_OFF = LIGHTING | OFF;
 static const EventID LIGHTING_COLOR = LIGHTING | STATE;
 
-static const EventID RASPBERRY_STARTUP = PRASPBERRY | POWERON;
+static const EventID RASPBERRY_STARTUP = RASPBERRY | POWERON;
 static const EventID RASPBERRY_SHUTDOWN = RASPBERRY | SHUTDOWN;
 static const EventID RASPBERRY_RESTART = RASPBERRY | RESTART;
 static const EventID RASPBERRY_HEARTBEAT = RASPBERRY | PULSE;

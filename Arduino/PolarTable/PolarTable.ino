@@ -28,7 +28,7 @@ struct FsmEventDriver : public EventTask
   
   void execute(Event *evt)
   {
-    DEBUG_PRINT_VAR("FsmEventDriver ", *(EventID*)evt->extra);
+    DEBUG_PRINT_EVENT("FsmEventDriver ", *(EventID*)evt->extra);
     fsm->trigger(*(EventID*)evt->extra);
   }
 };

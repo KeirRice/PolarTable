@@ -25,9 +25,9 @@ static const char RASP_SEND_DATA = 1 << 7;
 // The rest are values to specify the data type.
 static const char RASP_NULL = 0;
 
-static const char RASP_LED_ON = 1;
-static const char RASP_LED_OFF = 2;
-static const char RASP_LED_COLOR = 3;
+static const char RASP_LIGHTING_ON = 1;
+static const char RASP_LIGHTING_OFF = 2;
+static const char RASP_LIGHTING_COLOR = 3;
 
 static const char RASP_THETA = 5;
 static const char RASP_RADIUS = 6;
@@ -52,7 +52,7 @@ volatile unsigned char recieve_buffer_size = 0;
   Interrupts
 *************************************************************/
 
-void inject_test_data(const byte incomming, int incomming_size){
+void inject_test_data(const byte incomming, int incomming_size) {
   noInterrupts();
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
     memcpy((void*) &recieve_buffer, (void*) &incomming, min(incomming_size, 32));
@@ -84,21 +84,21 @@ void sendData() {
 }
 
 
-void process_recieve_data(char request, byte *recieve_data, byte recieve_data_size){
+void process_recieve_data(char request, byte *recieve_data, byte recieve_data_size) {
   // We have new data to push out to the device.
   switch (request) {
     case RASP_STAYALIVE :
       break;
-      
-    case RASP_LED_ON :
+
+    case RASP_LIGHTING_ON :
       evtManager.trigger(LIGHTING_TURN_ON);
       break;
-      
-    case RASP_LED_OFF :
+
+    case RASP_LIGHTING_OFF :
       evtManager.trigger(LIGHTING_TURN_OFF);
       break;
 
-    case RASP_LED_COLOR :
+    case RASP_LIGHTING_COLOR :
       {
         DEBUG_PRINT("ledColorChanged ");
         char *leds[3];
@@ -132,53 +132,53 @@ void process_recieve_data(char request, byte *recieve_data, byte recieve_data_si
   }
 }
 
-void process_send_data(char request){
+void process_send_data(char request) {
   static byte send_data[32];
   static byte send_data_size = 0;
-  
+
   // If we have a request for data load up the send buffer.
   switch (request) {
     case RASP_NULL:
       break;
-      
-    case RASP_LED_ON :
+
+    case RASP_LIGHTING_ON :
       send_data_size = 1;
-      send_data[0] = 1;  // true
+      send_data[0] = get_lighting_state();
       break;
 
-    case RASP_LED_OFF :
+    case RASP_LIGHTING_OFF :
       send_data_size = 1;
-      send_data[0] = 1;  // true
+      send_data[0] = !get_lighting_state();
       break;
 
-    case RASP_LED_COLOR :
-    {
-      send_data_size = 3;
-      memcpy(&send_data[0], &get_color()[0], send_data_size);
-      break;
-    }
+    case RASP_LIGHTING_COLOR :
+      {
+        send_data_size = 3;
+        memcpy(&send_data[0], &get_color()[0], send_data_size);
+        break;
+      }
 
     case RASP_THETA :
-    {
-      wire_packed<long> theta_out = wire_pack(321657498);
-      memcpy(&send_data[0], &theta_out.uBytes[0], theta_out.size);
-      break;
-   }
+      {
+        wire_packed<long> theta_out = wire_pack(321657498);
+        memcpy(&send_data[0], &theta_out.uBytes[0], theta_out.size);
+        break;
+      }
 
     case RASP_RADIUS :
-    {
-      wire_packed<long> radius_out = wire_pack(2132498);
-      memcpy(&send_data[0], &radius_out.uBytes[0], radius_out.size);
-      break;
-    }
+      {
+        wire_packed<long> radius_out = wire_pack(2132498);
+        memcpy(&send_data[0], &radius_out.uBytes[0], radius_out.size);
+        break;
+      }
 
     case RASP_STAYALIVE :
-    {
-      // TODO: This is our chance to tell the Pi to shutdown.
-      send_data_size = 1;
-      send_data[0] = 1;  // true
-      break;
-    }
+      {
+        // TODO: This is our chance to tell the Pi to shutdown.
+        send_data_size = 1;
+        send_data[0] = 0;
+        break;
+      }
     default :
       break;
   }
@@ -209,12 +209,12 @@ void raspberry_setup() {
   Wire.onRequest(sendData);
 }
 
-void raspberry_loop() {  
+void raspberry_loop() {
   // Check if there is any data waiting for us in the recieve buffer
   // If we have some new data run it quickly through the state machine, set values and trigger events.
   if (recieve_buffer_size) {
     raspberry_heartbeat();
-    
+
     byte recieve_data_size = 0;
     byte recieve_data[recieve_buffer_size];
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -226,8 +226,8 @@ void raspberry_loop() {
     // Unpack the bits and find out what data we aew working with.
     bool is_send = recieve_data[0] & RASP_SEND_DATA;
     RASP_REQ = recieve_data[0] & (~RASP_SEND_DATA);
-  
-    if (!is_send){
+
+    if (!is_send) {
       process_recieve_data(RASP_REQ, recieve_data, recieve_data_size);
     }
   }

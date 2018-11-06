@@ -28,9 +28,15 @@ CHSV colorTarget = CHSV(128, 255, 255); // target color
 CHSV incomingColorTarget;
 CHSV colorCurrent;
 
+bool lighting_on = false;
+
 /*************************************************************
   Access
 *************************************************************/
+
+bool get_lighting_state(){
+  return lighting_on;
+}
 
 char* get_color() {
   return (char*)(&leds[0]);
@@ -56,18 +62,23 @@ bool blend(bool reset = false)
   State Machine
 *************************************************************/
 
+void lighting_on_enter();
 void lighting_shutdown_enter();
 void lighting_shutdown_state();
 void lighting_off_enter();
 void lighting_blend_enter();
 void lighting_blend_state();
 
-State state_lighting_on(NULL, NULL, NULL);
+State state_lighting_on(&lighting_on_enter, NULL, NULL);
 State state_lighting_blend(&lighting_blend_enter, &lighting_blend_state, NULL);
 State state_lighting_shutdown(&lighting_off_enter, &lighting_shutdown_state, NULL);
 State state_lighting_off(&lighting_off_enter, NULL, NULL);
 
 Fsm fsm_lighting(&state_lighting_on);
+
+void lighting_on_enter(){
+  lighting_on = true;
+}
 
 void lighting_shutdown_enter(){
   // Reset blending and set the target to black (AKA Off)
@@ -85,6 +96,7 @@ void lighting_off_enter(){
   // Set the lights to off.
   leds[0] = CRGB::Black;
   FastLED.show();
+  lighting_on = false;
 }
 
 void lighting_blend_enter(){
