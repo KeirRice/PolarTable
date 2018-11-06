@@ -4,6 +4,9 @@
 
 #pragma once
 
+
+#include <Flash.h>
+
 // EventID number - 0 to 6
 // ActionID - 7
 // StateID - 8
@@ -25,16 +28,16 @@ typedef struct EventID {
     unsigned char id[3];
 
 #if DEBUG == 1
-    const char* debug_name;
+    _FLASH_STRING *debug_name;
 #endif // DEBUG
 
   public:
     EventID();
     EventID(const long _event_id);
     EventID(const int _event_id);
-    EventID(const long _event_id, char* _debug_name);
-    EventID(const int _event_id, char* _debug_name);
-
+    EventID(const long _event_id, _FLASH_STRING &debug_name);
+    EventID(const int _event_id, _FLASH_STRING &debug_name);    
+  
     bool operator> (const EventID  &f) const {
       return (long) * this >  (long)f;
     };
@@ -87,15 +90,9 @@ typedef struct EventID {
     //      return (id[1] << 8) | (id[0] << 0);
     //    };
 
-#if DEBUG == 1
-    operator const char* () {
-      return debug_name;
-    };
-#endif // DEBUG
-
 } EventID;
 
-EventID::EventID(const long _event_id) {
+EventID::EventID(const long _event_id) : debug_name(NULL){
   char* pChar;
   pChar = (char*)&_event_id;
 
@@ -103,7 +100,7 @@ EventID::EventID(const long _event_id) {
   id[1] = pChar[1];
   id[2] = pChar[2];
 };
-EventID::EventID(const int _event_id) {
+EventID::EventID(const int _event_id) : debug_name(NULL){
   char* pChar;
   pChar = (char*)&_event_id;
 
@@ -113,15 +110,15 @@ EventID::EventID(const int _event_id) {
 };
 
 #if DEBUG == 1
-EventID::EventID(const long _event_id, char* _debug_name) : debug_name(_debug_name) {
+EventID::EventID(const long _event_id, _FLASH_STRING &_debug_name) : debug_name(&_debug_name) {
   char* pChar;
   pChar = (char*)&_event_id;
 
   id[0] = pChar[0];
   id[1] = pChar[1];
-  id[2] = pChar[2];
+  id[2] = 0;
 };
-EventID::EventID(const int _event_id, char* _debug_name) : debug_name(_debug_name) {
+EventID::EventID(const int _event_id, _FLASH_STRING &_debug_name) : debug_name(&_debug_name) {
   char* pChar;
   pChar = (char*)&_event_id;
 
@@ -163,17 +160,17 @@ EventType STATE(2 << 7);
 
 typedef struct ActionID : public EventID {
   ActionID(const long _event_id): EventID(_event_id | ACTION) {}
-  ActionID(const long _event_id, char* debug_name): EventID(_event_id | ACTION, debug_name) {}
+  ActionID(const long _event_id, _FLASH_STRING &debug_name): EventID(_event_id | ACTION, debug_name) {}  
 } ActionID;
 
 typedef struct StateID : public EventID {
   StateID(const long _event_id): EventID(_event_id | STATE) {}
-  StateID(const long _event_id, char* debug_name): EventID(_event_id | STATE, debug_name) {}
+  StateID(const long _event_id, _FLASH_STRING &debug_name): EventID(_event_id | ACTION, debug_name) {}  
 } StateID;
 
 typedef struct SystemID : public EventID {
   SystemID(const int _bit_offset): EventID(1 << _bit_offset) {}
-  SystemID(const int _bit_offset, char* debug_name): EventID(1 << _bit_offset, debug_name) {}
+  SystemID(const int _bit_offset, _FLASH_STRING &debug_name): EventID(1 << _bit_offset, debug_name) {}
 } SystemID;
 
 // high bits for flags

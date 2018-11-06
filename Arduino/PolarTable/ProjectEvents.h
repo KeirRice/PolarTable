@@ -2,40 +2,46 @@
   Events that can be send between modules
 *************************************************************/
 #pragma once
+
+
+#include <Flash.h>
 #include "EventTypes.h"
 
 static int event_id_counter = 0;
 
 #if DEBUG == 1
-#define BuildAction(a) a(event_id_counter++, (char*) #a)
+#define BuildAction(a) \
+  FLASH_STRING(prog_##a, #a); \
+  ActionID a(event_id_counter++, prog_##a); 
 #else
 #define BuildAction(a) a(event_id_counter++)
 #endif // DEBUG
 
-ActionID BuildAction(SHUTDOWN);
-ActionID BuildAction(POWERON);
-ActionID BuildAction(RESTART);
-ActionID BuildAction(SLEEP);
-ActionID BuildAction(WAKE);
-ActionID BuildAction(PULSE);
-ActionID BuildAction(STOP);
-ActionID BuildAction(MOVE);
-ActionID BuildAction(SETSTATE);
-ActionID BuildAction(SETCOLOR);
-ActionID BuildAction(BLEND);
-ActionID BuildAction(SEND);
-ActionID BuildAction(RECEIVE);
-ActionID BuildAction(TURN_ON);
-ActionID BuildAction(TURN_OFF);
-ActionID BuildAction(PULSE_ON);
-ActionID BuildAction(PULSE_OFF);
 
-ActionID BuildAction(POSITION);
-ActionID BuildAction(REL_POSITION);
-ActionID BuildAction(ABS_POSITION);
-ActionID BuildAction(DIRECTION);
-ActionID BuildAction(REL_DIRECTION);
-ActionID BuildAction(ABS_DIRECTION);
+
+BuildAction(SHUTDOWN);
+BuildAction(POWERON);
+BuildAction(RESTART);
+BuildAction(SLEEP);
+BuildAction(WAKE);
+BuildAction(PULSE);
+BuildAction(STOP);
+BuildAction(MOVE);
+BuildAction(SETSTATE);
+BuildAction(SETCOLOR);
+BuildAction(BLEND);
+BuildAction(SEND);
+BuildAction(RECEIVE);
+BuildAction(TURN_ON);
+BuildAction(TURN_OFF);
+BuildAction(PULSE_ON);
+BuildAction(PULSE_OFF);
+BuildAction(POSITION);
+BuildAction(REL_POSITION);
+BuildAction(ABS_POSITION);
+BuildAction(DIRECTION);
+BuildAction(REL_DIRECTION);
+BuildAction(ABS_DIRECTION);
 
 StateID OFF(event_id_counter++);
 StateID ON(event_id_counter++);
