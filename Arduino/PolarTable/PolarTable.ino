@@ -1,6 +1,7 @@
 #include "Debug.h"
 
 const byte ARDUINO_I2C_ADDRESS = 0x04;
+const byte RASPBERRY_I2C_ADDRESS = 0x14;
 const byte SX1509_I2C_ADDRESS = 0x3E;  // SX1509 I2C address (00)
 
 typedef unsigned int uint;
@@ -46,6 +47,7 @@ struct FsmEventDriver : public EventTask
 
 #include "RaspberryManager.h"
 #include "Raspberry.h"
+#include "I2C.h"
 #include "UI.h"
 
 #include "Testing.h"
@@ -80,6 +82,8 @@ void setup()
   encoder_relative_setup();
   lighting_setup();
   motor_setup();
+  i2c_setup();
+  
   // testing_setup();
   DEBUG_WHERE();
 }
@@ -95,6 +99,7 @@ void loop()
   encoder_relative_loop();
   encoder_absolute_loop();
   motor_loop();
+  i2c_loop();
 }
 //void setup(){}
 //void loop(){}

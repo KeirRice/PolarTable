@@ -34,62 +34,19 @@ static const char RASP_RADIUS = 6;
 
 // const unsigned int RASP_GCODE = 10;
 
-static const char RASP_STAYALIVE = 20;
 static const char RASP_SLEEP = 21;
 static const char RASP_WAKE = 22;
 
 char RASP_REQ = RASP_NULL;
 
-// Buffers
-byte send_buffer[32];
-unsigned char send_buffer_size = 0;
-
-volatile byte recieve_buffer[32];
-volatile unsigned char recieve_buffer_size = 0;
-
-
 /*************************************************************
-  Interrupts
+  Processing for peripheral mode (slave)
 *************************************************************/
 
-void inject_test_data(const byte incomming, int incomming_size) {
-  noInterrupts();
-  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-    memcpy((void*) &recieve_buffer, (void*) &incomming, min(incomming_size, 32));
-  }
-  recieve_buffer_size = incomming_size;
-  interrupts();
-}
-
-
-// The controller calls us (the peripheral) and tells use what data it wants.
-// We save that into the recieve buffer and use it for generating data for the
-// next request to sendData
-
-// Data selection by controller
-void receiveData(int byteCount) { // Wire supports max 32bytes
-  UNUSED(byteCount);
-  for (recieve_buffer_size = 0; Wire.available(); ++recieve_buffer_size)
-  {
-    recieve_buffer[recieve_buffer_size] = Wire.read();
-  }
-}
-
-// Data rquest by controller
-void sendData() {
-  if (send_buffer_size > 0) {
-    Wire.write(send_buffer, send_buffer_size);
-    send_buffer_size = 0;
-  }
-}
-
-
+// Data has been sent to us from a controller
 void process_recieve_data(char request, byte *recieve_data, byte recieve_data_size) {
   // We have new data to push out to the device.
   switch (request) {
-    case RASP_STAYALIVE :
-      break;
-
     case RASP_LIGHTING_ON :
       evtManager.trigger(LIGHTING_TURN_ON);
       break;
@@ -132,6 +89,7 @@ void process_recieve_data(char request, byte *recieve_data, byte recieve_data_si
   }
 }
 
+// Data has been requested from us by a controller. We need to prep it for the next request.
 void process_send_data(char request) {
   static byte send_data[32];
   static byte send_data_size = 0;
@@ -172,13 +130,6 @@ void process_send_data(char request) {
         break;
       }
 
-    case RASP_STAYALIVE :
-      {
-        // TODO: This is our chance to tell the Pi to shutdown.
-        send_data_size = 1;
-        send_data[0] = 0;
-        break;
-      }
     default :
       break;
   }
@@ -197,14 +148,95 @@ void process_send_data(char request) {
 }
 
 /*************************************************************
+  Controller mode (master)
+*************************************************************/
+
+void send_raspberry_shutdown(){
+   /*
+      0: Successful send.
+      1: Send buffer too large for the twi buffer. This should not happen, as the TWI buffer length set in twi.h is equivalent to the send buffer length set in Wire.h.
+      2: Address was sent and a NACK received. This is an issue, and the master should send a STOP condition.
+      3: Data was sent and a NACK received. This means the slave has no more to send. The master can send a STOP condition, or a repeated START.
+      4: Another twi error took place (eg, the master lost bus arbitration).
+    */
+   Wire.beginTransmission(RASPBERRY_I2C_ADDRESS);
+   Wire.send("shutdown");
+   byte ack = Wire.endTransmission();
+   if(ack != 0){
+    DEBUG_PRINT("I2C send failed: ");
+    DEBUG_PRINT_LN(ack);
+    evtManager.trigger(ERROR_RASPBERRY_SEND);
+   }
+}
+
+#define ACK_POLL_TIMEOUT 1
+bool ack_poll() {
+    byte ACK = 0;
+    for (byte time = 0;time < ACK_POLL_TIMEOUT;time++) {
+        Wire.beginTransmission(this->deviceAddress);
+        ACK = Wire.endTransmission();
+        if (ACK == 0) {
+          return true;
+        }
+        delay(1);
+    }
+    return false;
+}
+
+/*************************************************************
   Setup and loop
 *************************************************************/
 
+
+/*************************************************************
+  State
+*************************************************************/
+
+void state_coms_sync_recieve_data();
+
+State state_coms_idle(NULL, NULL, NULL);
+State state_coms_peripheral(NULL, NULL, NULL);
+State state_coms_on_receive(NULL, NULL, NULL);
+State state_coms_on_request(NULL, NULL, NULL);
+
+State state_coms_controller(NULL, NULL, NULL);
+State state_coms_send(NULL, NULL, NULL);
+State state_coms_recieve(NULL, NULL, NULL);
+
+Fsm fsm_i2c_coms(&state_coms_idle);
+
+
+void state_coms_sync_recieve_data(){
+  if (recieve_buffer_size) {
+    byte recieve_data_size = 0;
+    byte recieve_data[recieve_buffer_size];
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+      memcpy(&recieve_data[0], (byte*) &recieve_buffer[0], recieve_buffer_size);
+      recieve_data_size = recieve_buffer_size;
+      recieve_buffer_size = 0;
+    }
+  }
+}
+
+void state_coms_sync_process_recieve_data(){
+  // Unpack the bits and find out what data we are working with.
+  bool is_send = recieve_data[0] & RASP_SEND_DATA;
+  RASP_REQ = recieve_data[0] & (~RASP_SEND_DATA);
+
+  if (!is_send) {
+    process_recieve_data(RASP_REQ, recieve_data, recieve_data_size);
+  }
+  else {
+    process_send_data(RASP_REQ);
+  }
+}
+
+
 void raspberry_setup() {
-  // Initialize i2c as peripheral
+  // Initialize i2c and make sure we are addressable
   Wire.begin(ARDUINO_I2C_ADDRESS);
 
-  // Define callbacks for i2c communication
+  // Define callbacks for i2c peripheral mode communication
   Wire.onReceive(receiveData);
   Wire.onRequest(sendData);
 }
@@ -223,7 +255,7 @@ void raspberry_loop() {
       recieve_buffer_size = 0;
     }
 
-    // Unpack the bits and find out what data we aew working with.
+    // Unpack the bits and find out what data we are working with.
     bool is_send = recieve_data[0] & RASP_SEND_DATA;
     RASP_REQ = recieve_data[0] & (~RASP_SEND_DATA);
 

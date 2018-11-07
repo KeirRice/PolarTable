@@ -101,6 +101,6 @@ static const EventID ERROR_EVENT = SystemID(128);
 static const EventID ERROR_SERIAL = SystemID(129);
 static const EventID ERROR_SX1509 = SystemID(130);
 static const EventID ERROR_MOTOR = ERROR | MOVEMENT;
-static const EventID ERROR_RASPBERRY = SystemID(132);
+static const EventID ERROR_RASPBERRY_SEND = ERROR | RASPBERRY | SEND;
 static const EventID ERROR_EVENT_SYSTEM = SystemID(133);
 static const EventID ERROR_REL_DIRECTION = ERROR | REL_DIRECTION;

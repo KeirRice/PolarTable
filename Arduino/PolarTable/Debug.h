@@ -24,8 +24,9 @@
 //#define DISABLE_CALIBRATION
 //#define DISABLE_LIGHTING
 //#define DISABLE_MOTORS
-//#define DISABLE_RASPBERRY_COMS
+#define DISABLE_RASPBERRY_COMS
 //#define DISABLE_RASPBERRY_MANAGER
+//#define DISABLE_I2C_COMS
 
 // Convert a byte to text we can print
 void print_byte(byte code)

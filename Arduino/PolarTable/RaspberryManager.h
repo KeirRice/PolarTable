@@ -38,10 +38,6 @@ State state_raspberry_heartbeat(&raspberry_heartbeat_enter, NULL, NULL);
 
 Fsm fsm_raspberry(&state_raspberry_on);
 
-void send_raspberry_shutdown(){
-  // TODO: Send shutdown signal to the PI
-}
-
 void set_raspberry_power(bool power_on){
   // Pull low to disconnect the power.
   digitalWrite(PIN_PI_POWER, power_on ? HIGH : LOW);  
@@ -56,7 +52,7 @@ void raspberry_startup_enter(){
 }
 
 void raspberry_shutdown_enter(){
-  send_raspberry_shutdown();
+  // send_raspberry_shutdown();
 }
 
 void raspberry_shutdown_exit(){
