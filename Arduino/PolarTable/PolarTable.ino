@@ -51,13 +51,10 @@ struct FsmEventDriver : public EventTask
 
 #include "Testing.h"
 
-extern long startMillis;
-
 
 void setup()
 {
   error_setup();
-  resetMillis();
   
   if (DEBUG) {
     Serial.begin(19200);

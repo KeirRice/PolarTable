@@ -25,16 +25,10 @@ static inline constexpr long offset_bitmask(const byte onecount, const byte offs
 }
 
 
-long startMillis = 0;
-
 void(* resetFunc) (void) = 0; //declare reset function @ address 0
 
 void doReset() {
   resetFunc();  //call reset
-}
-
-void resetMillis() {
-  startMillis = millis();
 }
 
 // Interrupt handler for the wakeup
