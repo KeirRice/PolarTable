@@ -15,7 +15,7 @@
 // static long event_id_mask =   0b00000000000000000000000001111111;
 // static long action_id_mask =  0b00000000000000000000000010000000;
 // static long state_id_mask =   0b00000000000000000000000100000000;
-static long system_id_mask =  0b11111111111111111111111000000000;
+static long system_id_mask_inverse =  0b11111111111111111111111000000000;
 
 int event_id_counter = 0;
 int system_id_offset = 6;
