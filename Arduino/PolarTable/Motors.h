@@ -36,130 +36,14 @@ AccelStepper *steppers[2] = {
 static const int THETA = 0;
 static const int RADIUS = 1;
 
-/*************************************************************
-  Steps
-*************************************************************/
+static int incomming_theta_direction;
+static int incomming_theta_steps;
+static int incomming_radius_direction;
+static int incomming_radius_steps;
 
-struct Steps {
-  // Absolute
-  MotorPosition (*steps_target)[2];
-  // long steps_previous[2] = {0, 0};
-  boolean theta_ready = true;
-  boolean radius_ready = true;
+static long incomming_steps[2];
+volatile bool new_position_ready = true;
 
-  boolean ready_to_read();
-  boolean set_steps(long int (*target)[2]);
-  boolean set_theta(long target);
-  boolean set_radius(long target);
-  MotorPosition (*get_steps())[2];
-};
-
-boolean Steps::ready_to_read(){
-  return theta_ready && radius_ready;
-}
-
-MotorPosition (*Steps::get_steps())[2]{
-  theta_ready = false;
-  radius_ready = false;
-  // memcpy(&steps_previous, &steps_target, 2 * sizeof(long));
-  return steps_target;
-}
-
-boolean Steps::set_steps(long int (*target)[2]){
-  if(!ready_to_read()){
-    memcpy(&steps_target, target, 2 * sizeof(long));
-    theta_ready = true;
-    radius_ready = true;
-    return true;
-  }
-  return false;    
-}
-boolean Steps::set_theta(long target){
-  if(!theta_ready){
-    steps_target[THETA]->steps = target;
-    theta_ready = true;
-    return true;
-  }
-  return false;    
-}
-boolean Steps::set_radius(long target){
-  if(!radius_ready){
-    steps_target[RADIUS]->steps = target;
-    radius_ready = true;
-    return true;
-  }
-  return false;    
-}
-
-Steps motor_steps;
-
-boolean motor_set_target_theta(long theta){
-  return motor_steps.set_theta(theta);
-}
-boolean motor_set_target_radius(long radius){
-  return motor_steps.set_radius(radius);
-}
-boolean motor_set_target(long theta, long radius)
-{
-  long blah[2] = {theta, radius};
-  return motor_steps.set_steps(&blah);
-}
-
-void motor_theta_event(void *data){
-  if(!motor_set_target_theta((long) data)){
-    DEBUG_PRINTLN("Motor wasn't ready for data.");
-    evtManager.trigger(ERROR_EVENT, ERROR_MOTOR);
-  }
-}
-void motor_radius_event(void *data){
-  if(!motor_set_target_radius((long) data)){
-    DEBUG_PRINTLN("Motor wasn't ready for data.");
-    evtManager.trigger(ERROR_EVENT, ERROR_MOTOR);
-  }
-}
-
-struct MotorEventDriver : public EventTask
-{
-  EventID motor;
-  MotorEventDriver();
-  MotorEventDriver(EventID motor) : motor(motor) {}
-
-  using EventTask::execute;
- 
-  void execute(Event *evt);
-};
-
-struct MotorThetaEventDriver : public MotorEventDriver
-{
-  MotorThetaEventDriver();
-  MotorThetaEventDriver(EventID motor) : MotorEventDriver(motor) {}
-
-  using MotorEventDriver::execute;
-  
-  void execute(Event *evt)
-  {
-    if(!motor_set_target_theta(*(long*)evt->extra)){
-      DEBUG_PRINTLN("Motor wasn't ready for data.");
-      evtManager.trigger(ERROR_MOTOR);
-    }
-  }
-};
-
-struct MotorRadiusEventDriver : public MotorEventDriver
-{
-  MotorRadiusEventDriver();
-  MotorRadiusEventDriver(EventID motor) : MotorEventDriver(motor) {}
-
-  using MotorEventDriver::execute;
-  
-  void execute(Event *evt)
-  {
-    if(!motor_set_target_radius(*(long*)evt->extra)){
-      DEBUG_PRINTLN("Motor wasn't ready for data.");
-      evtManager.trigger(ERROR_MOTOR);
-    }
-  }
-};
 /*************************************************************
   State
 *************************************************************/
@@ -174,7 +58,9 @@ void motors_sleep_enter();
 void motors_sleep_exit();
 
 State state_motors_wake(&motors_wake_enter, NULL, NULL);
+
 State state_motors_active(&motors_active_enter, &motors_active_state, NULL);
+
 State state_motors_stop(&motors_stop_enter, &motors_stop_state, NULL);
 State state_motors_idle(&motors_idle_enter, NULL, NULL);
 State state_motors_sleep(&motors_sleep_enter, NULL, &motors_sleep_exit);
@@ -205,15 +91,11 @@ void motors_wake_enter(){
 }
 
 void motors_active_enter(){
-  if(motor_steps.ready_to_read())
-  {
-    // If we have a new position lets move to it.
-    stepper.moveTo((long*) motor_steps.get_steps());
-    
-    evtManager.trigger(MOTOR_READY, (void*) NULL);
-    
-    stepper.run();
-  }
+  // If we have a new position lets move to it.
+  stepper.moveTo((long*) incomming_steps);   
+  new_position_ready = false;
+  evtManager.trigger(MOTOR_READY);
+  stepper.run();
 }
 
 void motors_active_state(){
@@ -221,11 +103,10 @@ void motors_active_state(){
   stepper.run();
 
   // Check if we have arrived
-  if(steppers[THETA]->distanceToGo() == 0 && steppers[RADIUS]->distanceToGo() == 0)
+  if(theta_stepper.distanceToGo() == 0 && radius_stepper.distanceToGo() == 0)
   {    
-    if(motor_steps.ready_to_read()){
-      // A new position has been set while we were moving.
-      fsm_motors.trigger(MOTOR_MOVE);        
+    if(new_position_ready){
+      fsm_motors.trigger(MOTOR_MOVE);
     }
     else {
       // We are where we need to be, we can stop now.
@@ -235,8 +116,8 @@ void motors_active_state(){
 }
 
 void motors_stop_enter(){
-  steppers[THETA]->stop();
-  steppers[RADIUS]->stop();
+  theta_stepper.stop();
+  radius_stepper.stop();
   stepper.run();
 }
 
@@ -256,16 +137,49 @@ void motors_sleep_exit(){
   motor_sleep(false);
 }
 
+
+struct MotorEventDriver : public FsmEventDriver
+{
+  Fsm *fsm;
+  MotorEventDriver();
+  MotorEventDriver(Fsm *statemachine) : fsm(statemachine) {}
+
+  using EventTask::execute;
+  
+  void execute(Event *evt)
+  {
+    if(evt->label == MOTOR_SET) {
+      uint8_t *data = (uint8_t*)evt->extra;
+//      incomming_theta_direction = data[0];
+//      incomming_theta_steps = data[1];
+//      incomming_radius_direction = data[2];
+//      incomming_radius_steps = data[3];
+
+      if(new_position_ready){
+        DEBUG_PRINT("We haven't clears the last position yet.");
+        return;
+      }
+      
+      // TODO: Pass longs through the data
+      incomming_steps[0] = data[1];
+      incomming_steps[1] = data[3];
+      new_position_ready = true;
+      
+      fsm->trigger(MOTOR_MOVE);
+    }
+  }
+};
+
+
+
 /*************************************************************
   Setup and Main loop
 *************************************************************/
 
 void motor_setup() {  
-  struct MotorEventDriver theta_event_listner = MotorThetaEventDriver(MOTOR_THETA_POSITION);
-  evtManager.subscribe(Subscriber(MOTOR_THETA_POSITION, &theta_event_listner));
-  struct MotorEventDriver radius_event_listner = MotorRadiusEventDriver(MOTOR_RADIUS_POSITION);
-  evtManager.subscribe(Subscriber(MOTOR_RADIUS_POSITION, &radius_event_listner));
-  
+  struct MotorEventDriver motor_event_driver = MotorEventDriver(&fsm_motors);
+  evtManager.subscribe(Subscriber(MOVEMENT, &motor_event_driver));
+    
   build_transitions();
   
   theta_stepper.setMaxSpeed(200.0);

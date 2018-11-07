@@ -122,20 +122,28 @@ struct LightingEventDriver : public FsmEventDriver
   void execute(Event *evt)
   {
     if(evt->label == LIGHTING_SET_STATE) {
-      
+      byte data = *(byte*)evt->extra;
+      if(data){
+        fsm->trigger(LIGHTING_TURN_ON);
+      }
+      else {
+        fsm->trigger(LIGHTING_TURN_OFF);
+      }
     }
     else if (evt->label == LIGHTING_SET_RED || evt->label == LIGHTING_SET_GREEN || evt->label == LIGHTING_SET_BLUE) {
-      
+      uint8_t *data = (uint8_t*)evt->extra;
+      incomingColorTarget = rgb2hsv_approximate(CRGB(data[0], data[1], data[2]));
+      fsm->trigger(LIGHTING_BLEND);
     }
-    else if(evt->label == LIGHTING_SET_BLEND_TIME) {
-        
-    }
-    else if(evt->label == LIGHTING_BLEND) {
-        
-    }
-    else {
-      fsm->trigger(*(int*)evt->extra);
-    }
+//    else if(evt->label == LIGHTING_SET_BLEND_TIME) {
+//        
+//    }
+//    else if(evt->label == LIGHTING_BLEND) {
+//        
+//    }
+//    else {
+//      fsm->trigger(*(int*)evt->extra);
+//    }
   }
 };
 
