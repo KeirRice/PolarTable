@@ -34,7 +34,6 @@ struct FsmEventDriver : public EventTask
   }
 };
 
-
 #include "WireTypes.h"
 #include "Error.h"
 #include "ButtonLED.h"

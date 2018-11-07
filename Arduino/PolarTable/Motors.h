@@ -261,10 +261,10 @@ void motors_sleep_exit(){
 *************************************************************/
 
 void motor_setup() {  
-  struct MotorEventDriver theta_event_listner = MotorThetaEventDriver(MOTOR_TARGET_THETA);
-  evtManager.subscribe(Subscriber(MOTOR_TARGET_THETA, &theta_event_listner));
-  struct MotorEventDriver radius_event_listner = MotorRadiusEventDriver(MOTOR_TARGET_RADIUS);
-  evtManager.subscribe(Subscriber(MOTOR_TARGET_RADIUS, &radius_event_listner));
+  struct MotorEventDriver theta_event_listner = MotorThetaEventDriver(MOTOR_THETA_POSITION);
+  evtManager.subscribe(Subscriber(MOTOR_THETA_POSITION, &theta_event_listner));
+  struct MotorEventDriver radius_event_listner = MotorRadiusEventDriver(MOTOR_RADIUS_POSITION);
+  evtManager.subscribe(Subscriber(MOTOR_RADIUS_POSITION, &radius_event_listner));
   
   build_transitions();
   

@@ -13,6 +13,18 @@ int sign(T x) {
     return (T(0) < x) - (x < T(0));
 }
 
+static constexpr long bitmask(const byte onecount)
+{
+    return static_cast<long>(-(onecount != 0))
+        & (static_cast<long>(-1) >> ((sizeof(long) * 8) - onecount));
+}
+
+static inline constexpr long offset_bitmask(const byte onecount, const byte offset)
+{
+  return bitmask(onecount) << offset;
+}
+
+
 long startMillis = 0;
 
 void(* resetFunc) (void) = 0; //declare reset function @ address 0

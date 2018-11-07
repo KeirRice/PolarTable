@@ -18,7 +18,6 @@ void i2c_loop() {}
    I2C Registers
 
    Register map:
-   0x00 - Status
    0x01 - System State (Sleep/Wake)
    0x02 - Lighting On/Off
    0x03 - Lighting Red
@@ -30,11 +29,37 @@ void i2c_loop() {}
    0x09 - Motor Radius Direction
    0x0A - Motor Radius Steps
 
-   Total size: 11
+   Total size: 10
 */
-const byte reg_size = 11;
+const byte reg_size = 10;
 volatile uint8_t i2c_regs[reg_size];
 volatile byte reg_position;
+
+typedef struct RegMask {
+  RegMask(const EventID &_event, int _start_offset, int _size) : event(&_event), start_offset(_start_offset), mask_size(_size){};
+
+  /* Maybe cache this if we can spear the memory */
+  long mask() const{
+    return offset_bitmask(mask_size, start_offset);
+  }
+  
+  const EventID *event;
+  const byte start_offset;
+  const byte mask_size;
+} RegMask;
+
+
+const byte i2c_reg_change_events_size = 4;
+const RegMask i2c_reg_change_events[i2c_reg_change_events_size] = {
+  // RegMask(SYSTEM_STATE, 0, 1),
+  RegMask(LIGHTING_SET_STATE, 1, 1),
+  RegMask(LIGHTING_SET_COLOUR, 2, 3),
+  RegMask(LIGHTING_SET_BLEND_TIME, 5, 1),
+  RegMask(MOTOR_SET, 6, 4),
+  };
+  
+volatile long int i2c_reg_changed;
+
 
 /*
    I2C Handelers
@@ -43,7 +68,7 @@ void i2cReceiveEvent(int howMany)
 {
   if (howMany < 1 || !Wire.available())
   {
-    return;// Sanity-check
+    return; // Sanity-check
   }
 
   reg_position = Wire.read();
@@ -57,6 +82,7 @@ void i2cReceiveEvent(int howMany)
   {
     //Store the recieved data in the currently selected register
     i2c_regs[reg_position] = Wire.read();
+    i2c_reg_changed |= 1 << (reg_position + 1);
 
     //Proceed to the next register
     reg_position++;
@@ -65,8 +91,6 @@ void i2cReceiveEvent(int howMany)
       reg_position = 0;
     }
   }
-  // led_needs_update = true;
-
 } //End i2cReceiveEvent()
 
 
@@ -103,6 +127,30 @@ void i2c_setup()
 
 void i2c_loop()
 {
+  // Look the events we know about.
+  // Check if their bits have changed, if they have fire the events.
+  
+  for(int i=0; i < i2c_reg_change_events_size; ++i) {
+    // If we are all 0 we are done
+    if(i2c_reg_changed == 0){
+      break;
+    }
+
+    // Test this bit
+    RegMask reg_event = i2c_reg_change_events[i];
+    long mask = reg_event.mask();
+    if(i2c_reg_changed & mask){
+      // Fire the event
+      byte reg_buffer[reg_event.mask_size];
+      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        // Buffer the data
+        memcpy(&reg_buffer[0], (byte*) &reg_buffer[0], reg_event.mask_size);
+        // Reset the bits
+        i2c_reg_changed = i2c_reg_changed & ~mask;
+      }
+      evtManager.trigger(*reg_event.event, &reg_buffer);
+    }
+  }
 }
 
 #endif // DISABLE_I2C_COMS

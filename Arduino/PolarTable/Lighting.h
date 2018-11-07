@@ -121,9 +121,17 @@ struct LightingEventDriver : public FsmEventDriver
   
   void execute(Event *evt)
   {
-    if(evt->label == LIGHTING_BLEND){
-      incomingColorTarget = (*(CHSV*)evt->extra);
-      fsm->trigger(LIGHTING_BLEND);
+    if(evt->label == LIGHTING_SET_STATE) {
+      
+    }
+    else if (evt->label == LIGHTING_SET_RED || evt->label == LIGHTING_SET_GREEN || evt->label == LIGHTING_SET_BLUE) {
+      
+    }
+    else if(evt->label == LIGHTING_SET_BLEND_TIME) {
+        
+    }
+    else if(evt->label == LIGHTING_BLEND) {
+        
     }
     else {
       fsm->trigger(*(int*)evt->extra);

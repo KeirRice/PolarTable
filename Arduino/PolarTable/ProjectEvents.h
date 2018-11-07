@@ -32,6 +32,12 @@ BuildEvent(ActionID, STOP);
 BuildEvent(ActionID, MOVE);
 BuildEvent(ActionID, SETSTATE);
 BuildEvent(ActionID, SETCOLOR);
+BuildEvent(ActionID, SET);
+BuildEvent(ActionID, RED);
+BuildEvent(ActionID, GREEN);
+BuildEvent(ActionID, BLUE);
+BuildEvent(ActionID, TIME);
+BuildEvent(ActionID, COLOUR);
 BuildEvent(ActionID, BLEND);
 BuildEvent(ActionID, SEND);
 BuildEvent(ActionID, RECEIVE);
@@ -62,6 +68,7 @@ BuildEvent(StateID, READY);
 *************************************************************/
 
 // System statemachine states.
+static const EventID SYSTEM_STATE = SYSTEM | STATE;
 static const EventID SYSTEM_SLEEP_ACTION = SYSTEM | SLEEP;
 static const EventID SYSTEM_WAKE_ACTION = SYSTEM | WAKE;
 
@@ -76,18 +83,28 @@ static const EventID MOTOR_STOP = MOVEMENT | STOP;
 static const EventID MOTOR_STOPPED = MOVEMENT | STOPPED;
 static const EventID MOTOR_MOVE = MOVEMENT | MOVE;
 static const EventID MOTOR_READY = MOVEMENT | READY;
-static const EventID MOTOR_TARGET_THETA = MOTOR_THETA | POSITION;
-static const EventID MOTOR_TARGET_RADIUS = MOTOR_RADIUS | POSITION;
+static const EventID MOTOR_THETA_POSITION = MOTOR_THETA | POSITION;
+static const EventID MOTOR_RADIUS_POSITION = MOTOR_RADIUS | POSITION;
+static const EventID MOTOR_THETA_DIRECTION = MOTOR_THETA | DIRECTION;
+static const EventID MOTOR_RADIUS_DIRECTION = MOTOR_RADIUS | DIRECTION;
+static const EventID MOTOR_SET = MOVEMENT | SET;
 
 
 // Lighting Actions
+static const EventID LIGHTING_SET_STATE = LIGHTING | STATE;
 static const EventID LIGHTING_TURN_ON = LIGHTING | TURN_ON;
 static const EventID LIGHTING_TURN_OFF = LIGHTING | TURN_OFF;
 static const EventID LIGHTING_BLEND = LIGHTING | BLEND;
+static const EventID LIGHTING_SET_RED = LIGHTING | RED;
+static const EventID LIGHTING_SET_GREEN = LIGHTING | GREEN;
+static const EventID LIGHTING_SET_BLUE = LIGHTING | BLUE;
+static const EventID LIGHTING_SET_COLOUR = LIGHTING | BLUE;
+static const EventID LIGHTING_SET_BLEND_TIME = LIGHTING | SETCOLOR;
+
 // Lighting States
 static const EventID LIGHTING_ON = LIGHTING | ON;
 static const EventID LIGHTING_OFF = LIGHTING | OFF;
-static const EventID LIGHTING_COLOR = LIGHTING | STATE;
+static const EventID LIGHTING_COLOR = LIGHTING | COLOUR;
 
 static const EventID RASPBERRY_STARTUP = RASPBERRY | POWERON;
 static const EventID RASPBERRY_SHUTDOWN = RASPBERRY | SHUTDOWN;
@@ -101,6 +118,6 @@ static const EventID ERROR_EVENT = SystemID(128);
 static const EventID ERROR_SERIAL = SystemID(129);
 static const EventID ERROR_SX1509 = SystemID(130);
 static const EventID ERROR_MOTOR = ERROR | MOVEMENT;
-static const EventID ERROR_RASPBERRY_SEND = ERROR | RASPBERRY | SEND;
+static const EventID ERROR_RASPBERRY_SEND = ERROR | RASPBERRY /*| SEND*/;
 static const EventID ERROR_EVENT_SYSTEM = SystemID(133);
 static const EventID ERROR_REL_DIRECTION = ERROR | REL_DIRECTION;

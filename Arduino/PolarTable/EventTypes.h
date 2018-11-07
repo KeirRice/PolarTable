@@ -12,9 +12,9 @@
 // StateID - 8
 // SystemID - 9 to 24
 
-static long event_id_mask =   0b00000000000000000000000001111111;
-static long action_id_mask =  0b00000000000000000000000010000000;
-static long state_id_mask =   0b00000000000000000000000100000000;
+// static long event_id_mask =   0b00000000000000000000000001111111;
+// static long action_id_mask =  0b00000000000000000000000010000000;
+// static long state_id_mask =   0b00000000000000000000000100000000;
 static long system_id_mask =  0b11111111111111111111111000000000;
 
 int event_id_counter = 0;
@@ -30,7 +30,7 @@ typedef struct EventID {
   protected:
     unsigned char id[3];
 
-#if ENABLE_DEBUG_STRINGS == 1
+#if ENABLE_DEBUG_STRINGS == 0
     _FLASH_STRING *debug_name = NULL;
 #endif
 
@@ -176,9 +176,9 @@ bool operator& (const long &i, const EventID &f) {
 
 
 typedef struct SystemID : public EventID {
-  SystemID(const int _bit_offset): EventID(1 << _bit_offset) {}
+  SystemID(const long _bit_offset): EventID(1 << _bit_offset) {}
 #if ENABLE_DEBUG_STRINGS == 1
-  SystemID(const int _bit_offset, _FLASH_STRING &_debug_name): EventID(1 << _bit_offset, _debug_name) {}
+  SystemID(const long _bit_offset, _FLASH_STRING &_debug_name): EventID(1 << _bit_offset, _debug_name) {}
 #endif
 } SystemID;
 
@@ -193,15 +193,15 @@ The debug strings are all stored in PROGMEM.
 #if DEBUG == 1 && ENABLE_DEBUG_STRINGS == 1
 #define BuildEvent(t, a) \
   FLASH_STRING(prog_##a, #a); \
-  t a(event_id_counter++, prog_##a); 
+  const t a(event_id_counter++, prog_##a); 
 #define BuildSystem(t, a) \
   FLASH_STRING(prog_##a, #a); \
-  t a(system_id_offset++, prog_##a); 
+  const t a(system_id_offset++, prog_##a); 
 #else
 #define BuildEvent(t, a) \
-  t a(event_id_counter++)
+  const t a(event_id_counter++)
 #define BuildSystem(t, a) \
-  t a(system_id_offset++)
+  const t a(system_id_offset++)
 #endif // DEBUG == 1
 
 // Two bits to seperate the actions from the states if we need to.
