@@ -9,8 +9,8 @@
 #include "Arduino.h"
 #include "EventTypes.h"
 
-#define INTERVAL_SLOT_COUNT 5
-#define SUBSCRIBER_SLOT_COUNT 10
+#define INTERVAL_SLOT_COUNT 0
+#define SUBSCRIBER_SLOT_COUNT 3
 
 #define MAX_LONG 2147483647
 
