@@ -120,10 +120,10 @@ static const PinID PIN_MOTOR_SLEEPX = SHIFT_S0;
 static const PinID PIN_MOTOR_ENABLEX = SHIFT_S1;
 static const PinID PIN_MOTOR_SLEEPY = SHIFT_S2;
 static const PinID PIN_MOTOR_ENABLEY = SHIFT_S3;
-static const PinID PIN_MOTOR_YMS1 = SHIFT_S4;
-static const PinID PIN_MOTOR_YMS2 = SHIFT_S5;
-static const PinID PIN_MOTOR_XMS1 = SHIFT_S6;
-static const PinID PIN_MOTOR_XMS2 = SHIFT_S7;
+static const PinID PIN_MOTOR_XMS1 = SHIFT_S4;
+static const PinID PIN_MOTOR_XMS2 = SHIFT_S5;
+static const PinID PIN_MOTOR_YMS1 = SHIFT_S6;
+static const PinID PIN_MOTOR_YMS2 = SHIFT_S7;
 
 // Error Light
 static const PinID PIN_ERROR_LED = ARDUINO_D13;
