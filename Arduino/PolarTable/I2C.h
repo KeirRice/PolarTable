@@ -24,10 +24,10 @@ void i2c_loop() {}
    0x04 - Lighting Green
    0x05 - Lighting Blue
    0x06 - Lighting Blend Time
-   0x07 - Motor Theta Direction
-   0x08 - Motor Theta Steps
-   0x09 - Motor Radius Direction
-   0x0A - Motor Radius Steps
+   0x07 - Motor Theta Steps MSB
+   0x08 - Motor Theta Steps LSB
+   0x09 - Motor Radius Steps MSB
+   0x0A - Motor Radius Steps LSB
 
    Total size: 10
 */

@@ -36,11 +36,6 @@ AccelStepper *steppers[2] = {
 static const int THETA = 0;
 static const int RADIUS = 1;
 
-static int incomming_theta_direction;
-static int incomming_theta_steps;
-static int incomming_radius_direction;
-static int incomming_radius_steps;
-
 static long incomming_steps[2];
 volatile bool new_position_ready = true;
 
@@ -161,8 +156,8 @@ struct MotorEventDriver : public FsmEventDriver
       }
       
       // TODO: Pass longs through the data
-      incomming_steps[0] = data[1];
-      incomming_steps[1] = data[3];
+      incomming_steps[0] = (data[0] << 8) | data[1];
+      incomming_steps[1] = (data[2] << 8) | data[3];
       new_position_ready = true;
       
       fsm->trigger(MOTOR_MOVE);
