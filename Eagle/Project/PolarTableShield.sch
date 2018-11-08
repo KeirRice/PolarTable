@@ -18707,8 +18707,8 @@ hard reset.</text>
 </segment>
 <segment>
 <pinref part="U8" gate="A" pin="Q3"/>
-<wire x1="55.88" y1="86.36" x2="60.96" y2="86.36" width="0.1524" layer="91"/>
 <label x="60.96" y="86.36" size="1.27" layer="95" xref="yes"/>
+<wire x1="55.88" y1="86.36" x2="60.96" y2="86.36" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="SLEEPY" class="4">
@@ -18719,8 +18719,8 @@ hard reset.</text>
 </segment>
 <segment>
 <pinref part="U8" gate="A" pin="Q2"/>
-<wire x1="55.88" y1="88.9" x2="60.96" y2="88.9" width="0.1524" layer="91"/>
 <label x="60.96" y="88.9" size="1.27" layer="95" xref="yes"/>
+<wire x1="60.96" y1="88.9" x2="55.88" y2="88.9" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="YMS1" class="4">
@@ -18730,9 +18730,10 @@ hard reset.</text>
 <label x="55.88" y="335.28" size="1.27" layer="95" rot="MR0" xref="yes"/>
 </segment>
 <segment>
-<pinref part="U8" gate="A" pin="Q4"/>
-<wire x1="55.88" y1="83.82" x2="60.96" y2="83.82" width="0.1524" layer="91"/>
-<label x="60.96" y="83.82" size="1.27" layer="95" xref="yes"/>
+<label x="60.96" y="78.74" size="1.27" layer="95" xref="yes"/>
+<wire x1="56.0324" y1="78.74" x2="60.96" y2="78.74" width="0.1524" layer="91"/>
+<pinref part="U8" gate="A" pin="Q6"/>
+<wire x1="56.0324" y1="78.74" x2="55.88" y2="78.74" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="YMS2" class="4">
@@ -18742,9 +18743,10 @@ hard reset.</text>
 <label x="55.88" y="332.74" size="1.27" layer="95" rot="MR0" xref="yes"/>
 </segment>
 <segment>
-<pinref part="U8" gate="A" pin="Q5"/>
-<wire x1="55.88" y1="81.28" x2="60.96" y2="81.28" width="0.1524" layer="91"/>
-<label x="60.96" y="81.28" size="1.27" layer="95" xref="yes"/>
+<label x="60.96" y="76.2" size="1.27" layer="95" xref="yes"/>
+<wire x1="56.0324" y1="76.2" x2="60.96" y2="76.2" width="0.1524" layer="91"/>
+<pinref part="U8" gate="A" pin="Q7"/>
+<wire x1="56.0324" y1="76.2" x2="55.88" y2="76.2" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="ENX" class="4">
@@ -18778,9 +18780,9 @@ hard reset.</text>
 <label x="55.88" y="345.44" size="1.27" layer="95" rot="MR0" xref="yes"/>
 </segment>
 <segment>
-<pinref part="U8" gate="A" pin="Q6"/>
-<wire x1="55.88" y1="78.74" x2="60.96" y2="78.74" width="0.1524" layer="91"/>
-<label x="60.96" y="78.74" size="1.27" layer="95" xref="yes"/>
+<label x="60.96" y="83.82" size="1.27" layer="95" xref="yes"/>
+<pinref part="U8" gate="A" pin="Q4"/>
+<wire x1="60.96" y1="83.82" x2="55.88" y2="83.82" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="XMS2" class="4">
@@ -18790,9 +18792,10 @@ hard reset.</text>
 <label x="55.88" y="342.9" size="1.27" layer="95" rot="MR0" xref="yes"/>
 </segment>
 <segment>
-<pinref part="U8" gate="A" pin="Q7"/>
-<wire x1="55.88" y1="76.2" x2="60.96" y2="76.2" width="0.1524" layer="91"/>
-<label x="60.96" y="76.2" size="1.27" layer="95" xref="yes"/>
+<label x="60.96" y="81.28" size="1.27" layer="95" xref="yes"/>
+<wire x1="56.0324" y1="81.28" x2="60.96" y2="81.28" width="0.1524" layer="91"/>
+<pinref part="U8" gate="A" pin="Q5"/>
+<wire x1="55.88" y1="81.28" x2="56.0324" y2="81.28" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="XSTEP" class="4">
