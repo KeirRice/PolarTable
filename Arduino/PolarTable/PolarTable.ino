@@ -7,6 +7,10 @@ const byte SX1509_I2C_ADDRESS = 0x3E;  // SX1509 I2C address (00)
 typedef unsigned int uint;
 typedef unsigned char State2;
 
+
+#define THETA_MAX_TRAVEL 1000
+#define RADIUS_MAX_TRAVEL 1000
+
 #include "Pins.h"
 #include "ProjectEvents.h"
 
@@ -79,6 +83,7 @@ void setup()
   lighting_setup();
   motor_setup();
   i2c_setup();
+  calibration_setup();
   
   // testing_setup();
   DEBUG_WHERE();
@@ -96,6 +101,7 @@ void loop()
   encoder_absolute_loop();
   motor_loop();
   i2c_loop();
+  calibration_loop();
 }
 //void setup(){}
 //void loop(){}

@@ -29,6 +29,7 @@ AccelStepper *steppers[2] = {
   &radius_stepper
   };
 
+
 /*************************************************************
   Variables
 *************************************************************/
@@ -43,6 +44,9 @@ volatile bool new_position_ready = true;
   State
 *************************************************************/
 
+void motors_calibration_enter();
+void motors_calibration_active();
+void motors_calibration_exit();
 void motors_wake_enter();
 void motors_active_enter();
 void motors_active_state();
@@ -52,6 +56,7 @@ void motors_idle_enter();
 void motors_sleep_enter();
 void motors_sleep_exit();
 
+State state_motors_calibration(&motors_calibration_enter, &motors_calibration_active, &motors_calibration_exit);
 State state_motors_wake(&motors_wake_enter, NULL, NULL);
 
 State state_motors_active(&motors_active_enter, &motors_active_state, NULL);
@@ -64,6 +69,8 @@ State state_motors_sleep(&motors_sleep_enter, NULL, &motors_sleep_exit);
 Fsm fsm_motors(&state_motors_wake);
 
 void build_transitions(){
+  fsm_motors.add_transition(&state_motors_calibration, &state_motors_stop, CALIBRATION_STOP, NULL);
+  
   // Short timmed event to enable the wake command to propagate
   fsm_motors.add_timed_transition(&state_motors_wake, &state_motors_active, 5, NULL);
 

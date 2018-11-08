@@ -10,6 +10,7 @@
 BuildSystem(SystemID, GLOBAL);
 BuildSystem(SystemID, SYSTEM);
 BuildSystem(SystemID, MOVEMENT);
+BuildSystem(SystemID, CALIBRATION);
 BuildSystem(SystemID, REL_MOVEMENT);
 BuildSystem(SystemID, ABS_MOVEMENT);
 BuildSystem(SystemID, MOTOR);
@@ -28,6 +29,7 @@ BuildEvent(ActionID, RESTART);
 BuildEvent(ActionID, SLEEP);
 BuildEvent(ActionID, WAKE);
 BuildEvent(ActionID, PULSE);
+BuildEvent(ActionID, START);
 BuildEvent(ActionID, STOP);
 BuildEvent(ActionID, MOVE);
 BuildEvent(ActionID, SETSTATE);
@@ -88,6 +90,9 @@ static const EventID MOTOR_RADIUS_POSITION = MOTOR_RADIUS | POSITION;
 static const EventID MOTOR_THETA_DIRECTION = MOTOR_THETA | DIRECTION;
 static const EventID MOTOR_RADIUS_DIRECTION = MOTOR_RADIUS | DIRECTION;
 static const EventID MOTOR_SET = MOVEMENT | SET;
+static const EventID CALIBRATION_START = CALIBRATION | START;
+static const EventID CALIBRATION_STOP = CALIBRATION | STOP;
+
 
 
 // Lighting Actions
