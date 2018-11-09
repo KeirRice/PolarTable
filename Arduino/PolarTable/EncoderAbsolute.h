@@ -23,21 +23,15 @@ extern SX1509 io; // Create an SX1509 object to be used throughout
 // Global variables:
 volatile bool SX1509Interrupt = false; // Track Interrupts in ISR
 
+static char absolute_position;
+
+// The encoder is using 4 bit grey codes. This means we need to map from the 4bit number to 
+// the actual positions in sequence around the wheel.
+static const char absolute_position_table[16] = {0, 15, 7, 8, 3, 12, 4, 11, 1, 14, 6, 9, 2, 13, 5, 10};
+
 // Masks
 static const byte absolute_port_read_mask = 0b00001111; // Only keep the four lowest bits
 static const byte absolute_lower_nibble_mask = 0b00001111; // Only keep the four lowest bits
-
-static const byte absolute_position_mask = 0b00001111;
-static const byte previous_absolute_position_mask = 0b11110000;
-
-static const byte absolute_position_table[16] = {0, 15, 7, 8, 3, 12, 4, 11, 1, 14, 6, 9, 2, 13, 5, 10};
-
-// Encoder state packed into a byte so we can use it as an index into the direction array.
-// bits 7-4 == previous values
-// bits 3-0 == current values
-
-static byte absolute_encoder_state;
-static char absolute_position;
 
 
 /*************************************************************
@@ -55,6 +49,13 @@ long GetAbsolutePosition() {
 
 
 char absoluteDirectionLookup(char previous_segment, char current_segment) {
+  /* Turns out a giant set of if statements is more memory effient than a 2D lookup table.
+  It's also compiled down to the same size as doing less comparisions by using the
+  raw absolute_encoder_state. 
+  
+  I guess sometimes super dumb and simple code works best.
+  */
+  
   // No change
   if (previous_segment == current_segment) {
     return 0;
@@ -191,6 +192,7 @@ char absoluteDirectionLookup(char previous_segment, char current_segment) {
   {
     return -1;
   }
+  return 2; // Error
 }
 
 
@@ -200,6 +202,11 @@ char absoluteDirectionLookup(char previous_segment, char current_segment) {
 
 void UpdateAbsolutePosition()
 {
+  // Encoder state packed into a byte so we can use it as an index into the direction array.
+  // bits 7-4 == previous values
+  // bits 3-0 == current values
+  static byte absolute_encoder_state;
+
   byte previous_absolute_position_index = absolute_encoder_state & absolute_lower_nibble_mask;
 
   // Read the input data state of Bank B

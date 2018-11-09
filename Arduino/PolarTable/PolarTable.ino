@@ -5,8 +5,6 @@ const byte RASPBERRY_I2C_ADDRESS = 0x14;
 const byte SX1509_I2C_ADDRESS = 0x3E;  // SX1509 I2C address (00)
 
 typedef unsigned int uint;
-typedef unsigned char State2;
-
 
 #define THETA_MAX_TRAVEL 1000
 #define RADIUS_MAX_TRAVEL 1000
@@ -38,7 +36,6 @@ struct FsmEventDriver : public EventTask
   }
 };
 
-#include "WireTypes.h"
 #include "Error.h"
 #include "ButtonLED.h"
 #include "Button.h"
@@ -51,9 +48,6 @@ struct FsmEventDriver : public EventTask
 #include "RaspberryManager.h"
 #include "Raspberry.h"
 #include "I2C.h"
-#include "UI.h"
-
-#include "Testing.h"
 
 
 void setup()
@@ -73,7 +67,6 @@ void setup()
     while (1);
   }
   
-  ui_setup();
   raspberry_setup();
   raspberry_manager_setup();
   button_setup();
@@ -91,7 +84,6 @@ void setup()
 
 void loop()
 {
-  ui_loop();
   raspberry_loop();
   raspberry_manager_loop();
   button_loop();

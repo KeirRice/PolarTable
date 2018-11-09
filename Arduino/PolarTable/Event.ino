@@ -67,9 +67,9 @@ void EventManager::subscribe(Subscriber sub)
 void EventManager::trigger(Event *evt)
 {
   const EventID label = evt->label;
-  long system_label = (label & system_id_mask_inverse);
+  long system_label = (label & system_id_mask);
   
-  for (unsigned int i = 0; i < _subCount; ++i)
+  for (unsigned char i = 0; i < _subCount; ++i)
   {
     Subscriber *sub = _sub[i];
     if (sub)
@@ -80,7 +80,7 @@ void EventManager::trigger(Event *evt)
         (sub->task->execute)(evt);
       }
       else {
-        bool sub_wants_system_labels = (sub->label & system_id_mask_inverse) == 0;
+        bool sub_wants_system_labels = (sub->label & system_id_mask) == 0;
         if(sub_wants_system_labels and (system_label == label)){
           // Execute event
           (sub->task->execute)(evt);            
@@ -120,27 +120,27 @@ void EventManager::trigger(const EventID cLabel, const EventID fsm_event)
 */
 void EventManager::triggerInterval(TimedTask *task)
 {
-  int slot = getFreeSlot();
-  if (slot != -1){
+  unsigned char slot = getFreeSlot();
+  if (slot != 255){
     _interval[slot] = task;
     _next_event_ms = min(_next_event_ms, task->target_ms);
   }
 }
 
-int EventManager::getFreeSlot(){
+unsigned char EventManager::getFreeSlot(){
   TimedTask *task;
-  for(unsigned int i = 0; i < _intervalCount ; ++i){
+  for(unsigned char i = 0; i < _intervalCount ; ++i){
     task = _interval[0];
     if(task == nullptr){
       return i;
     }
   }
-//  DEBUG_PRINTLN("No free timer event slots.");
+  DEBUG_PRINTLN("No free timer event slots.");
 //  error_listener(ERROR_EVENT_SYSTEM); // Event system can't really use it's self...
-  return -1;
+  return 255;
 }
 
-void EventManager::clearSlot(int slot){
+void EventManager::clearSlot(unsigned char  slot){
   TimedTask *task = _interval[slot];
   delete task;
   _interval[slot] = nullptr;
@@ -158,7 +158,7 @@ void EventManager::tick()
 
     _next_event_ms = MAX_LONG;
     
-    for(unsigned int i = 0; i < _intervalCount ; ++i){
+    for(unsigned char i = 0; i < _intervalCount ; ++i){
       task = _interval[i];
       if (currentMs >= task->target_ms){
           trigger(task->evt);
@@ -175,7 +175,7 @@ void EventManager::tick()
 void EventManager::resetIntervals()
 {
   _next_event_ms = MAX_LONG;
-  for(unsigned int i = 0; i < _intervalCount ; ++i){
+  for(unsigned char i = 0; i < _intervalCount ; ++i){
     clearSlot(i);
   }
 }

@@ -18,7 +18,7 @@ static const byte HALF_STEP = 0b10;
 static const byte QUARTER_STEP = 0b01;
 static const byte EIGHTH_STEP = 0b11;
 
-unsigned char motor_settings = 0;
+static byte motor_settings = 0;
 
 /*************************************************************
   Functions
@@ -41,7 +41,7 @@ void motor_sleep(boolean do_sleep)
   // SLEEP active on low
   bitWrite(motor_settings, PIN_MOTOR_SLEEPX, do_sleep ? 0 : 1);
   bitWrite(motor_settings, PIN_MOTOR_SLEEPY, do_sleep ? 0 : 1);
-  
+
   send_state();
 }
 
@@ -50,18 +50,20 @@ void motor_enable(boolean enable)
   // ENABLE active on low
   bitWrite(motor_settings, PIN_MOTOR_ENABLEX, enable ? 0 : 1);
   bitWrite(motor_settings, PIN_MOTOR_ENABLEY, enable ? 0 : 1);
-  
+
   send_state();
 }
 
-void motor_wake_and_enable(){
-//  // SLEEP active on low
-//  bitWrite(motor_settings, PIN_MOTOR_SLEEPX, 1);
-//  bitWrite(motor_settings, PIN_MOTOR_SLEEPY, 1);
-//  // ENABLE active on low
-//  bitWrite(motor_settings, PIN_MOTOR_ENABLEX, 0);
-//  bitWrite(motor_settings, PIN_MOTOR_ENABLEY, 0);
-
+void motor_wake_and_enable() {
+  /* Optimised version below
+ 
+    // SLEEP active on low
+    bitWrite(motor_settings, PIN_MOTOR_SLEEPX, 1);
+    bitWrite(motor_settings, PIN_MOTOR_SLEEPY, 1);
+    // ENABLE active on low
+    bitWrite(motor_settings, PIN_MOTOR_ENABLEX, 0);
+    bitWrite(motor_settings, PIN_MOTOR_ENABLEY, 0);
+  */
   motor_settings = (motor_settings & 0b00001111) | 0b10100000;
   send_state();
 }

@@ -32,18 +32,17 @@ static const byte relative_lower_nibble_mask = 0b00001111;  // Only keep the fou
 static const byte relative_port_read_mask = 0b00000011;     // ARDUINO_D9, ARDUINO_D8
 
 static volatile byte relative_encoder_state;
-static volatile signed char relative_direction_buffer = 1;
-static volatile int relative_steps_buffer = 0;
+static volatile char relative_steps_buffer = 0;
 static volatile boolean relative_error_flag = false;
 
-static signed char relative_direction = 1;
+static char relative_direction = 1;
 static long relative_steps = 0;
 
 /*************************************************************
   Encoder lookup tables.
 *************************************************************/
 
-static const signed char relativeDirectionLookup[16] = {
+static const char relativeDirectionLookup[16] = {
   0,  // 00 00 // no change
   -1, // 00 01
   1,  // 00 10

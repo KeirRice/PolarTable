@@ -22,11 +22,10 @@ CRGB leds[NUM_LEDS];
 
 static const uint8_t blendRate = 50;  // How fast to blend.  Higher is slower.  [milliseconds]
 
-CHSV colorStart = CHSV(255, 255, 255); // starting color
-CHSV colorTarget = CHSV(128, 255, 255); // target color
-
-CHSV incomingColorTarget;
-CHSV colorCurrent;
+static CHSV colorCurrent;
+static CHSV colorSource = CHSV(255, 255, 255); // starting color
+static CHSV colorTarget = CHSV(128, 255, 255); // target color
+static CHSV incomingColorTarget;
 
 bool lighting_on = false;
 
@@ -50,7 +49,7 @@ bool blend(bool reset = false)
       k = 0;  // reset k value
       return true;
     }
-    colorCurrent = blend(colorStart, colorTarget, k++, SHORTEST_HUES);
+    colorCurrent = blend(colorSource, colorTarget, k++, SHORTEST_HUES);
     leds[0] = colorCurrent;
     FastLED.show();  // update the display
   }
@@ -102,6 +101,7 @@ void lighting_off_enter(){
 void lighting_blend_enter(){
   // Reset any current blending.
   blend(true);
+  colorSource = colorCurrent;
   colorTarget = incomingColorTarget;
 }
 void lighting_blend_state(){

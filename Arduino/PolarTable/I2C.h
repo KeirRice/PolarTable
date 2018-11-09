@@ -31,33 +31,42 @@ void i2c_loop() {}
 
    Total size: 10
 */
-static const byte reg_size = 10;
+static const char reg_size = 10;
 volatile uint8_t i2c_regs[reg_size];
 volatile byte reg_position;
 
 typedef struct RegMask {
-  RegMask(const EventID &_event, int _start_offset, int _size) : event(&_event), start_offset(_start_offset), mask_size(_size){};
 
-  /* Maybe cache this if we can spare the memory */
-  long mask() const{
-    return offset_bitmask(mask_size, start_offset);
-  }
-  
-  const EventID *event;
-  const byte start_offset;
-  const byte mask_size;
+  public:
+    RegMask(const EventID &_event, unsigned char _offset, unsigned char _size) : event(&_event), packed_size_offset((_size << 4) | _offset) {};
+    RegMask(const EventID &_event, unsigned char _packed_size_offset) : event(&_event), packed_size_offset(_packed_size_offset) {};
+
+    long mask() const {
+      return offset_bitmask(mask_size(), start_offset());
+    }
+
+    unsigned char start_offset() const {
+      return packed_size_offset >> 4;
+    }
+    unsigned char mask_size() const {
+      return packed_size_offset & 0b1111;
+    }
+    const EventID *event;
+
+  private:
+    // Pack the size into the high bits and offset in the low
+    const unsigned char packed_size_offset;
 } RegMask;
 
 
-const byte i2c_reg_change_events_size = 4;
+const char i2c_reg_change_events_size = 4;
 const RegMask i2c_reg_change_events[i2c_reg_change_events_size] = {
-  // RegMask(SYSTEM_STATE, 0, 1),
+  // RegMask(SYSTEM_STATE, 1),
   RegMask(LIGHTING_SET_STATE, 1, 1),
   RegMask(LIGHTING_SET_COLOUR, 2, 3),
   RegMask(LIGHTING_SET_BLEND_TIME, 5, 1),
   RegMask(MOTOR_SET, 6, 4),
-  };
-  
+};
 volatile long int i2c_reg_changed;
 
 
@@ -124,27 +133,27 @@ void i2c_loop()
 {
   // Look the events we know about.
   // Check if their bits have changed, if they have fire the events.
-  if(i2c_reg_changed == 0){
-      return;
+  if (i2c_reg_changed == 0) {
+    return;
   }
-  for(int i=0; i < i2c_reg_change_events_size; ++i) {
+  for (int i = 0; i < i2c_reg_change_events_size; ++i) {
     // If we are all 0 we are done
-    if(i2c_reg_changed == 0){
+    if (i2c_reg_changed == 0) {
       break;
     }
 
     // Test this bit
     RegMask reg_event = i2c_reg_change_events[i];
     long mask = reg_event.mask();
-    if(i2c_reg_changed & mask){
-      // Fire the event
-      byte reg_buffer[reg_event.mask_size];
+    if (i2c_reg_changed & mask) {
+      // Buffer the data
+      byte reg_buffer[reg_event.mask_size()];
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        // Buffer the data
-        memcpy(&reg_buffer[0], (byte*) &reg_buffer[0], reg_event.mask_size);
+        memcpy(&reg_buffer[0], (byte*) &reg_buffer[0], reg_event.mask_size());
         // Reset the bits
         i2c_reg_changed = i2c_reg_changed & ~mask;
       }
+      // Fire the event
       evtManager.trigger(*reg_event.event, &reg_buffer);
     }
   }

@@ -9,7 +9,7 @@
 #include "Arduino.h"
 #include "EventTypes.h"
 
-#define INTERVAL_SLOT_COUNT 0
+#define INTERVAL_SLOT_COUNT 1
 #define SUBSCRIBER_SLOT_COUNT 3
 
 #define MAX_LONG 2147483647
@@ -98,8 +98,8 @@ class EventManager
     void resetIntervals();
     
   private:
-    int getFreeSlot();
-    void clearSlot(int slot);
+    unsigned char getFreeSlot();
+    void clearSlot(unsigned char slot);
     
     TimedTask* _interval[INTERVAL_SLOT_COUNT];
     unsigned int _intervalCount;
@@ -108,6 +108,6 @@ class EventManager
     unsigned long _next_event_ms;
     
     Subscriber* _sub[SUBSCRIBER_SLOT_COUNT];
-    unsigned int _subCount;
-    unsigned int _subPos;
+    unsigned char _subCount;
+    unsigned char _subPos;
 };

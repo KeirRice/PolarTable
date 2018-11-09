@@ -14,8 +14,8 @@ void calibration_loop() {}
 
 void motors_calibration_enter(){
   motor_wake_and_enable();
-  theta_stepper.moveTo((long*) -THETA_MAX_TRAVEL);
-  radius_stepper.moveTo((long*) -RADIUS_MAX_TRAVEL);
+  theta_stepper.moveTo(-THETA_MAX_TRAVEL);
+  radius_stepper.moveTo(-RADIUS_MAX_TRAVEL);
 }
 
 void motors_calibration_active(){

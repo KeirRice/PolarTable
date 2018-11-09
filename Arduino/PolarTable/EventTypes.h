@@ -15,10 +15,10 @@
 // static long event_id_mask =   0b00000000000000000000000001111111;
 // static long action_id_mask =  0b00000000000000000000000010000000;
 // static long state_id_mask =   0b00000000000000000000000100000000;
-static long system_id_mask_inverse =  0b11111111111111111111111000000000;
+static long system_id_mask =  0b11111111111111111111111000000000;
 
-int event_id_counter = 0;
-int system_id_offset = 6;
+unsigned char event_id_counter = 0;
+unsigned char system_id_offset = 6;
 
 // EventID
 //  * Group
@@ -59,11 +59,11 @@ typedef struct EventID {
     bool operator< (const EventID  &f) const {
       return (long) * this <  (long)f;
     };
-    bool operator| (const EventID  &f) const {
-      return (long) * this |  (long)f;
+    EventID operator| (const EventID  &f) const {
+      return EventID((long) * this |  (long)f);
     };
-    bool operator& (const EventID  &f) const {
-      return (long) * this &  (long)f;
+    EventID operator& (const EventID  &f) const {
+      return EventID((long) * this &  (long)f);
     };
 
     bool operator> (const long   &i) const {
@@ -167,12 +167,13 @@ bool operator<=(const long &i, const EventID &f) {
 bool operator< (const long &i, const EventID &f) {
   return i <  (long)f;
 };
-bool operator| (const long &i, const EventID &f) {
-  return i |  (long)f;
+EventID operator| (const long &i, const EventID &f) {
+  return EventID(i |  (long)f);
 };
-bool operator& (const long &i, const EventID &f) {
-  return i &  (long)f;
+EventID operator& (const long &i, const EventID &f) {
+  return EventID(i &  (long)f);
 };
+
 
 
 typedef struct SystemID : public EventID {
