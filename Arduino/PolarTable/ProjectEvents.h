@@ -94,6 +94,7 @@ static const EventID MOTOR_RADIUS_STOP = MOVEMENT | MOTOR_RADIUS | STOP;
 static const EventID MOTOR_SET = MOVEMENT | SET;
 static const EventID CALIBRATION_START = CALIBRATION | START;
 static const EventID CALIBRATION_STOP = CALIBRATION | STOP;
+static const EventID MOTOR_SHUTDOWN = MOVEMENT | SHUTDOWN;
 
 
 
@@ -118,7 +119,7 @@ static const EventID RASPBERRY_SHUTDOWN = RASPBERRY | SHUTDOWN;
 static const EventID RASPBERRY_RESTART = RASPBERRY | RESTART;
 static const EventID RASPBERRY_HEARTBEAT = RASPBERRY | PULSE;
 static const EventID RASPBERRY_ON = RASPBERRY | ON;
-
+static const EventID RASBERRY_MESSAGE = RASPBERRY | SEND;
 
 static const EventID ERROR_LED_SIGNAL = SystemID(127); // event group
 static const EventID ERROR_EVENT = SystemID(128);

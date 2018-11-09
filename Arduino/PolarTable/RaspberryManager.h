@@ -14,7 +14,6 @@ void raspberry_manager_loop() {}
 #include "Event.h"
 #include "ProjectEvents.h"
 
-extern EventManager evtManager;
 
 /*************************************************************
   Raspberry State machine
@@ -41,10 +40,6 @@ Fsm fsm_raspberry(&state_raspberry_on);
 void set_raspberry_power(bool power_on){
   // Pull low to disconnect the power.
   digitalWrite(PIN_PI_POWER, power_on ? HIGH : LOW);  
-}
-
-void raspberry_listener(void* data){
-  fsm_raspberry.trigger((int) data);
 }
 
 void raspberry_startup_enter(){

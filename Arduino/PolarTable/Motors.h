@@ -86,6 +86,13 @@ void build_transitions(){
   fsm_motors.add_transition(&state_motors_stop, &state_motors_wake, MOTOR_MOVE, NULL);
   fsm_motors.add_transition(&state_motors_idle, &state_motors_wake, MOTOR_MOVE, NULL);
   fsm_motors.add_transition(&state_motors_sleep, &state_motors_wake, MOTOR_MOVE, NULL);
+
+  // Shutdown from anywhere
+  fsm_motors.add_transition(&state_motors_calibration, &state_motors_sleep, MOTOR_SHUTDOWN, NULL);
+  fsm_motors.add_transition(&state_motors_wake, &state_motors_sleep, MOTOR_SHUTDOWN, NULL);
+  fsm_motors.add_transition(&state_motors_active, &state_motors_sleep, MOTOR_SHUTDOWN, NULL);
+  fsm_motors.add_transition(&state_motors_stop, &state_motors_sleep, MOTOR_SHUTDOWN, NULL);
+  fsm_motors.add_transition(&state_motors_idle, &state_motors_sleep, MOTOR_SHUTDOWN, NULL);
 }
 
 void motors_wake_enter(){

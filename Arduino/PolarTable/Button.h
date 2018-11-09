@@ -29,7 +29,6 @@ bool just_woke = false;
 void system_on_enter();
 void system_on_state();
 void system_shutdown_enter();
-void system_shutdown_state();
 void system_off_enter();
 void system_off_state();
 void system_waking_enter();
@@ -37,16 +36,11 @@ void system_waking_enter();
 void on_trans_system_on_system_shutdown();
 
 State state_system_on(&system_on_enter, &system_on_state, NULL);
-State state_system_shutdown(&system_shutdown_enter, &system_shutdown_state, NULL);
+State state_system_shutdown(&system_shutdown_enter, NULL, NULL);
 State state_system_off(&system_off_enter, &system_off_state, NULL);
 State state_system_wake(&system_waking_enter, NULL, NULL);
 
 Fsm fsm_system(&state_system_on);
-
-
-/*************************************************************
-  Interface
-*************************************************************/
 
 /*************************************************************
   Functions
@@ -79,11 +73,12 @@ void system_on_state(){
 /* SHUTDOWN */
 void system_shutdown_enter(){
   evtManager.trigger(BUTTON_PULSE);
-  // TODO: Send shutdown command to PI
-  delay(3000);
-}
-void system_shutdown_state(){
-  // TODO: Check if Pi is down?
+  evtManager.trigger(RASPBERRY_SHUTDOWN);
+  evtManager.trigger(MOTOR_SHUTDOWN);
+  evtManager.trigger(LIGHTING_TURN_OFF);
+  
+  // SX1509 shutdown? We don't have a hardware reset line so use software.
+  io.reset(false);
 }
 
 /* OFF */
@@ -113,7 +108,7 @@ void button_setup()
   bounce.attach(PIN_WAKE_SWITCH);
 
   fsm_system.add_transition(&state_system_on, &state_system_shutdown, SYSTEM_SLEEP_ACTION, NULL);  
-  fsm_system.add_timed_transition(&state_system_shutdown, &state_system_off, 3000, NULL);
+  fsm_system.add_timed_transition(&state_system_shutdown, &state_system_off, 4000, NULL);
   
   fsm_system.add_transition(&state_system_off, &state_system_wake, SYSTEM_WAKE_ACTION, NULL);
   fsm_system.add_timed_transition(&state_system_wake, &state_system_on, 100, NULL);
