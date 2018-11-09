@@ -19,6 +19,7 @@ void motors_calibration_enter(){
 }
 
 void motors_calibration_active(){
+  // Run the motors until we hit our stops
   bool still_going = false;
   // PIN_C_SWITCH is the refrence point
   if(io.digitalRead(PIN_C_SWITCH)){
@@ -43,13 +44,24 @@ void motors_calibration_exit(){
   radius_stepper.setCurrentPosition(0);
 }
 
-
-
 void calibration_setup() {
   // Use io.pinMode(<pin>, <mode>) to set our relative encoder switches
   io.pinMode(PIN_A_SWITCH, INPUT_PULLUP);
   io.pinMode(PIN_B_SWITCH, INPUT_PULLUP);
 }
-void calibration_loop() {}
+
+void calibration_loop() {
+  // Safety checks
+  if(io.digitalRead(PIN_A_SWITCH)){
+    theta_stepper.move(-1);
+    theta_stepper.run();
+    evtManager.trigger(MOTOR_STOP);
+  }
+  if(io.digitalRead(PIN_B_SWITCH)){
+    theta_stepper.move(1);
+    theta_stepper.run();
+    evtManager.trigger(MOTOR_STOP);
+  }  
+}
 
 #endif // DISABLE_CALIBRATION

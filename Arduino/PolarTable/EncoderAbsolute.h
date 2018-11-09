@@ -24,13 +24,13 @@ extern SX1509 io; // Create an SX1509 object to be used throughout
 volatile bool SX1509Interrupt = false; // Track Interrupts in ISR
 
 // Masks
-static const byte absolute_port_read_mask = B00001111; // Only keep the four lowest bits
-static const byte absolute_lower_nibble_mask = B00001111; // Only keep the four lowest bits
+static const byte absolute_port_read_mask = 0b00001111; // Only keep the four lowest bits
+static const byte absolute_lower_nibble_mask = 0b00001111; // Only keep the four lowest bits
 
-const unsigned char absolute_position_mask = B00001111;
-const unsigned char previous_absolute_position_mask = B11110000;
+static const byte absolute_position_mask = 0b00001111;
+static const byte previous_absolute_position_mask = 0b11110000;
 
-const char absolute_position_table[16] = {0, 15, 7, 8, 3, 12, 4, 11, 1, 14, 6, 9, 2, 13, 5, 10};
+static const byte absolute_position_table[16] = {0, 15, 7, 8, 3, 12, 4, 11, 1, 14, 6, 9, 2, 13, 5, 10};
 
 // Encoder state packed into a byte so we can use it as an index into the direction array.
 // bits 7-4 == previous values
@@ -53,74 +53,144 @@ long GetAbsolutePosition() {
   Encoder lookup tables.
 *************************************************************/
 
-char absoluteDirectionLookup[16][16] = {2};
 
-void setupAbsoluteDirectionLookup() {
-  // TODO: Make this [15][2] and derive the index from row < column (beware wrapping)
+char absoluteDirectionLookup(char previous_segment, char current_segment) {
+  // No change
+  if (previous_segment == current_segment) {
+    return 0;
+  }
 
-  absoluteDirectionLookup[0][0] = 0;
-  absoluteDirectionLookup[0][1] = 1;
-  absoluteDirectionLookup[0][8] = -1;
+  // Foward
+  if (previous_segment == 0 && current_segment == 1)
+  {
+    return 1;
+  }
+  if (previous_segment == 1 && current_segment == 3)
+  {
+    return 1;
+  }
+  if (previous_segment == 2 && current_segment == 6)
+  {
+    return 1;
+  }
+  if (previous_segment == 3 && current_segment == 2)
+  {
+    return 1;
+  }
+  if (previous_segment == 4 && current_segment == 12)
+  {
+    return 1;
+  }
+  if (previous_segment == 5 && current_segment == 4)
+  {
+    return 1;
+  }
+  if (previous_segment == 6 && current_segment == 7)
+  {
+    return 1;
+  }
+  if (previous_segment == 7 && current_segment == 5)
+  {
+    return 1;
+  }
+  if (previous_segment == 8 && current_segment == 0)
+  {
+    return 1;
+  }
+  if (previous_segment == 9 && current_segment == 8)
+  {
+    return 1;
+  }
+  if (previous_segment == 10 && current_segment == 11)
+  {
+    return 1;
+  }
+  if (previous_segment == 11 && current_segment == 9)
+  {
+    return 1;
+  }
+  if (previous_segment == 12 && current_segment == 13)
+  {
+    return 1;
+  }
+  if (previous_segment == 13 && current_segment == 15)
+  {
+    return 1;
+  }
+  if (previous_segment == 14 && current_segment == 10)
+  {
+    return 1;
+  }
+  if (previous_segment == 15 && current_segment == 14)
+  {
+    return 1;
+  }
 
-  absoluteDirectionLookup[1][0] = -1;
-  absoluteDirectionLookup[1][1] = 0;
-  absoluteDirectionLookup[1][3] = 1;
-
-  absoluteDirectionLookup[2][2] = 0;
-  absoluteDirectionLookup[2][3] = -1;
-  absoluteDirectionLookup[2][6] = 1;
-
-  absoluteDirectionLookup[3][1] = -1;
-  absoluteDirectionLookup[3][2] = 1;
-  absoluteDirectionLookup[3][3] = 0;
-
-  absoluteDirectionLookup[4][4] = 0;
-  absoluteDirectionLookup[4][5] = -1;
-  absoluteDirectionLookup[4][12] = 1;
-
-  absoluteDirectionLookup[5][4] = 1;
-  absoluteDirectionLookup[5][5] = 0;
-  absoluteDirectionLookup[5][7] = -1;
-
-  absoluteDirectionLookup[6][2] = -1;
-  absoluteDirectionLookup[6][6] = 0;
-  absoluteDirectionLookup[6][7] = 1;
-
-  absoluteDirectionLookup[7][5] = 1;
-  absoluteDirectionLookup[7][6] = -1;
-  absoluteDirectionLookup[7][7] = 0;
-
-  absoluteDirectionLookup[8][0] = 1;
-  absoluteDirectionLookup[8][8] = 0;
-  absoluteDirectionLookup[8][9] = -1;
-
-  absoluteDirectionLookup[9][8] = 1;
-  absoluteDirectionLookup[9][9] = 0;
-  absoluteDirectionLookup[9][11] = -1;
-
-  absoluteDirectionLookup[10][10] = 0;
-  absoluteDirectionLookup[10][11] = 1;
-  absoluteDirectionLookup[10][14] = -1;
-
-  absoluteDirectionLookup[11][9] = 1;
-  absoluteDirectionLookup[11][10] = -1;
-  absoluteDirectionLookup[11][11] = 0;
-
-  absoluteDirectionLookup[12][4] = -1;
-  absoluteDirectionLookup[12][12] = 0;
-  absoluteDirectionLookup[12][13] = 1;
-
-  absoluteDirectionLookup[13][12] = -1;
-  absoluteDirectionLookup[13][13] = 0;
-  absoluteDirectionLookup[13][15] = 1;
-
-  absoluteDirectionLookup[14][10] = 1;
-  absoluteDirectionLookup[14][14] = 0;
-  absoluteDirectionLookup[14][15] = -1;
-
-  absoluteDirectionLookup[15][13] = -1;
-  absoluteDirectionLookup[15][14] = 1;
-  absoluteDirectionLookup[15][15] = 0;
+  // Back
+  if (previous_segment == 0 && current_segment == 8)
+  {
+    return -1;
+  }
+  if (previous_segment == 1 && current_segment == 0)
+  {
+    return -1;
+  }
+  if (previous_segment == 2 && current_segment == 3)
+  {
+    return -1;
+  }
+  if (previous_segment == 3 && current_segment == 1)
+  {
+    return -1;
+  }
+  if (previous_segment == 4 && current_segment == 5)
+  {
+    return -1;
+  }
+  if (previous_segment == 5 && current_segment == 7)
+  {
+    return -1;
+  }
+  if (previous_segment == 6 && current_segment == 2)
+  {
+    return -1;
+  }
+  if (previous_segment == 7 && current_segment == 6)
+  {
+    return -1;
+  }
+  if (previous_segment == 8 && current_segment == 9)
+  {
+    return -1;
+  }
+  if (previous_segment == 9 && current_segment == 11)
+  {
+    return -1;
+  }
+  if (previous_segment == 10 && current_segment == 14)
+  {
+    return -1;
+  }
+  if (previous_segment == 11 && current_segment == 10)
+  {
+    return -1;
+  }
+  if (previous_segment == 12 && current_segment == 4)
+  {
+    return -1;
+  }
+  if (previous_segment == 13 && current_segment == 12)
+  {
+    return -1;
+  }
+  if (previous_segment == 14 && current_segment == 15)
+  {
+    return -1;
+  }
+  if (previous_segment == 15 && current_segment == 13)
+  {
+    return -1;
+  }
 }
 
 
@@ -130,8 +200,8 @@ void setupAbsoluteDirectionLookup() {
 
 void UpdateAbsolutePosition()
 {
-  // byte previous_absolute_position_index = absolute_encoder_state & absolute_lower_nibble_mask;
-  
+  byte previous_absolute_position_index = absolute_encoder_state & absolute_lower_nibble_mask;
+
   // Read the input data state of Bank B
   // Mask out the data keeping only pins 11-8
   // Shift the last data we got left four bits
@@ -141,23 +211,24 @@ void UpdateAbsolutePosition()
   // Clear the iterrupt flag.
   // TODO: Add a function to the SX1509 library to clear without reading.
   io.interruptSource();
-  
+
   byte absolute_position_index = absolute_encoder_state & absolute_lower_nibble_mask;
   absolute_position = absolute_position_table[absolute_position_index];
 
-//  byte absolute_direction = absoluteDirectionLookup[previous_absolute_position_index][absolute_position_index];
-//  switch (absolute_direction){
-//    case 0:
-//      // No change
-//      break;
-//    case 2:
-//      // Error
-//      DEBUG_PRINTLN("Absolute position error.");
-//      break;
-//    default:
-//      DEBUG_PRINT_VAR("We moved to ", absolute_position));
-//      break;
-//  }
+  //absoluteDirectionLookup
+  byte absolute_direction = absoluteDirectionLookup(previous_absolute_position_index, absolute_position_index);
+  switch (absolute_direction) {
+    case 0:
+      // No change
+      break;
+    case 2:
+      // Error
+      DEBUG_PRINTLN("Absolute position error.");
+      break;
+    default:
+      DEBUG_PRINT_VAR("We moved to ", absolute_position);
+      break;
+  }
 }
 
 /*************************************************************
@@ -184,12 +255,9 @@ void encoder_absolute_setup()
   assert(PIN_H_IR == SX1509_B9);
   assert(PIN_I_IR == SX1509_B10);
   assert(PIN_J_IR == SX1509_B11);
-  
-  // Initalize the lookup tables.
-  // setupAbsoluteDirectionLookup();
 
   // The SX1509 has built-in debounce.
-  char debounce_time = 4; // <time_ms> can be either 0, 1, 2, 4, 8, 16, 32, or 64 ms.
+  char debounce_time = 2; // <time_ms> can be either 0, 1, 2, 4, 8, 16, 32, or 64 ms.
   io.debounceTime(debounce_time);
 
   // Use io.pinMode(<pin>, <mode>) to set our absolute encoder switches
@@ -199,7 +267,7 @@ void encoder_absolute_setup()
   io.pinMode(PIN_J_IR, INPUT_PULLUP);
 
   // Prime our values
-  UpdateAbsolutePosition(); 
+  UpdateAbsolutePosition();
 
   // Interupts on
   io.enableInterrupt(PIN_G_IR, CHANGE);
