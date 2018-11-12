@@ -36,11 +36,16 @@ Start  # Optional repeat start without Stop
 
 Stop
 
+More reference:
+	https://rheingoldheavy.com/i2c-signals/
+	https://robot-electronics.co.uk/i2c-tutorial
+
 """
 
 
 import pigpio
 import Queue
+import struct
 
 
 # Globals
@@ -382,18 +387,51 @@ class Register(object):
 	REGISTERS = list()
 	REGISTER_COUNT = 0
 
-	def __init__(self, name):
+	def __init__(self, name, size=1):
 		"""Init."""
 		self.name = name
 		self.index = Register.REGISTER_COUNT
 		Register.REGISTER_COUNT += 1
 		Register.REGISTERS.append(self)
 
+	def __int__(self):
+		"""For indexing."""
+		return self.index
+
 	@classmethod
 	def max(cls):
 		"""Highest register offset."""
 		return cls.REGISTER_COUNT
 
+
+class CompoundRegister(object):
+	"""Base for working with values that span multiple registers."""
+
+	def __init__(self, name, *args):
+		"""Init."""
+		self.name = name
+		self.registers = args
+
+	def pack(self, value):
+		"""Write a struct pack to get your value into bytes."""
+		return NotImplemented
+
+	def unpack(self, value):
+		"""Write a struct unpack to get your bytes into value."""
+		return NotImplemented
+
+
+class IntRegister(CompoundRegister):
+	"""Class for auto numbering registers."""
+
+	def pack(self, value):
+		"""Short int to bytes."""
+		return struct.pack('>h', value)
+
+	def unpack(self, value):
+		"""Byte to short int."""
+		return struct.unpack('>h', value)[0]
+		
 
 # Create the list of registers we are exposing.
 REG_STATUS = Register('REG_STATUS')
@@ -410,6 +448,9 @@ REG_MOTOR_R2 = Register('REG_MOTOR_R2')	 # Motor Radius Steps LSB
 
 REG_INTERUPTS_0 = Register('REG_INTERUPTS_0')  # Interupts Bank0
 REG_INTERUPTS_1 = Register('REG_INTERUPTS_1')  # Interupts Bank1
+
+REG_MOTOR_THETA = IntRegister('REG_MOTOR_THETA', REG_MOTOR_T1, REG_MOTOR_T2)
+REG_MOTOR_RADIUS = IntRegister('REG_MOTOR_RADIUS', REG_MOTOR_R1, REG_MOTOR_R2)
 
 
 class Registers(object):
@@ -456,10 +497,24 @@ class Registers(object):
 	# Python side interface
 	def read(self, register):
 		"""Read a register."""
-		return self.register_data[register]
+		if isinstance(register, Register):
+			return self.register_data[register]
+
+		elif isinstance(register, CompoundRegister):
+			values = b''
+			for reg in register.registers:
+				values += self.register_data[reg]
+			return register.unpack(values)
+
+		raise RuntimeError('Not supported')
 	
 	def write(self, register, value):
 		"""Write to a register."""
+		if isinstance(register, CompoundRegister):
+			for reg, val in zip(register.registers, register.pack(value)):
+				self.write(reg, val)
+			return
+
 		self.register_data[register] = value
 
 		# Update our interupt flags
@@ -485,8 +540,10 @@ def main():
 	ADDRESS = '\x14'
 	wire = Peripheral(SCL, SDA, ADDRESS)
 	try:
-		Registers(wire)
+		reg = Registers(wire)
 		while True:
 			pass
+		reg.write(REG_MOTOR_THETA, 654654)
+		reg.write(REG_MOTOR_RADIUS, 654654)
 	finally:
 		wire.cancel()
