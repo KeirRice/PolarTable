@@ -121,6 +121,33 @@ class PinBase(object):
 		"""Write to the pin."""
 		return NotImplemented
 
+	def __int__(self):
+		"""Int."""
+		return self.pin
+
+	def __radd__(self, other):
+		return other + int(self)
+	def __rsub__(self, other):
+		return other - int(self)
+	def __rmul__(self, other):
+		return other * int(self)
+	def __rmod__(self, other):
+		return other % int(self)
+	def __rdivmod__(self, other):
+		return divmod(other, int(self))
+	def __rpow__(self, other):
+		return other ** int(self)
+	def __rlshift__(self, other):
+		return other << int(self)
+	def __rrshift__(self, other):
+		return other >> int(self)
+	def __rand__(self, other):
+		return other & int(self)
+	def __rxor__(self, other):
+		return other ^ int(self)
+	def __ror__(self, other):
+		return other | int(self)
+
 class PiPin(PinBase):
 	"""Wrapper to swap modes when we need to read and write."""
 
@@ -162,7 +189,7 @@ class RpiPin(PinBase):
 
 	def setup(self):
 		"""Initial setup."""
-		self.pi.setup(self.pin, self.pi.IN, self.pi.PUD_OFF)
+		self.pi.setup(self.pin, self.pi.OUT, self.pi.PUD_OFF)
 
 	def set_mode(self, mode):
 		"""Update the pin mode if it needs to change.
@@ -176,16 +203,16 @@ class RpiPin(PinBase):
 
 	def read(self):
 		"""Read from the pin."""
-		self.set_mode(self.pin, self.pi.IN)
+		# self.set_mode(self.pin, self.pi.IN)
 		return self.pi.input(self.pin)
 
 	def write(self, output):
 		"""Write to the pin."""
-		self.set_mode(self.pin, self.pi.OUT)
+		# self.set_mode(self.pin, self.pi.OUT)
 		return self.pi.output(self.pin, output)
 
-ENABLE_PIGPIO = False
-ENABLE_RPI = True
+ENABLE_PIGPIO = True
+ENABLE_RPI = False
 if ENABLE_PIGPIO:
 
 	import pigpio
@@ -275,8 +302,8 @@ class Peripheral(object):
 
 		if ENABLE_PIGPIO:
 			# Callbacks from the hardware side
-			self.cb1 = self.pi.callback(self.SDA, pigpio.EITHER_EDGE, self.hardware_callback)
-			self.cb2 = self.pi.callback(self.SCL, pigpio.EITHER_EDGE, self.hardware_callback)
+			self.cb1 = pi.callback(self.SDA, pigpio.EITHER_EDGE, self.hardware_callback)
+			self.cb2 = pi.callback(self.SCL, pigpio.EITHER_EDGE, self.hardware_callback)
 
 		if ENABLE_RPI:
 			def hardware_callback_sda():
@@ -285,10 +312,10 @@ class Peripheral(object):
 			def hardware_callback_scl():
 				self.hardware_callback(self.SCL, self.SCL.read(), 0)
 
-			GPIO.add_event_detect(self.SDA, GPIO.BOTH)
-			GPIO.add_event_callback(self.SDA, hardware_callback_sda)
-			GPIO.add_event_detect(self.SCL, GPIO.BOTH)
-			GPIO.add_event_callback(self.SCL, hardware_callback_scl)
+			GPIO.add_event_detect(int(self.SDA), GPIO.BOTH)
+			GPIO.add_event_callback(int(self.SDA), hardware_callback_sda)
+			GPIO.add_event_detect(int(self.SCL), GPIO.BOTH)
+			GPIO.add_event_callback(int(self.SCL), hardware_callback_scl)
 
 	def cancel(self):
 		"""Clean up the callbacks."""
@@ -605,8 +632,8 @@ class Registers(object):
 	def __init__(self, wire):
 		"""Init."""
 		self.wire = wire
-		self.onReceive(self.i2cReceiveEvent)
-		self.onRequest(self.i2cRequestEvent)
+		wire.onReceive(self.i2cReceiveEvent)
+		wire.onRequest(self.i2cRequestEvent)
 
 		self.reg_position = 0
 		self.register_data = bytearray(Register.max())
