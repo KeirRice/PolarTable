@@ -693,3 +693,6 @@ def main():
 		reg.write(REG_MOTOR_RADIUS, 654654)
 	finally:
 		wire.cancel()
+
+if __name__ == '__main__':
+	main()
