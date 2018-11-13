@@ -2,7 +2,7 @@
 
 const byte ARDUINO_I2C_ADDRESS = 0x04;
 const byte RASPBERRY_I2C_ADDRESS = 0x14;
-const byte SX1509_I2C_ADDRESS = 0x3E;  // SX1509 I2C address (00)
+const byte SX1509_I2C_ADDRESS = 0x3E;
 
 typedef unsigned int uint;
 
