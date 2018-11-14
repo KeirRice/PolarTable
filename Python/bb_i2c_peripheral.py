@@ -220,7 +220,7 @@ if ENABLE_PIGPIO:
 	HIGH = 1
 	LOW = 0
 	PUD_OFF = pigpio.PUD_OFF
-	
+
 	Pin = PiPin
 
 
