@@ -37,6 +37,14 @@ AccelStepper *steppers[2] = {
 static long incomming_steps[2];
 volatile bool new_position_ready = true;
 
+long get_theta_motor_steps(){
+  return theta_stepper.currentPosition();
+}
+
+long get_radius_motor_steps(){
+  return radius_stepper.currentPosition();
+}
+
 /*************************************************************
   State
 *************************************************************/

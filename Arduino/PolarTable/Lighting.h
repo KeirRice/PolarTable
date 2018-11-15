@@ -37,7 +37,7 @@ bool get_lighting_state(){
   return lighting_on;
 }
 
-char* get_color() {
+char* get_lighting_color() {
   return (char*)(&leds[0]);
 }
 
