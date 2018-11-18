@@ -303,6 +303,8 @@ class Peripheral(object):
 		self.fall_oneshots = list()
 		self.rise_oneshots = list()
 
+		self.ack = False
+
 		self.debug_scl = u' '
 		self.debug_sda = u' '
 
@@ -416,7 +418,8 @@ class Peripheral(object):
 	def read_data(self):
 		"""Read data on the clock high pulses."""
 		# If we are not in a tansaction the data is for someone else.
-		if not self.transaction_active:
+		# Don't read data generated when we are sending an ack
+		if not self.transaction_active or self.ack:
 			return
 		
 		with Peripheral.Stretch(self.SCL):
@@ -428,8 +431,9 @@ class Peripheral(object):
 			if self._read_counter == 8:
 				# A whole byte has been read, check for an ack from the controller next clock tick.
 				self._read_counter = 0
-				self.process_packet()
+				packet = self._read_buffer
 				self._read_buffer = 0
+				self.process_packet(packet)
 			else:
 				# Haven't finished the byte yet, keep going.
 				self.rise_oneshots.append(self.read_data)
@@ -454,7 +458,7 @@ class Peripheral(object):
 				self._write_buffer = self.write_buffer.get_nowait()
 
 			# Writing is MSB first
-			self.SDA.write(self._write_buffer & 0b10000000)
+			self.SDA.write(1 if self._write_buffer & 0b10000000 else 0)
 			self._write_buffer = self._write_buffer << 1
 			self._write_counter += 1
 			
@@ -475,11 +479,16 @@ class Peripheral(object):
 		3) When clock falls, clear out our ack by writing high
 		4) Switch back to read mode ready for the next clock pulse
 		"""
+		self.ack = True
+		print 'write_ack'
 		self.SDA.write(pigpio.LOW)
 
 		def clear_ack():
+			self.ack = False
+			print 'clear_ack'
 			self.SDA.write(pigpio.HIGH)
 			self.rise_oneshots.append(self.read_data)
+
 		self.fall_oneshots.append(clear_ack)
 
 	def write_nack(self):
@@ -492,13 +501,13 @@ class Peripheral(object):
 		self.SDA.write(pigpio.HIGH)
 
 	# Process
-	def process_packet(self):
+	def process_packet(self, packet):
 		"""Action the data we just got."""
 		print 'process_packet'
 		if self.address_recieved:
 			# We have new data!
 			self.fall_oneshots.append(self.write_ack)
-			self.read_buffer.put_nowait(self._read_buffer)
+			self.read_buffer.put_nowait(packet)
 			self._bytes_recieved += 1
 
 		else:
@@ -507,14 +516,14 @@ class Peripheral(object):
 			if (self._read_buffer >> 2) == 0b11110:
 				# We are not using 10bit addresses so we can safely ignore this transaction.
 				return
-			address = self._read_buffer >> 1
+			address = packet >> 1
 			print 'address', address, bin(address)
 			if address != self.our_address:
 				self.transaction_active = False
 				# Ignore any transactions not for us.
 				return
 			self.fall_oneshots.append(self.write_ack)
-			self.rw = self._read_buffer & 1
+			self.rw = packet & 1
 
 			# Setup the callback chain for the transaction.
 			self.address_recieved = True
@@ -666,7 +675,7 @@ class Registers(object):
 			return
 
 		reg_position = int(self.wire.read(1)[0])  # struct.unpack('>I', self.wire.read())[0]
-		if reg_position not in self.register_data:
+		if 0 > reg_position > len(self.register_data):
 			raise RuntimeError("Fail we don't have a register at {0}".format(reg_position))
 		self.reg_position = reg_position
 
