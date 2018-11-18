@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Bitbashed IC2 communication as a peripheral (Slave mode).
 
 # Transaction
@@ -82,6 +83,7 @@ SUBSYSTEM=="gpio*", PROGRAM="/bin/sh -c 'chown -R root:gpio /sys/class/gpio && c
 
 import Queue
 import struct
+import threading
 
 
 class PinBase(object):
@@ -157,7 +159,7 @@ class PiPin(PinBase):
 
 	def setup(self):
 		"""Initial setup."""
-		self.pi.set_pull_up_down(self.pin, PUD_OFF)
+		self.pi.set_pull_up_down(self.pin, pigpio.PUD_OFF)
 
 	def set_mode(self, mode):
 		"""Update the pin mode if it needs to change.
@@ -166,19 +168,18 @@ class PiPin(PinBase):
 		externally.
 		"""
 		if self.mode != mode:
-			self.pi.set_mode(mode)
+			self.pi.set_mode(self.pin, mode)
 			self.mode = mode
 
 	def read(self):
 		"""Read from the pin."""
-		self.set_mode(self.pin, pigpio.INPUT)
+		self.set_mode(pigpio.INPUT)
 		return self.pi.read(self.pin)
 
 	def write(self, value):
 		"""Write to the pin."""
-		self.set_mode(self.pin, pigpio.OUTPUT)
+		self.set_mode(pigpio.OUTPUT)
 		return self.pi.write(self.pin, value)
-
 
 class RpiPin(PinBase):
 	"""Wrapper to swap modes when we need to read and write."""
@@ -213,16 +214,13 @@ class RpiPin(PinBase):
 
 ENABLE_PIGPIO = True
 ENABLE_RPI = False
+
 if ENABLE_PIGPIO:
 
-	import pigpio
-
-	HIGH = 1
-	LOW = 0
-	PUD_OFF = pigpio.PUD_OFF
+	import pigpio_mock as pigpio
+	# import pigpio
 
 	Pin = PiPin
-
 
 if ENABLE_RPI:
 
@@ -234,11 +232,15 @@ if ENABLE_RPI:
 
 	Pin = RpiPin
 
-
 # Globals
-
 NACK = 1
 ACK = 0
+
+SDA, SCL = 2, 3
+PIN_NAMES = {
+	SDA: 'SDA',
+	SCL: 'SCL',
+}
 
 
 class Peripheral(object):
@@ -256,12 +258,13 @@ class Peripheral(object):
 
 		def __enter__(self):
 			"""Pull low for clock streching."""
-			self.pin.write(LOW)
+			# self.pin.write(LOW)
 			return self
 
 		def __exit__(self, *args):
 			"""Release control of the clock."""
-			self.pin.write(HIGH)
+			# self.pin.write(HIGH)
+			pass
 
 	def __init__(self, SCL, SDA, address):
 		"""Init."""
@@ -300,10 +303,13 @@ class Peripheral(object):
 		self.fall_oneshots = list()
 		self.rise_oneshots = list()
 
+		self.debug_scl = u' '
+		self.debug_sda = u' '
+
 		if ENABLE_PIGPIO:
 			# Callbacks from the hardware side
-			self.cb1 = pi.callback(self.SDA, pigpio.EITHER_EDGE, self.hardware_callback)
-			self.cb2 = pi.callback(self.SCL, pigpio.EITHER_EDGE, self.hardware_callback)
+			self.cb1 = pi.callback(int(self.SDA), pigpio.EITHER_EDGE, self.hardware_callback)
+			self.cb2 = pi.callback(int(self.SCL), pigpio.EITHER_EDGE, self.hardware_callback)
 
 		if ENABLE_RPI:
 			def hardware_callback_sda():
@@ -342,20 +348,22 @@ class Peripheral(object):
 		self.fall_oneshots = list()
 		self.rise_oneshots = list()
 
+
 	# Hardware side callbacks.
 	def hardware_callback(self, pin, level, tick):
 		"""Callback on pin change from pigpio."""
-		if pin == self.SDA:
-			if level:
+		if pin == int(self.SDA):
+			if level == pigpio.HIGH:
 				self.sda_rise()
 			else:
 				self.sda_fall()
-		elif pin == self.SCL:
-			if level:
+		
+		elif pin == int(self.SCL):
+			if level == pigpio.HIGH:
 				self.scl_rise()
 			else:
 				self.scl_fall()
-
+		
 	def sda_fall(self):
 		"""SDA line just fell."""
 		self.watch_for_start()
@@ -366,24 +374,28 @@ class Peripheral(object):
 	
 	def scl_fall(self):
 		"""SCL line just fell."""
-		while len(self.fall_oneshots):
-			self.fall_oneshots.pop()()
+		if self.fall_oneshots:
+			func = self.fall_oneshots.pop(0)
+			func()
 	
 	def scl_rise(self):
 		"""SCL line just rose."""
-		while len(self.rise_oneshots):
-			self.rise_oneshots.pop()()
+		if self.rise_oneshots:
+			func = self.rise_oneshots.pop(0)
+			func()
 
 	def watch_for_start(self):
 		"""Start is when the SDA line falls when the SCL is held high."""
-		if self.SCL.read() == HIGH:
+		if self.SCL.read() == pigpio.HIGH:
 			if self.transaction_active:
 				# This is a repeated start!
 				# TODO: Maybe we can release some bytes here?
 				# self.release_bytes_so_far()
 				pass
+				print 'continue transaction'
 			else:
 				# New transaction.
+				print 'new transaction'
 				self.transaction_active = True
 
 			# Start our data read so we can get the address.
@@ -392,10 +404,11 @@ class Peripheral(object):
 
 	def watch_for_end(self):
 		"""End is when the SDA line raises when the SCL is held high."""
-		if self.SCL.read() == HIGH:
+		if self.SCL.read() == pigpio.HIGH:
 			# Clear out the transaction state
 			self.transaction_active = False
 			self.address_recieved = False
+			print 'end transaction'
 
 			self.release_bytes_so_far()
 
@@ -407,14 +420,16 @@ class Peripheral(object):
 			return
 		
 		with Peripheral.Stretch(self.SCL):
-			self._read_buffer = (self._read_buffer << 1) | self.SDA.read()
+			bit = self.SDA.read()
+			print 'bit', bit
+			self._read_buffer = (self._read_buffer << 1) | bit
 			self._read_counter += 1
-
+			 
 			if self._read_counter == 8:
 				# A whole byte has been read, check for an ack from the controller next clock tick.
 				self._read_counter = 0
-				self.fall_oneshots.append(self.write_ack)
 				self.process_packet()
+				self._read_buffer = 0
 			else:
 				# Haven't finished the byte yet, keep going.
 				self.rise_oneshots.append(self.read_data)
@@ -460,10 +475,10 @@ class Peripheral(object):
 		3) When clock falls, clear out our ack by writing high
 		4) Switch back to read mode ready for the next clock pulse
 		"""
-		self.SDA.write(LOW)
+		self.SDA.write(pigpio.LOW)
 
 		def clear_ack():
-			self.SDA.write(HIGH)
+			self.SDA.write(pigpio.HIGH)
 			self.rise_oneshots.append(self.read_data)
 		self.fall_oneshots.append(clear_ack)
 
@@ -473,13 +488,16 @@ class Peripheral(object):
 		We probabily don't even need to do this much as doing nothing will
 		also get interupted on the controll as a nack.
 		"""
-		self.SDA.write(HIGH)
+		print 'nack'
+		self.SDA.write(pigpio.HIGH)
 
 	# Process
 	def process_packet(self):
 		"""Action the data we just got."""
+		print 'process_packet'
 		if self.address_recieved:
 			# We have new data!
+			self.fall_oneshots.append(self.write_ack)
 			self.read_buffer.put_nowait(self._read_buffer)
 			self._bytes_recieved += 1
 
@@ -490,33 +508,35 @@ class Peripheral(object):
 				# We are not using 10bit addresses so we can safely ignore this transaction.
 				return
 			address = self._read_buffer >> 1
+			print 'address', address, bin(address)
 			if address != self.our_address:
 				self.transaction_active = False
 				# Ignore any transactions not for us.
 				return
+			self.fall_oneshots.append(self.write_ack)
 			self.rw = self._read_buffer & 1
 
 			# Setup the callback chain for the transaction.
 			self.address_recieved = True
-			if self.rw == Peripheral.CONTROLLER_REQUESTING:
+			if self.rw == 0:
 				if self.onSlaveTransmit:
 					self.onSlaveTransmit()
 				self.fall_oneshots.append(self.write_data)
-			elif self.rw == Peripheral.CONTROLLER_REQUESTING:
+			elif self.rw == 1:
 				self.rise_oneshots.append(self.read_data)
 
 	# Python side interface
 	def read(self, size=-1):
 		"""Read from the read buffer and return a byte encoded string."""
-		byte_string = b''
+		bytes_list = list()
 		if size == -1:
 			size = self.read_buffer.qsize()
 		try:
 			for i in range(size):
-				byte_string += chr(self.read_buffer.get_nowait())
+				bytes_list.append(self.read_buffer.get_nowait())  # += struct.pack('>I', self.read_buffer.get_nowait())
 		except Queue.Empty:
 			pass
-		return byte_string
+		return bytes_list
 
 	def write(self, value):
 		"""Write bytes in to the buffer for sending."""
@@ -641,12 +661,14 @@ class Registers(object):
 	# I2C interface
 	def i2cReceiveEvent(self, how_many):
 		"""We have new data to handle."""
+		print 'i2cReceiveEvent', how_many
 		if how_many < 1 or not self.wire.available():
 			return
 
-		self.reg_position = self.wire.read()
-		if self.reg_position not in self.register_data:
-			raise RuntimeError("Fail we don't have a register at that offset.")
+		reg_position = int(self.wire.read(1)[0])  # struct.unpack('>I', self.wire.read())[0]
+		if reg_position not in self.register_data:
+			raise RuntimeError("Fail we don't have a register at {0}".format(reg_position))
+		self.reg_position = reg_position
 
 		how_many -= 1
 		if not how_many:
@@ -655,7 +677,7 @@ class Registers(object):
 		registers_changed = list()
 		while how_many and self.wire.available():
 			# Set the value
-			self.registers[self.reg_position] = self.wire.read()
+			self.registers[self.reg_position] = self.wire.read(1)[0]
 			registers_changed.append(self.reg_position)
 			self.increment_register_position()
 			how_many -= 1
@@ -664,6 +686,7 @@ class Registers(object):
 
 	def i2cRequestEvent(self):
 		"""We need to send some data."""
+		print 'i2cRequestEvent', self.reg_position
 		self.wire.write(self.registers[self.reg_position])
 		self.increment_register_position()
 
@@ -707,19 +730,49 @@ class Registers(object):
 			# TODO: Call out to system that needs to update.
 			pass
 
+from itertools import izip_longest, izip
+
+def grouper(iterable, n, fillvalue='-'):
+    args = [iter(iterable)] * n
+    return izip_longest(*args, fillvalue=fillvalue)
 
 def main():
-	SDA, SCL = 2, 3
-	ADDRESS = '\x14'
+	
+	ADDRESS = 0x14
+	print 'listening: Address = ', ADDRESS, 'PINS', SDA, SCL
 	wire = Peripheral(SCL, SDA, ADDRESS)
+	sda_monitor = pigpio.MonitorPin(pin=SDA)
+	scl_monitor = pigpio.MonitorPin(pin=SCL)
+
 	try:
 		reg = Registers(wire)
+		
+		sda_monitor.start()
+		scl_monitor.start()
+		threading.Thread(target=pigpio._recieve_i2c).start()
+
 		while True:
 			pass
-		reg.write(REG_MOTOR_THETA, 654654)
-		reg.write(REG_MOTOR_RADIUS, 654654)
-	finally:
+		# reg.write(REG_MOTOR_THETA, 654654)
+		# reg.write(REG_MOTOR_RADIUS, 654654)
+
+	except KeyboardInterrupt:
+		print 'KeyboardInterrupt'
 		wire.cancel()
+
+	
+	sda_monitor.stop()
+	scl_monitor.stop()
+	scl_monitor.join()
+
+	sda_monitor.join()
+
+	for a, b in zip(list(grouper(unicode(scl_monitor), 60)), list(grouper(unicode(sda_monitor), 60))):
+	 	print ''
+	 	print u'SCL:', u''.join(a)
+	 	print u'SDA:', u''.join(b)
+		
+		
 
 if __name__ == '__main__':
 	main()
