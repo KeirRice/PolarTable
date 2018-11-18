@@ -45,9 +45,9 @@ struct FsmEventDriver : public EventTask
 #include "Lighting.h"
 #include "Motors.h"
 
+#include "I2C.h"
 #include "RaspberryManager.h"
 #include "Raspberry.h"
-#include "I2C.h"
 
 
 void setup()
@@ -60,12 +60,12 @@ void setup()
   DEBUG_PRINTLN("Setup serial.");
   DEBUG_WHERE();
 
-  if (!io.begin(SX1509_I2C_ADDRESS))
-  {
-    DEBUG_PRINTLN("Failed to begin SX1509 coms.");
-    evtManager.trigger(ERROR_EVENT, ERROR_SX1509);
-    while (1);
-  }
+//  if (!io.begin(SX1509_I2C_ADDRESS))
+//  {
+//    DEBUG_PRINTLN("Failed to begin SX1509 coms.");
+//    evtManager.trigger(ERROR_EVENT, ERROR_SX1509);
+//    while (1);
+//  }
   
   raspberry_setup();
   raspberry_manager_setup();
@@ -84,16 +84,16 @@ void setup()
 
 void loop()
 {
-  raspberry_loop();
-  raspberry_manager_loop();
-  button_loop();
-  button_led_loop();
-  lighting_loop();
-  encoder_relative_loop();
-  encoder_absolute_loop();
-  motor_loop();
+//  raspberry_loop();
+//  raspberry_manager_loop();
+//  button_loop();
+//  button_led_loop();
+//  lighting_loop();
+//  encoder_relative_loop();
+//  encoder_absolute_loop();
+//  motor_loop();
   i2c_loop();
-  calibration_loop();
+//  calibration_loop();
 }
 //void setup(){}
 //void loop(){}

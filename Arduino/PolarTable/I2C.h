@@ -20,7 +20,8 @@ void i2c_loop() {}
 void i2c_setup()
 {
   // Initialize i2c and make sure we are addressable
-  Wire.begin(ARDUINO_I2C_ADDRESS);
+  Wire.begin(); // ARDUINO_I2C_ADDRESS
+  Wire.setClock(10000);
 
   i2c_controller_setup();
   // i2c_peripheral_setup();

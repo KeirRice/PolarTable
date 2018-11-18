@@ -22,14 +22,14 @@ typedef struct Register {
     
     const EventID *set_event;  // Callback for when we have a value
 
-    const inline byte get_address(){
-      return register_adderess & 0b00111111;
+    const byte get_address(){
+      return packed_register_mask & 0b00111111;
     }
-    const inline byte get_bytes(){
-      return register_adderess >> 6;
+    const byte get_bytes(){
+      return packed_register_mask >> 6;
     }
-    const inline long get_mask(){
-      return offset_bitmask(mask_width(), register_adderess());
+    const long get_mask(){
+      return 1; // return offset_bitmask(this->get_bytes(), this->get_adderess());
     }
     
   private:
@@ -51,12 +51,17 @@ void send_raspberry_shutdown() {
      4: Another twi error took place (eg, the master lost bus arbitration).
   */
   Wire.beginTransmission(RASPBERRY_I2C_ADDRESS);
-  Wire.write(1);
+  byte payload = 0b10101010;
+  Wire.write(payload);
   byte ack = Wire.endTransmission();
   if (ack != 0) {
     DEBUG_PRINT("I2C send failed: ");
-    DEBUG_PRINT_VAR(ack);
-    evtManager.trigger(ERROR_RASPBERRY_SEND);
+    DEBUG_PRINT_VAR(RASPBERRY_I2C_ADDRESS, payload, ack);
+    // evtManager.trigger(ERROR_RASPBERRY_SEND);
+  }
+  else {
+    DEBUG_PRINT("I2C send success: ");
+    DEBUG_PRINT_VAR(RASPBERRY_I2C_ADDRESS, payload, ack);    
   }
 }
 
@@ -109,7 +114,7 @@ byte read_byte(byte peripheral_address, byte register_address){
   return data;
 }
 
-void read_bytes(byte peripheral_address, byte register_address, byte[] &data, byte byte_count){
+void read_bytes(byte peripheral_address, byte register_address, byte data[], byte byte_count){
   Wire.beginTransmission(peripheral_address);
   Wire.write(register_address);
   Wire.endTransmission(false);
@@ -125,8 +130,8 @@ void read_bytes(byte peripheral_address, byte register_address, byte[] &data, by
 int read_word(byte peripheral_address, byte register_address){
   byte data[2];
   read_bytes(peripheral_address, register_address, data, 2);
-  int data_word = read_bytes[0];
-  data_word = (data_word << 8) | read_bytes[1];
+  int data_word = data[0];
+  data_word = (data_word << 8) | data[1];
   return data_word;
 }
 
@@ -137,7 +142,7 @@ write_byte(byte peripheral_address, byte register_address, byte value){
   Wire.endTransmission(true);
 }
 
-void write_bytes(byte peripheral_address, byte register_address, byte[] &data, byte byte_count){
+void write_bytes(byte peripheral_address, byte register_address, byte data[], byte byte_count){
   Wire.beginTransmission(peripheral_address);
   Wire.write(register_address);
   byte p = 0;
@@ -175,10 +180,10 @@ REG_INTERUPTS_1 = Register('REG_INTERUPTS_1')  # Interupts Bank1
 const char raspberry_register_count = 4;
 const Register raspberry_registers[raspberry_register_count] = {
   // REG_STATUS = Register(0);
-  REG_LIGHTING_ON = Register(LIGHTING_SET_STATE, 2, 1),
-  REG_LIGHTING_COLOUR = Register(LIGHTING_SET_COLOUR, 3, 3);
-  REG_LIGHTING_BLEND_TIME = Register(LIGHTING_SET_BLEND_TIME, 6, 1);
-  REG_MOTOR = Register(MOTOR_SET, 7, 4);
+  Register(LIGHTING_SET_STATE, 2, 1), // REG_LIGHTING_ON
+  Register(LIGHTING_SET_COLOUR, 3, 3),  // REG_LIGHTING_COLOUR 
+  Register(LIGHTING_SET_BLEND_TIME, 6, 1),  // REG_LIGHTING_BLEND_TIME 
+  Register(MOTOR_SET, 7, 4) // REG_MOTOR 
 };
 
 void push_settings() {
@@ -195,24 +200,29 @@ void push_settings() {
   Wire.write(1);
 
   // Lighting
-  Wire.write(get_lighting_state());
+  // Wire.write(get_lighting_state());
+  Wire.write(1);
   
-  char *colors = get_lighting_color();
+  // char *colors = get_lighting_color();
+  char colors[3] = {0x22, 0xEE, 0x22};
   Wire.write(colors[0]);
   Wire.write(colors[1]);
   Wire.write(colors[2]);
   
   Wire.write(10); // Blend time
 
-  long t_steps = get_theta_motor_steps();
-  byte motor_steps_lsb = t_steps & 255;
-  byte motor_steps_msb = t_steps >> 8;
+  // long t_steps = get_theta_motor_steps();
+  byte motor_steps_lsb, motor_steps_msb;
+  long t_steps = 500;
+  motor_steps_lsb = t_steps & 255;
+  motor_steps_msb = t_steps >> 8;
   Wire.write(motor_steps_msb);
   Wire.write(motor_steps_lsb);
   
-  long r_steps = get_radius_motor_steps();
-  byte motor_steps_lsb = r_steps & 255;
-  byte motor_steps_msb = r_steps >> 8;
+  // long r_steps = get_radius_motor_steps();
+  long r_steps = 300;
+  motor_steps_lsb = r_steps & 255;
+  motor_steps_msb = r_steps >> 8;
   Wire.write(motor_steps_msb);
   Wire.write(motor_steps_lsb);
 
@@ -225,7 +235,7 @@ long poll_interupt() {
   return read_word(peripheral_address, register_address);
 }
 
-long clear_interupt() {
+long clear_interupts() {
   byte peripheral_address = RASPBERRY_I2C_ADDRESS;
   byte register_address = 10;  
   return write_word(peripheral_address, register_address, 0);
@@ -236,44 +246,51 @@ void i2c_controller_setup(){
 }
 
 void i2c_controller_loop(){
-  long interupt_state = poll_interupt();
 
-  // TODO: Can we spread out the updates over multiple frames.
-  
-  // Look the events we know about.
-  // Check if their bits have changed, if they have fire the events.
-  if (interupt_state == 0) {
-    return;
-  }
-  for (int i = 0; i < raspberry_register_count; ++i) {
-    // If we are all 0 we are done
-    if (interupt_state == 0) {
-      break;
-    }
-  
-    // Test this bit
-    Register reg_event = raspberry_registers[i];
-    long mask = reg_event.get_mask();
-    if (interupt_state & mask) {
-
-      byte byte_count = reg_event.mask_width;
-      byte reg_buffer[byte_count];
-      if(byte_count > 1){
-        read_bytes(RASPBERRY_I2C_ADDRESS, reg_event.get_address(), reg_buffer, reg_event.get_bytes());
-      }
-      else {
-        reg_buffer[0] = read_byte(RASPBERRY_I2C_ADDRESS, reg_event.get_address());
-      }
-      
-      // Reset the bits
-      interupt_state &= ~mask;
-      
-      // Fire the event
-      evtManager.trigger(*reg_event.event, &reg_buffer);
-    }
+  static int timer = 0;
+  if(timer < millis()){
+    send_raspberry_shutdown();
+    timer = millis() + 5000;
   }
   
-  clear_interupts();
+//  long interupt_state = poll_interupt();
+//
+//  // TODO: Can we spread out the updates over multiple frames.
+//  
+//  // Look the events we know about.
+//  // Check if their bits have changed, if they have fire the events.
+//  if (interupt_state == 0) {
+//    return;
+//  }
+//  for (int i = 0; i < raspberry_register_count; ++i) {
+//    // If we are all 0 we are done
+//    if (interupt_state == 0) {
+//      break;
+//    }
+//  
+//    // Test this bit
+//    Register reg_event = raspberry_registers[i];
+//    long mask = reg_event.get_mask();
+//    if (interupt_state & mask) {
+//
+//      byte byte_count = reg_event.get_bytes();
+//      byte reg_buffer[byte_count];
+//      if(byte_count > 1){
+//        read_bytes(RASPBERRY_I2C_ADDRESS, reg_event.get_address(), reg_buffer, reg_event.get_bytes());
+//      }
+//      else {
+//        reg_buffer[0] = read_byte(RASPBERRY_I2C_ADDRESS, reg_event.get_address());
+//      }
+//      
+//      // Reset the bits
+//      interupt_state &= ~mask;
+//      
+//      // Fire the event
+//      evtManager.trigger(*reg_event.set_event, &reg_buffer);
+//    }
+//  }
+//  
+//  clear_interupts();
   
 }
 
