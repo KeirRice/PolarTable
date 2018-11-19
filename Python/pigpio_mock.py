@@ -29,50 +29,69 @@ pin_callbacks = [None] * 30
 running = threading.Event()
 running.set()
 
-class callback_handle(object):
 
-	def cancel(self):
-		pass
+# Mock Interface.
 
 class pi(object):
+	"""Minimal mock of the pigpio.pi class."""
+
+	class callback_handle(object):
+		"""Mock handle when registering callbacks."""
+
+		def cancel(self):
+			"""Mocked to match pigpio."""
+			pass
 
 	connected = True
 
 	def set_mode(self, pin, mode):
+		"""Set the direction/mode of pin."""
 		pin_direction[pin] = mode
 
 	def set_pull_up_down(self, pin, pull):
+		"""Set pull up/down of pin. We just track how it is set, we don't actully pull the pins."""
 		pin_pull[pin] = pull
 
 	def read(self, pin):
+		"""Read current value."""
 		return _read(pin)
 
 	def write(self, pin, value):
+		"""Write to pin."""
 		if pin_direction[pin] != OUTPUT:
 			raise RuntimeError('Pin {d} is not in output mode.'.format(pin))
 		_write(pin, value)
 
 	def callback(self, pin, edge, callback):
-		# callback(pin, level, tick)
+		"""Register callbacks."""
 		pin_callbacks[pin] = callback
-		return callback_handle()  # should be a handle
+		return pi.callback_handle()  # Mock handle
 
 	def close(self):
+		"""Close the object for shutdown."""
 		running.clear()
+
 	cancel = close
 
 
+# Internals
+
 def _trigger_callback(pin, edge):
+	"""Fire the callback for the given pin/edge.
+
+	TODO: Support the edge callback filtering of pigpio.
+	"""
 	func = pin_callbacks[pin]
 	if func:
 		func(pin, edge, 0)
 
+
 def _write(pin, value):
-	# print '_write(', pin, value, ')'
+	"""Write values to the pins. Update edges and callbacks."""
 	edge = CONSTANT_EDGE
 
 	if value > pin_state[pin]:
-		edge |= RAISING_EDGE 
+		edge |= RAISING_EDGE
 	if value < pin_state[pin]:
 		edge |= FALLING_EDGE
 	pin_state[pin] = value
@@ -81,13 +100,17 @@ def _write(pin, value):
 		# TODO: Check callback was looking for this type of edge.
 		_trigger_callback(pin, value)
 
+
 def _read(pin):
+	"""Return the pin value."""
 	return pin_state[pin]
 
+# Simulation speed.
 speed = 0.1
 
-def _recieve_i2c():
 
+def _recieve_i2c():
+	"""Mock up the pins recieving an I2C signal."""
 	SCL = 3
 	SDA = 2
 
@@ -160,57 +183,3 @@ def _recieve_i2c():
 		clock_high = not clock_high
 
 	print 'mock _recieve_i2c %s sent!' % message
-
-
-class MonitorPin(threading.Thread):
-
-	def __init__(self, pin):
-		super(MonitorPin, self).__init__()
-		self.pin = pin
-		self.pin_buffer = u''
-
-		self.end = threading.Event()
-
-	def run(self):
-		pin = self.pin
-		sample_speed = speed / 10.0
-		symbol_map = {
-			u'/': u'‾',
-			u'‾': u'‾',
-			u'_': u'_',
-			u'\\': u'_',
-			u' ': u' ',
-			LOW: u'_',
-			HIGH: u'‾',
-		}
-		last_state = None
-		while not self.end.is_set():
-			state = _read(pin)
-			if last_state is None:
-				self.pin_buffer = symbol_map[state]
-			else:
-				if last_state != state:
-					if state == HIGH:
-						self.pin_buffer += u'/'
-					elif state == LOW:
-						self.pin_buffer += u'\\'
-					else:
-						raise RuntimeError('What')
-
-				else:
-					self.pin_buffer += symbol_map[state]
-
-			last_state = state
-			time.sleep(sample_speed)
-
-	def stop(self):
-		self.end.set()
-
-	def __unicode__(self):
-		return self.pin_buffer
-
-
-def delay():
-	target = time.time() + 0.0001
-	while target > time.time():
-		pass

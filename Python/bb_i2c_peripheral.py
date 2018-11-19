@@ -84,6 +84,7 @@ SUBSYSTEM=="gpio*", PROGRAM="/bin/sh -c 'chown -R root:gpio /sys/class/gpio && c
 import Queue
 import struct
 import threading
+import pigpio_monitor
 
 
 class PinBase(object):
@@ -272,9 +273,12 @@ class Peripheral(object):
 			pi = pigpio.pi()             # exit script if no connection
 			if not pi.connected:
 				raise RuntimeError('No Connection')
-		
+
 		if ENABLE_RPI:
 			pi = GPIO
+	
+		pigpio_monitor.SignalProbe(SDA, pi.read).start()
+		pigpio_monitor.SignalProbe(SCL, pi.read).start()
 		
 		# Pins and address
 		self.SCL = Pin(SCL, pi)
@@ -325,6 +329,22 @@ class Peripheral(object):
 			GPIO.add_event_detect(int(self.SCL), GPIO.BOTH)
 			GPIO.add_event_callback(int(self.SCL), hardware_callback_scl)
 
+		bit_monitor = pigpio_monitor.DataProbe('Bits', 100, False)
+		bit_monitor.start()
+		data_monitor = pigpio_monitor.DataProbe('Data', 101)
+		data_monitor.start()
+
+		self.bit_monitor = bit_monitor
+		self.data_monitor = data_monitor
+
+	def post_bit_monitor_char(self, char):
+		if self.bit_monitor:
+			self.bit_monitor.data(char)
+
+	def post_data_monitor_char(self, data):
+		if self.data_monitor:
+			self.data_monitor.data(data)
+
 	def cancel(self):
 		"""Clean up the callbacks."""
 		if ENABLE_PIGPIO:
@@ -349,7 +369,6 @@ class Peripheral(object):
 		self.error = False
 		self.fall_oneshots = list()
 		self.rise_oneshots = list()
-
 
 	# Hardware side callbacks.
 	def hardware_callback(self, pin, level, tick):
@@ -395,9 +414,11 @@ class Peripheral(object):
 				# self.release_bytes_so_far()
 				pass
 				print 'continue transaction'
+				self.post_bit_monitor_char('s')
 			else:
 				# New transaction.
 				print 'new transaction'
+				self.post_bit_monitor_char('s')
 				self.transaction_active = True
 
 			# Start our data read so we can get the address.
@@ -411,6 +432,7 @@ class Peripheral(object):
 			self.transaction_active = False
 			self.address_recieved = False
 			print 'end transaction'
+			self.post_bit_monitor_char('e')
 
 			self.release_bytes_so_far()
 
@@ -425,9 +447,11 @@ class Peripheral(object):
 		with Peripheral.Stretch(self.SCL):
 			bit = self.SDA.read()
 			print 'bit', bit
+
+			self.post_bit_monitor_char(str(bit))
 			self._read_buffer = (self._read_buffer << 1) | bit
 			self._read_counter += 1
-			 
+			
 			if self._read_counter == 8:
 				# A whole byte has been read, check for an ack from the controller next clock tick.
 				self._read_counter = 0
@@ -482,6 +506,7 @@ class Peripheral(object):
 		self.ack = True
 		print 'write_ack'
 		self.SDA.write(pigpio.LOW)
+		self.post_bit_monitor_char('a')
 
 		def clear_ack():
 			self.ack = False
@@ -510,6 +535,8 @@ class Peripheral(object):
 			self.read_buffer.put_nowait(packet)
 			self._bytes_recieved += 1
 
+			self.post_data_monitor_char(u'{:02x} '.format(packet))
+
 		else:
 			# Grab the address
 			# First frame after a start is always the address and Read/Write flag.
@@ -518,6 +545,7 @@ class Peripheral(object):
 				return
 			address = packet >> 1
 			print 'address', address, bin(address)
+			self.post_data_monitor_char(u'{:0x} '.format(address))
 			if address != self.our_address:
 				self.transaction_active = False
 				# Ignore any transactions not for us.
@@ -739,25 +767,15 @@ class Registers(object):
 			# TODO: Call out to system that needs to update.
 			pass
 
-from itertools import izip_longest, izip
-
-def grouper(iterable, n, fillvalue='-'):
-    args = [iter(iterable)] * n
-    return izip_longest(*args, fillvalue=fillvalue)
 
 def main():
-	
+	"""Run."""
 	ADDRESS = 0x14
 	print 'listening: Address = ', ADDRESS, 'PINS', SDA, SCL
 	wire = Peripheral(SCL, SDA, ADDRESS)
-	sda_monitor = pigpio.MonitorPin(pin=SDA)
-	scl_monitor = pigpio.MonitorPin(pin=SCL)
 
 	try:
 		reg = Registers(wire)
-		
-		sda_monitor.start()
-		scl_monitor.start()
 		threading.Thread(target=pigpio._recieve_i2c).start()
 
 		while True:
@@ -768,19 +786,6 @@ def main():
 	except KeyboardInterrupt:
 		print 'KeyboardInterrupt'
 		wire.cancel()
-
-	
-	sda_monitor.stop()
-	scl_monitor.stop()
-	scl_monitor.join()
-
-	sda_monitor.join()
-
-	for a, b in zip(list(grouper(unicode(scl_monitor), 60)), list(grouper(unicode(sda_monitor), 60))):
-	 	print ''
-	 	print u'SCL:', u''.join(a)
-	 	print u'SDA:', u''.join(b)
-		
 		
 
 if __name__ == '__main__':
