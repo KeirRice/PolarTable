@@ -20,31 +20,54 @@ UDP_IP = "127.0.0.1"
 UDP_PORT = 6000
 
 # Simulation speed.
-speed = 0.1
+SIMULATION_SPEED = 0.1
+SAMPLE_SPEED = SIMULATION_SPEED / 10.0
+
+START_TIME = time.time()
+
+
+def millis():
+	"""Milli seconds since script start."""
+	return int((time.time() - START_TIME) * 1000)
+
 
 # Client Side
 
-
-class SignalProbe(threading.Thread):
+class Probe(threading.Thread):
 	"""Monitor the levels of a given PIN."""
 
-	def __init__(self, pin, read_func):
+	def __init__(self, port_offset):
 		"""Init."""
 		super(SignalProbe, self).__init__()
-		self.pin = pin
-		self.read_func = read_func
-		self.pin_buffer = u''
-
+		
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		self.address = (UDP_IP, UDP_PORT + pin)
+		self.address = (UDP_IP, UDP_PORT + port_offset)
 
 		self.daemon = True
 
 	def run(self):
 		"""Main loop catches data and broadcasts it."""
-		pin = self.pin
+		return NotImplemented
 
-		sample_speed = speed / 10.0
+	def broadcast(self, char):
+		"""Send char out over UDP, hopfully to a listening monitor."""
+		encoded = char.encode('utf-8')
+		self.sock.sendto(encoded, self.address)
+
+
+class SignalProbe(Probe):
+	"""Monitor the levels of a given PIN."""
+
+	def __init__(self, pin, read_func):
+		"""Init."""
+		port_offset = pin
+		super(SignalProbe, self).__init__(port_offset)
+		self.pin = pin
+		self.read_func = read_func
+		self.pin_buffer = u''
+
+	def run(self):
+		"""Main loop catches data and broadcasts it."""
 		symbol_map = {
 			u'/': u'‾',
 			u'‾': u'‾',
@@ -56,7 +79,7 @@ class SignalProbe(threading.Thread):
 		}
 		last_state = None
 		while True:
-			state = self.read_func(pin)
+			state = self.read_func(self.pin)
 			char = symbol_map[state]
 
 			if last_state is not None and last_state != state:
@@ -69,12 +92,7 @@ class SignalProbe(threading.Thread):
 			self.broadcast(char)
 
 			last_state = state
-			time.sleep(sample_speed)
-
-	def broadcast(self, char):
-		"""Send char out over UDP, hopfully to a listening monitor."""
-		encoded = char.encode('utf-8')
-		self.sock.sendto(encoded, self.address)
+			time.sleep(SAMPLE_SPEED)
 
 
 class DataProbe(threading.Thread):
@@ -82,14 +100,10 @@ class DataProbe(threading.Thread):
 
 	def __init__(self, name, port_offset, compact=True):
 		"""Init."""
-		super(DataProbe, self).__init__()
+		super(DataProbe, self).__init__(port_offset)
 		self.daemon = True
 		
 		self.name = name
-		
-		port = UDP_PORT + port_offset
-		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		self.address = (UDP_IP, port)
 		
 		# If compact is False we insert spaces into the stream so it keeps
 		# up with the sample rate.
@@ -102,10 +116,6 @@ class DataProbe(threading.Thread):
 
 	def run(self):
 		"""Main loop catches data and broadcasts it."""
-		# Speed from mock, We want to keep our samples speed in lock step
-		speed = 0.1
-		sample_speed = speed / 10.0
-		
 		while True:
 			if self.char is None:
 				if self.compact is False:
@@ -113,12 +123,7 @@ class DataProbe(threading.Thread):
 			else:
 				self.broadcast(self.char)
 				self.char = None
-			time.sleep(sample_speed)
-
-	def broadcast(self, char):
-		"""Send char out over UDP, hopfully to a listening monitor."""
-		encoded = char.encode('utf-8')
-		self.sock.sendto(encoded, self.address)
+			time.sleep(SAMPLE_SPEED)
 
 
 # Server Side
@@ -139,7 +144,8 @@ class Signal(threading.Thread):
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
 		self.sock.bind((UDP_IP, port))
 
-		self.data = u''
+		self.data = list()
+		self.millis = list()
 		self.line = 0
 		self.new_data = False
 
@@ -161,14 +167,41 @@ class Signal(threading.Thread):
 		while True:
 			data, addr = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
 			incomming = data.decode('utf-8')
-			self.data += incomming
+			self.data.append(incomming)
+			self.millis.append(millis())
 			self.new_data = True
 
 	def present(self, width):
 		"""Return the most recent cached data upto the width."""
 		return NotImplemented
 
+"""
+********************************************************************************
+I2C Watcher
+********************************************************************************
 
+SDA(2) /‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\____________________________________________________________
+SCL(3) _____/‾‾‾‾‾‾‾‾\________/‾‾‾‾‾‾‾‾‾\________/‾‾‾‾‾‾‾‾\________/‾‾‾‾‾‾‾‾‾\________/
+BIT                           0                  0                  0                 0
+
+********************************************************************************
+Time	 	Tag				Binary				Hex				Decimal			Ascii
+	
+30			Address			0b010100			0x14			20			
+
+
+
+Commands: (P)ause, (←) Scrub Left, (→) Scrub Right, 
+
+
+
+
+
+--
+
+
+return chr(c) if curses.ascii.isalnum(c) else ''
+"""
 class DataSignal(Signal):
 	"""Data signals. Anything text based."""
 
@@ -177,11 +210,23 @@ class DataSignal(Signal):
 		super(DataSignal, self).__init__(UDP_PORT + port_offset, name)
 		self.line = line
 
-	def present(self, width):
+	def present_timeline(self, width):
 		"""Return the most recent cached data upto the width."""
 		self.new_data = False
-		return u'{name} {data}'.format(
-			name=self.name,
+
+		return u'{label:<10} {data}'.format(
+			label=self.name,
+			data=self.data if len(self.data) < width else self.data[-width:],
+		)
+
+	def present_table(self):
+		"""Return the most recent cached data upto the width."""
+
+		for data, timestamp in zip(self.)
+		timestamp = 
+
+		return u'{label:<10} {data}'.format(
+			label=self.name,
 			data=self.data if len(self.data) < width else self.data[-width:],
 		)
 
@@ -194,14 +239,16 @@ class PinSignal(Signal):
 		super(PinSignal, self).__init__(UDP_PORT + pin, name)
 		self.line = self.pin = pin
 
-	def present(self, width):
+	def present_timeline(self, width):
 		"""Return the most recent cached data upto the width."""
 		self.new_data = False
-		return u'{name}({pin}) {data}'.format(
-			name=self.name,
-			pin=self.pin,
-			data=self.data if len(self.data) < width else self.data[-width:],
-		)
+
+		label = u'{name}({pin})'.format(name=self.name, pin=self.pin)
+		
+		data = u''.join(self.data)
+		data = data if len(data) < width else data[-width:]
+
+		return u'{label:<10} {data}'.format(label=label, data=data)
 
 
 def main():
