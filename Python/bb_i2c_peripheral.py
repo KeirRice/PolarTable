@@ -765,7 +765,7 @@ class Registers(object):
 		"""Callback for the python side to know when data was updated."""
 		for register in registers_changed:
 			# TODO: Call out to system that needs to update.
-			pass
+			print 'register', register, self.register_data[register]
 
 
 def main():

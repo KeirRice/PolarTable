@@ -5,6 +5,7 @@ import time
 import threading
 import socket
 import curses
+from terminalsize import get_terminal_size
 
 import locale
 locale.setlocale(locale.LC_ALL, '')
@@ -38,7 +39,7 @@ class Probe(threading.Thread):
 
 	def __init__(self, port_offset):
 		"""Init."""
-		super(SignalProbe, self).__init__()
+		super(Probe, self).__init__()
 		
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		self.address = (UDP_IP, UDP_PORT + port_offset)
@@ -95,7 +96,7 @@ class SignalProbe(Probe):
 			time.sleep(SAMPLE_SPEED)
 
 
-class DataProbe(threading.Thread):
+class DataProbe(Probe):
 	"""Instrument code with this class to send data back to the monitor."""
 
 	def __init__(self, name, port_offset, compact=True):
@@ -171,37 +172,19 @@ class Signal(threading.Thread):
 			self.millis.append(millis())
 			self.new_data = True
 
-	def present(self, width):
+	def present_timeline(self, skip=0, limit=-1):
 		"""Return the most recent cached data upto the width."""
 		return NotImplemented
 
-"""
-********************************************************************************
-I2C Watcher
-********************************************************************************
+	def present_table(self, skip=0, limit=-1):
+		"""Return the most recent cached data upto the width."""
+		return NotImplemented
 
-SDA(2) /‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\____________________________________________________________
-SCL(3) _____/‾‾‾‾‾‾‾‾\________/‾‾‾‾‾‾‾‾‾\________/‾‾‾‾‾‾‾‾\________/‾‾‾‾‾‾‾‾‾\________/
-BIT                           0                  0                  0                 0
-
-********************************************************************************
-Time	 	Tag				Binary				Hex				Decimal			Ascii
-	
-30			Address			0b010100			0x14			20			
+	def pause(self, pause):
+		"""Pause data capture?"""
+		pass
 
 
-
-Commands: (P)ause, (←) Scrub Left, (→) Scrub Right, 
-
-
-
-
-
---
-
-
-return chr(c) if curses.ascii.isalnum(c) else ''
-"""
 class DataSignal(Signal):
 	"""Data signals. Anything text based."""
 
@@ -210,25 +193,43 @@ class DataSignal(Signal):
 		super(DataSignal, self).__init__(UDP_PORT + port_offset, name)
 		self.line = line
 
-	def present_timeline(self, width):
+	def present_timeline(self, skip=0, limit=-1):
 		"""Return the most recent cached data upto the width."""
-		self.new_data = False
+		skip = min(skip, len(self.data))
 
+		if limit < 0:
+			limit = len(self.data)
+		limit = min(limit, len(self.data) - skip) 
+		
+		data = list(reversed(self.data))[skip:limit]
+		data = reversed(data)
+		
 		return u'{label:<10} {data}'.format(
 			label=self.name,
-			data=self.data if len(self.data) < width else self.data[-width:],
+			data=u''.join(data)
 		)
 
-	def present_table(self):
-		"""Return the most recent cached data upto the width."""
+	def present_table(self, skip=0, limit=-1):
+		"""Return the most recent cached data in table form."""
+		skip = min(skip, len(self.data))
 
-		for data, timestamp in zip(self.)
-		timestamp = 
+		if limit < 0:
+			limit = len(self.data)
+		limit = min(limit, len(self.data) - skip) 
 
-		return u'{label:<10} {data}'.format(
-			label=self.name,
-			data=self.data if len(self.data) < width else self.data[-width:],
-		)
+		lines = list()
+		for data, timestamp in zip(self.data[skip:limit], self.millis[skip:limit]):
+			processed_data = (
+				'{timestamp:>12d}ms '
+				'{tag:<12s} '
+				'{data:#010b} '
+				'      {data:#04X} '
+				'       {data:>03d} '
+				'{data:>10c} ').format(timestamp=timestamp, tag='', data=int(data, 16))
+
+			lines.append(processed_data)
+
+		return lines
 
 
 class PinSignal(Signal):
@@ -239,16 +240,47 @@ class PinSignal(Signal):
 		super(PinSignal, self).__init__(UDP_PORT + pin, name)
 		self.line = self.pin = pin
 
-	def present_timeline(self, width):
-		"""Return the most recent cached data upto the width."""
-		self.new_data = False
-
-		label = u'{name}({pin})'.format(name=self.name, pin=self.pin)
+	def present_timeline(self, skip=0, limit=-1):
+		"""Return the most recent cached data upto the limit.
 		
-		data = u''.join(self.data)
-		data = data if len(data) < width else data[-width:]
+		For the skip value 0 is most recent.
+		"""
+		skip = min(skip, len(self.data))
 
-		return u'{label:<10} {data}'.format(label=label, data=data)
+		if limit < 0:
+			limit = len(self.data)
+		limit = min(limit, len(self.data) - skip) 
+
+
+		self.new_data = False
+		label = u'{name}({pin})'.format(name=self.name, pin=self.pin)
+
+		data = list(reversed(self.data))[skip:limit]
+		data = reversed(data)
+		return u'{label:<10} {data}'.format(label=label, data=u''.join(data))
+
+
+def timeline(timeline_win, timeline_signals):
+	"""Pump the timeline"""
+	for s in timeline_signals:
+		text = encoder(s.present_timeline(0, 80))
+		try:
+			timeline_win.addstr(s.line_hint() - 2, 0, text)
+		except Exception:
+
+			curses.nocbreak()
+			curses.echo()
+			curses.endwin()
+			print text
+			print s.line_hint()
+			raise
+
+
+def details(detail_win, detail_signals):
+	for s in detail_signals:
+		table = s.present_table(0, 80)
+		for row_num, row_text in enumerate(table): 
+			detail_win.addstr(row_num + 1, 0, row_text)
 
 
 def main():
@@ -270,56 +302,95 @@ def main():
 	stdscr = curses.initscr()
 	curses.noecho()
 	curses.cbreak()
-	stdscr.keypad(1)
-
+	curses.curs_set(False)
+	
 	try:
-		# Window size.
-		begin_x = 20
-		begin_y = 7
-		height = 30
-		width = 80
-		win = curses.newwin(height, width, begin_y, begin_x)
-		max_height, max_width = win.getmaxyx()
+		terminal_width, terminal_height = get_terminal_size()
 		
-		# Debug line.
-		# stdscr.addstr(max_height, 0, 'max_height {}, max_width {}'.format(max_height, max_width))
+		header_height = 4
+		timeline_height = 8
+		status_height = 4
+		details_height = terminal_height - header_height - timeline_height - status_height
+		
+		header_start = 0
+		timeline_start = header_height
+		details_start = timeline_start + timeline_height 
+		status_start = details_start + details_height 
 
-		signals = [
+		header_win = curses.newwin(header_height, terminal_width, header_start, 0)
+		timeline_win = curses.newwin(timeline_height, terminal_width, timeline_start, 0)
+		details_win = curses.newwin(details_height, terminal_width, details_start, 0)
+		status_win = curses.newwin(status_height, terminal_width, status_start, 0)
+
+		details_header = '{:>14} {:>12s} {:>10} {:>10} {:>10} {:>10}'.format(
+			'Timestamp',
+			'Tag',
+			'Binary',
+			'Hex',
+			'Decimal',
+			'ASCII'
+			)
+		details_win.addstr(0, 0, encoder(details_header))
+
+		status_win.addstr(0, 0, encoder(u'Commands: (P)ause, (←) Scrub Left, (→) Scrub Right, (Q)uit'))
+		status_win.addstr(1, 0, encoder(u'{} {}'.format(status_start, terminal_height)))
+		status_win.refresh()
+		
+		data_signal = DataSignal('DATA', 101, 6)  # The data in hex
+		timeline_signals = [
 			PinSignal('SDA', 2),  # SDA signal pin
 			PinSignal('SCL', 3),  # SCL signal pin
 			DataSignal('BIT   ', 100, 4),  # The bits as they get read
-			DataSignal('DATA', 101, 6),  # The data in hex
+			data_signal,
+		]
+		detail_signals = [
+			data_signal,
 		]
 
 		# Start listening
 		Signal.listen()
 
 		# Header
-		stdscr.addstr(0, 0, '*' * max_width)
-		stdscr.addstr(1, 0, 'I2C Watcher')
-		stdscr.addstr(2, 0, '*' * max_width)
-		stdscr.refresh()
+		header_win.addstr(0, 0, '*' * terminal_width)
+		header_win.addstr(1, 0, 'I2C Watcher')
+		header_win.addstr(2, 0, '*' * terminal_width)
+		header_win.refresh()
+
+		# Input
+		status_win.keypad(1)
+		status_win.nodelay(True)
 
 		# Update the data streams
-		offset = 4
-		new_data = True
+		pause = False
 		while True:
-			
-			for s in signals:
-				if s.new_data:
-					new_data = True
-					break
+			timeline(timeline_win, timeline_signals)
+			timeline_win.refresh()
+			details(details_win, detail_signals)
+			details_win.refresh()
 
-			if new_data:
-				for s in signals:
-					text = encoder(s.present(max_width))
-					stdscr.addstr(offset + s.line_hint(), 0, text)
-					# stdscr.redrawln(offset + s.pin)
-				stdscr.refresh()
-				new_data = False
+			try:
+				c = status_win.getch()
+			except curses.ERR:
+				c = None
+
+			if c in ('q', 'Q'):
+				return
+			elif c in ('p', 'P'):
+				pause = not pause
+				for s in timeline_signals:
+					s.pause(pause)
+			elif c in (curses.KEY_LEFT, curses.KEY_RIGHT):
+				return
+			elif c in (curses.KEY_UP, curses.KEY_DOWN):
+				return
+			else:
+				if c is not None:
+					status_win.addstr(2, 0, encoder(unicode(c)))
+
 
 	finally:
 		stdscr.keypad(0)
+		curses.curs_set(True)
 		curses.nocbreak()
 		curses.echo()
 		curses.endwin()

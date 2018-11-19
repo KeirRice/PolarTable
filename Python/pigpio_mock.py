@@ -117,7 +117,7 @@ def _recieve_i2c():
 	address = 0x14
 	rw = 1  # read
 
-	message = '[{0:08b} {1:08b}]'.format((address << 1) | rw, 2)
+	message = '[{0:08b} {1:08b} {2:08b}]'.format((address << 1) | rw, 2, 63)
 	print 'mock _recieve_i2c %s' % message
 
 	clock_high = True
