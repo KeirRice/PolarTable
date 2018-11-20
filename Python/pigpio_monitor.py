@@ -344,6 +344,85 @@ class Status(object):
 		cls.window.border()
 		cls.window.refresh()
 
+class Window(object):
+
+	def __init__(self):
+
+		self.sections = list()
+
+		self.header_layout = None
+		self.timeline_layout = None
+		self.details_layout = None
+		self.status_layout = None
+
+		self.header_win = None
+		self.timeline_win = None
+		self.details_win = None
+		self.status_win = None
+
+		self.height, self.width = get_terminal_size()
+
+		self.create()
+
+	def create(self):
+		self.layout()
+		self.header_win = curses.newwin(*self.header_layout)
+		self.timeline_win = curses.newwin(*self.timeline_layout)
+		self.details_win = curses.newwin(*self.details_layout)
+		self.status_win = curses.newwin(*self.status_layout)
+		self.border()
+
+	def layout(self):
+		self.width, self.height = get_terminal_size()
+		
+		header_height = 4
+		timeline_height = 8
+		status_height = 4
+		details_height = self.height - header_height - timeline_height - status_height
+		
+		header_start = 0
+		timeline_start = header_height
+		details_start = timeline_start + timeline_height
+		status_start = details_start + details_height
+
+		self.header_layout = (header_height, self.width, header_start, 0)
+		self.timeline_layout = (timeline_height, self.width, timeline_start, 0)
+		self.details_layout = (details_height, self.width, details_start, 0)
+		self.status_layout = (status_height, self.width, status_start, 0)
+
+	def resize(self):
+		self.layout()
+
+		self.header_win.erase()
+		self.timeline_win.erase()
+		self.details_win.erase()
+		self.status_win.erase()
+
+		self.header_win.resize(self.header_layout[0], self.header_layout[1])
+		self.timeline_win.resize(self.timeline_layout[0], self.timeline_layout[1])
+		self.details_win.resize(self.details_layout[0], self.details_layout[1])
+		self.status_win.resize(self.status_layout[0], self.status_layout[1])
+
+		self.header_win.mvwin(self.header_layout[2], self.header_layout[3])
+		self.timeline_win.mvwin(self.timeline_layout[2], self.timeline_layout[3])
+		self.details_win.mvwin(self.details_layout[2], self.details_layout[3])
+		self.status_win.mvwin(self.status_layout[2], self.status_layout[3])
+
+		self.border()
+		self.refresh()
+
+	def border(self):
+		# self.header_win.border()
+		self.timeline_win.border()
+		self.details_win.border()
+		self.status_win.border()
+
+	def refresh(self):
+		self.header_win.refresh()
+		self.timeline_win.refresh()
+		self.details_win.refresh()
+		self.status_win.refresh()
+
 
 def main():
 	ur"""Setup a window to work in.
@@ -362,34 +441,21 @@ def main():
 
 	"""
 	stdscr = curses.initscr()
+	curses.start_color()
 	curses.noecho()
 	curses.cbreak()
 	curses.curs_set(False)
 	
 	try:
-		terminal_width, terminal_height = get_terminal_size()
-		
-		header_height = 4
-		timeline_height = 8
-		status_height = 4
-		details_height = terminal_height - header_height - timeline_height - status_height
-		
-		header_start = 0
-		timeline_start = header_height
-		details_start = timeline_start + timeline_height
-		status_start = details_start + details_height
+		w = Window()
+		header_win = w.header_win
+		timeline_win = w.timeline_win
+		details_win = w.details_win
+		status_win = w.status_win
 
-		header_win = curses.newwin(header_height, terminal_width, header_start, 0)
-		timeline_win = curses.newwin(timeline_height, terminal_width, timeline_start, 0)
-		details_win = curses.newwin(details_height, terminal_width, details_start, 0)
-		status_win = curses.newwin(status_height, terminal_width, status_start, 0)
 		Status.set_window(status_win)
 
-		timeline_win.border()
-		details_win.border()
-		status_win.border()
-
-		timeline_win.refresh()
+		w.refresh()
 
 		details_header = '{:>14} {:>12s} {:>10} {:>10} {:>10} {:>10}'.format(
 			'Timestamp',
@@ -417,14 +483,18 @@ def main():
 		Signal.listen()
 
 		# Header
-		header_win.addstr(0, 0, '*' * terminal_width)
+		header_win.addstr(0, 0, '*' * w.width)
 		header_win.addstr(1, 0, 'I2C Watcher')
-		header_win.addstr(2, 0, '*' * terminal_width)
+		header_win.addstr(2, 0, '*' * w.width)
 		header_win.refresh()
 
 		# Input
-		status_win.keypad(1)
-		status_win.nodelay(True)
+		stdscr.nodelay(True)
+
+		KEY_UP = 0x41
+		KEY_DOWN = 0x42
+		KEY_RIGHT = 0x43
+		KEY_LEFT = 0x44
 
 		# Update the data streams
 		pause = False
@@ -432,23 +502,25 @@ def main():
 			timeline(timeline_win, timeline_signals)
 			details(details_win, data_signal)
 			try:
-				c = status_win.getch()
+				c = stdscr.getch()
 			except curses.ERR:
-				c = None
+				continue
 
-			if c in ('q', 'Q'):
+			if c in (KEY_LEFT, KEY_RIGHT):
 				return
-			elif c in ('p', 'P'):
+			elif c in (KEY_UP, KEY_DOWN):
+				return
+			elif c == curses.KEY_RESIZE:
+				w.resize()
+			elif c == curses.KEY_HOME:
+				return
+			elif c in (ord('q'), ord('Q')):
+				return
+			elif c in (ord('p'), ord('P')):
 				pause = not pause
+				Status.write(u'pause = {}'.format(pause))
 				for s in timeline_signals:
 					s.pause(pause)
-			elif c in (curses.KEY_LEFT, curses.KEY_RIGHT):
-				return
-			elif c in (curses.KEY_UP, curses.KEY_DOWN):
-				return
-			else:
-				if c is not None:
-					status_win.addstr(2, 0, encoder(unicode(c)))
 
 	finally:
 		stdscr.keypad(0)
