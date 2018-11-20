@@ -123,14 +123,13 @@ class DataProbe(Probe):
 	def run(self):
 		"""Main loop catches data and broadcasts it."""
 		while True:
-			if self.char is None:
+			if self.char.empty():
 				if self.compact is False:
 					self.broadcast(' ')
 			else:
 				try:
 					while True:
 						char, tag = self.char.get_nowait()
-						print 'broadcast', char, tag
 						self.broadcast(char, tag)
 				except Queue.Empty:
 					pass
@@ -207,22 +206,10 @@ class DataSignal(Signal):
 		"""Init."""
 		super(DataSignal, self).__init__(UDP_PORT + port_offset, name)
 		self.line = line
+		self.seperator = u''
 
-	def present_timeline(self, skip=0, limit=-1):
-		"""Return the most recent cached data upto the width."""
-		skip = min(skip, len(self.data))
-
-		if limit < 0:
-			limit = len(self.data)
-		limit = min(limit, len(self.data) - skip)
-		
-		data = list(reversed(self.data))[skip:skip + limit]
-		data = [unicode(d['data']) for d in reversed(data)]
-		
-		return u'{label:<10} {data}'.format(
-			label=self.name,
-			data=u''.join(data)
-		)
+	def set_seperator(self, seperator):
+		self.seperator = seperator
 
 	def present_table(self, skip=0, limit=-1, context=None):
 		"""Return the most recent cached data in table form."""
@@ -251,11 +238,32 @@ class DataSignal(Signal):
 					'{data:>10c} ').format(
 					timestamp=data['timestamp'],
 					tag=data['tag'],
-					data=int(data['data'], 16))
+					data=data['data'])
 
 			lines.append(processed_data)
 
 		return lines
+
+	def present_timeline(self, skip=0, limit=-1):
+		"""Return the most recent cached data upto the width."""
+		skip = min(skip, len(self.data))
+
+		label_width = 11
+		limit -= label_width
+		if limit < 0:
+			limit = len(self.data)
+		limit = min(limit, len(self.data) - skip)
+		
+		data = list(reversed(self.data))[skip:skip + limit]
+		data = [d['data'] for d in reversed(data)]
+		
+		label = u'{label:<10}'.format(
+			label=self.name,
+			)
+		data_string = '{data}'.format(
+			data=self.seperator.join([d if isinstance(d, basestring) else u'{:#02x}'.format(d) for d in data if d != ''])
+		)
+		return label, data_string
 
 	def length(self):
 		"""Number of rows of data."""
@@ -277,6 +285,8 @@ class PinSignal(Signal):
 		"""
 		skip = min(skip, len(self.data))
 
+		label_width = 11
+		limit -= label_width
 		if limit < 0:
 			limit = len(self.data)
 		limit = min(limit, len(self.data) - skip)
@@ -287,64 +297,18 @@ class PinSignal(Signal):
 		data = list(reversed(self.data))[skip:skip + limit]
 		data = [d['data'] for d in reversed(data)]
 		
-		return u'{label:<10} {data}'.format(label=label, data=u''.join(data))
+		label = u'{label:<10}'.format(
+			label=self.name,
+			)
+		data_string = u'{data}'.format(
+			data=u''.join(data)
+		)
+		return label, data_string
 
-
-def timeline(timeline_win, timeline_signals):
-	"""Pump the timeline"""
-	for s in timeline_signals:
-		hy, hx = timeline_win.getmaxyx()
-		text = encoder(s.present_timeline(0, hx - 20))
-		try:
-			timeline_win.addstr(s.line_hint() - 1, 1, text)
-		except Exception:
-
-			curses.nocbreak()
-			curses.echo()
-			curses.endwin()
-			print text
-			print s.line_hint()
-			raise
-	timeline_win.refresh()
-
-
-def details(detail_win, detail_signal):
-	s = detail_signal
-
-	hy, hx = detail_win.getmaxyx()
-	hy -= 3
-	offset = max(0, s.length() - hy)
-	limit = hy
-
-	table = s.present_table(offset, limit)
-
-	for row_num, row_text in enumerate(table):
-		detail_win.move(row_num + 2, 1)
-		detail_win.clrtoeol()
-		detail_win.addstr(row_num + 2, 1, row_text)
-		# Status.write('offset = {}, limit = {}, len = {}, row_num = {}'.format(offset, limit, s.length(), row_num))
-
-	detail_win.border()
-	detail_win.refresh()
-
-
-class Status(object):
-
-	window = None
-
-	@classmethod
-	def set_window(cls, window):
-		cls.window = window
-
-	@classmethod
-	def write(cls, text):
-		cls.window.move(2, 1)
-		cls.window.clrtoeol()
-		cls.window.addstr(2, 1, encoder(text))
-		cls.window.border()
-		cls.window.refresh()
 
 class Window(object):
+
+	status_window = None
 
 	def __init__(self):
 
@@ -360,6 +324,8 @@ class Window(object):
 		self.details_win = None
 		self.status_win = None
 
+		self.windows = list()
+
 		self.height, self.width = get_terminal_size()
 
 		self.create()
@@ -367,10 +333,15 @@ class Window(object):
 	def create(self):
 		self.layout()
 		self.header_win = curses.newwin(*self.header_layout)
+		self.windows.append(self.header_win)
 		self.timeline_win = curses.newwin(*self.timeline_layout)
+		self.windows.append(self.timeline_win)
 		self.details_win = curses.newwin(*self.details_layout)
+		self.windows.append(self.details_win)
 		self.status_win = curses.newwin(*self.status_layout)
-		self.border()
+		self.windows.append(self.status_win)
+		Window.status_window = self.status_win
+		self.refresh()
 
 	def layout(self):
 		self.width, self.height = get_terminal_size()
@@ -393,10 +364,8 @@ class Window(object):
 	def resize(self):
 		self.layout()
 
-		self.header_win.erase()
-		self.timeline_win.erase()
-		self.details_win.erase()
-		self.status_win.erase()
+		for window in self.windows:
+			window.erase()
 
 		self.header_win.resize(self.header_layout[0], self.header_layout[1])
 		self.timeline_win.resize(self.timeline_layout[0], self.timeline_layout[1])
@@ -408,6 +377,7 @@ class Window(object):
 		self.details_win.mvwin(self.details_layout[2], self.details_layout[3])
 		self.status_win.mvwin(self.status_layout[2], self.status_layout[3])
 
+		self.content()
 		self.border()
 		self.refresh()
 
@@ -418,11 +388,75 @@ class Window(object):
 		self.status_win.border()
 
 	def refresh(self):
-		self.header_win.refresh()
-		self.timeline_win.refresh()
-		self.details_win.refresh()
-		self.status_win.refresh()
+		for window in self.windows:
+			window.refresh()
 
+	def content(self):
+		self.header_content()
+		self.details_content()
+		self.status_content()
+	
+	def header_content(self):
+		self.header_win.addstr(0, 0, '*' * self.width)
+		self.header_win.addstr(1, 1, 'I2C Watcher')
+		self.header_win.addstr(2, 0, '*' * self.width)
+	
+	def details_content(self):
+		details_header = '{:>14} {:>12s} {:>10} {:>10} {:>10} {:>10}'.format(
+			'Timestamp',
+			'Tag',
+			'Binary',
+			'Hex',
+			'Decimal',
+			'ASCII'
+		)
+		self.details_win.addstr(1, 1, encoder(clip(details_header, self.width - 2)))
+	
+	def status_content(self):
+		help_text = u'Commands: (P)ause, (←) Scrub Left, (→) Scrub Right, (Q)uit'
+		self.status_win.addstr(1, 1, encoder(clip(help_text, self.width - 2)))
+
+	def timeline(self, timeline_signals):
+		"""Pump the timeline"""
+		for s in timeline_signals:
+			content_width = self.width - 2
+			label, stream = s.present_timeline(0, content_width)
+			padding = content_width - len(label) - 1 - len(stream)
+			if padding:
+				stream = (u' ' * padding) + stream
+			self.timeline_win.addstr(s.line_hint() - 1, 1, encoder(label + ' ' + stream))
+		self.timeline_win.refresh()
+
+	def details(self, detail_signal):
+		hy, hx = self.details_win.getmaxyx()
+		hy -= 3  # Heading + borders
+		offset = max(0, detail_signal.length() - hy)
+		limit = hy
+
+		table = detail_signal.present_table(offset, limit)
+
+		for row_num, row_text in enumerate(table):
+			self.details_win.move(row_num + 2, 1)
+			self.details_win.clrtoeol()
+			self.details_win.addstr(row_num + 2, 1, row_text)
+			
+		self.details_win.border()
+		self.details_win.refresh()
+
+	@classmethod
+	def set_status(cls, *args):
+		width, _ = get_terminal_size()
+		text = u' '.join([unicode(a) for a in args])
+		text = clip(text, width - 2)
+		
+		cls.status_window.move(2, 1)
+		cls.status_window.clrtoeol()
+		cls.status_window.addstr(2, 1, encoder(text))
+		cls.status_window.border()
+		cls.status_window.refresh()
+
+def clip(text, width):
+	return text[:min(len(text), width)]
 
 def main():
 	ur"""Setup a window to work in.
@@ -451,27 +485,10 @@ def main():
 		header_win = w.header_win
 		timeline_win = w.timeline_win
 		details_win = w.details_win
-		status_win = w.status_win
+		status_win = w.status_win		
 
-		Status.set_window(status_win)
-
-		w.refresh()
-
-		details_header = '{:>14} {:>12s} {:>10} {:>10} {:>10} {:>10}'.format(
-			'Timestamp',
-			'Tag',
-			'Binary',
-			'Hex',
-			'Decimal',
-			'ASCII'
-		)
-		details_win.addstr(1, 1, encoder(details_header))
-		details_win.refresh()
-
-		status_win.addstr(1, 1, encoder(u'Commands: (P)ause, (←) Scrub Left, (→) Scrub Right, (Q)uit'))
-		status_win.refresh()
-		
 		data_signal = DataSignal('DATA', 101, 6)  # The data in hex
+		data_signal.set_seperator(u' ')
 		timeline_signals = [
 			PinSignal('SDA', 2),  # SDA signal pin
 			PinSignal('SCL', 3),  # SCL signal pin
@@ -481,12 +498,6 @@ def main():
 
 		# Start listening
 		Signal.listen()
-
-		# Header
-		header_win.addstr(0, 0, '*' * w.width)
-		header_win.addstr(1, 0, 'I2C Watcher')
-		header_win.addstr(2, 0, '*' * w.width)
-		header_win.refresh()
 
 		# Input
 		stdscr.nodelay(True)
@@ -498,9 +509,11 @@ def main():
 
 		# Update the data streams
 		pause = False
+		
 		while True:
-			timeline(timeline_win, timeline_signals)
-			details(details_win, data_signal)
+
+			w.timeline(timeline_signals)
+			w.details(data_signal)
 			try:
 				c = stdscr.getch()
 			except curses.ERR:
