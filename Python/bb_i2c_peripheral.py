@@ -538,7 +538,7 @@ class Peripheral(object):
 			self.read_buffer.put_nowait(packet)
 			self._bytes_recieved += 1
 
-			self.post_data_monitor_char(u'{:02x} '.format(packet), 'Read')
+			self.post_data_monitor_char(packet, 'Read')
 
 		else:
 			# Grab the address
@@ -548,7 +548,7 @@ class Peripheral(object):
 				return
 			address = packet >> 1
 			print 'address', address, bin(address)
-			self.post_data_monitor_char(u'{:d}'.format(address), tag='Address')
+			self.post_data_monitor_char(address, tag='Address')
 			
 			if address != self.our_address:
 				self.transaction_active = False
@@ -562,11 +562,11 @@ class Peripheral(object):
 			if self.rw == 0:
 				if self.onSlaveTransmit:
 					self.onSlaveTransmit()
-				self.post_data_monitor_char('0', tag='Write Mode')
+				self.post_data_monitor_char(0, tag='Write Mode')
 				self.fall_oneshots.append(self.write_data)
 
 			elif self.rw == 1:
-				self.post_data_monitor_char('1', tag='Read Mode')
+				self.post_data_monitor_char(1, tag='Read Mode')
 				self.rise_oneshots.append(self.read_data)
 
 			else:
