@@ -298,6 +298,7 @@ class Peripheral(object):
 		self.write_buffer = Queue.Queue()
 		self._write_counter = 0
 		self._write_buffer = 0
+		self._write_packet = None
 
 		# State
 		self.transaction_active = False
@@ -329,21 +330,18 @@ class Peripheral(object):
 			GPIO.add_event_detect(int(self.SCL), GPIO.BOTH)
 			GPIO.add_event_callback(int(self.SCL), hardware_callback_scl)
 
-		bit_monitor = pigpio_monitor.DataProbe('Bits', 100, False)
-		bit_monitor.start()
-		data_monitor = pigpio_monitor.DataProbe('Data', 101)
-		data_monitor.start()
-
-		self.bit_monitor = bit_monitor
-		self.data_monitor = data_monitor
+		self.bit_monitor = pigpio_monitor.DataProbe('Bits', 100, False)
+		self.bit_monitor.start()
+		self.data_monitor = pigpio_monitor.DataProbe('Data', 101)
+		self.data_monitor.start()
 
 	def post_bit_monitor_char(self, char):
 		if self.bit_monitor:
 			self.bit_monitor.data(char)
 
-	def post_data_monitor_char(self, data):
+	def post_data_monitor_char(self, data, tag=''):
 		if self.data_monitor:
-			self.data_monitor.data(data)
+			self.data_monitor.data(data, tag)
 
 	def cancel(self):
 		"""Clean up the callbacks."""
@@ -415,10 +413,12 @@ class Peripheral(object):
 				pass
 				print 'continue transaction'
 				self.post_bit_monitor_char('s')
+				self.post_data_monitor_char('', tag='Repeated Start')
 			else:
 				# New transaction.
 				print 'new transaction'
 				self.post_bit_monitor_char('s')
+				self.post_data_monitor_char('', tag='Start')
 				self.transaction_active = True
 
 			# Start our data read so we can get the address.
@@ -433,6 +433,7 @@ class Peripheral(object):
 			self.address_recieved = False
 			print 'end transaction'
 			self.post_bit_monitor_char('e')
+			self.post_data_monitor_char('', tag='End')
 
 			self.release_bytes_so_far()
 
@@ -479,7 +480,7 @@ class Peripheral(object):
 
 		with Peripheral.Stretch(self.SCL):
 			if self._write_buffer is None:
-				self._write_buffer = self.write_buffer.get_nowait()
+				self._write_packet = self._write_buffer = self.write_buffer.get_nowait()
 
 			# Writing is MSB first
 			self.SDA.write(1 if self._write_buffer & 0b10000000 else 0)
@@ -488,6 +489,7 @@ class Peripheral(object):
 			
 			if self._write_counter == 8:
 				# The byte has been written, check for an ack from the controller next clock tick.
+				self.post_data_monitor_char(u'{:02x} '.format(self._write_packet), 'Write')
 				self._write_counter = 0
 				self._write_buffer = None
 				self.rise_oneshots.append(self.read_nack)
@@ -507,6 +509,7 @@ class Peripheral(object):
 		print 'write_ack'
 		self.SDA.write(pigpio.LOW)
 		self.post_bit_monitor_char('a')
+		self.post_data_monitor_char('', tag='Send Ack')
 
 		def clear_ack():
 			self.ack = False
@@ -535,7 +538,7 @@ class Peripheral(object):
 			self.read_buffer.put_nowait(packet)
 			self._bytes_recieved += 1
 
-			self.post_data_monitor_char(u'{:02x} '.format(packet))
+			self.post_data_monitor_char(u'{:02x} '.format(packet), 'Read')
 
 		else:
 			# Grab the address
@@ -545,7 +548,8 @@ class Peripheral(object):
 				return
 			address = packet >> 1
 			print 'address', address, bin(address)
-			self.post_data_monitor_char(u'{:0x} '.format(address))
+			self.post_data_monitor_char(u'{:d}'.format(address), tag='Address')
+			
 			if address != self.our_address:
 				self.transaction_active = False
 				# Ignore any transactions not for us.
@@ -558,9 +562,15 @@ class Peripheral(object):
 			if self.rw == 0:
 				if self.onSlaveTransmit:
 					self.onSlaveTransmit()
+				self.post_data_monitor_char('0', tag='Write Mode')
 				self.fall_oneshots.append(self.write_data)
+
 			elif self.rw == 1:
+				self.post_data_monitor_char('1', tag='Read Mode')
 				self.rise_oneshots.append(self.read_data)
+
+			else:
+				raise RuntimeError('Whaaaa')
 
 	# Python side interface
 	def read(self, size=-1):
@@ -714,7 +724,7 @@ class Registers(object):
 		registers_changed = list()
 		while how_many and self.wire.available():
 			# Set the value
-			self.registers[self.reg_position] = self.wire.read(1)[0]
+			self.register_data[self.reg_position] = self.wire.read(1)[0]
 			registers_changed.append(self.reg_position)
 			self.increment_register_position()
 			how_many -= 1
@@ -778,8 +788,8 @@ def main():
 		reg = Registers(wire)
 		threading.Thread(target=pigpio._recieve_i2c).start()
 
-		while True:
-			pass
+		# while True:
+		# 	pass
 		# reg.write(REG_MOTOR_THETA, 654654)
 		# reg.write(REG_MOTOR_RADIUS, 654654)
 

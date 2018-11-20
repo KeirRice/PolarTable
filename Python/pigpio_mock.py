@@ -111,13 +111,14 @@ speed = 0.1
 
 def _recieve_i2c():
 	"""Mock up the pins recieving an I2C signal."""
+
 	SCL = 3
 	SDA = 2
 
 	address = 0x14
 	rw = 1  # read
 
-	message = '[{0:08b} {1:08b} {2:08b}]'.format((address << 1) | rw, 2, 63)
+	message = '[{0:08b} {1:08b} {2:08b} ]'.format((address << 1) | rw, 2, 63)
 	print 'mock _recieve_i2c %s' % message
 
 	clock_high = True
@@ -125,47 +126,47 @@ def _recieve_i2c():
 	_write(SDA, HIGH)
 	time.sleep(speed)
 
+	started = False
+	going_to_stop = False
+	going_to_start = False
 	while running.is_set():
-
-		if not message:
+		if not message and not going_to_stop:
 			break
-		
-		if message[0] == '[':
-			# print 'start'
-			# scl high then data falls
-			_write(SCL, HIGH)
-			time.sleep(speed / 2.0)
-			_write(SDA, LOW)
-			time.sleep(speed / 2.0)
-			message = message[1:]
-
-			continue
-
-		elif message[0] == ']':
-			# print 'end'
-			# scl high then data raises
-			_write(SCL, HIGH)
-			time.sleep(speed / 2.0)
-			_write(SDA, HIGH)
-			time.sleep(speed / 2.0)
-			message = message[1:]
-
-			continue
 
 		# Pulse the clock
 		if clock_high:
 			_write(SCL, HIGH)
 		else:
-			_write(SCL, LOW)
+			if started:
+				_write(SCL, LOW)
 		time.sleep(speed / 2.0)
 
-		if clock_high:
+		if _read(SCL):
+			# Hold data
+			if message and message[0] == '[':
+				message = message[1:]
+				going_to_start = True
+			if going_to_start:
+				# print 'start'
+				# scl high then data falls
+				_write(SDA, LOW)
+				started = True
+				going_to_start = False
+
+			if going_to_stop:
+				# scl high then data raises
+				_write(SDA, HIGH)
+				started = False
+				going_to_stop = False
+
 			# Hold data
 			time.sleep(speed / 2.0)
 
 		else:
+			# Clock low, change data
 			char = message[0]
 			message = message[1:]
+			going_to_stop = False
 			# print 'char', char
 			# Change data
 			if char == '0':
@@ -177,6 +178,15 @@ def _recieve_i2c():
 			elif char == ' ':
 				# should have ack, set high as the other end will pull low
 				_write(SDA, HIGH)
+
+			elif char == '[':
+				_write(SDA, HIGH)
+				going_to_start = True
+			
+			elif char == ']':
+				print 'char ]'
+				_write(SDA, LOW)
+				going_to_stop = True
 
 			time.sleep(speed / 2.0)
 		
