@@ -163,6 +163,7 @@ class Signal(threading.Thread):
 		self.data = list()
 		self.line = 0
 		self.new_data = False
+		self.selection_index = -1
 
 		Signal.__signals.append(self)
 
@@ -198,6 +199,21 @@ class Signal(threading.Thread):
 		"""Pause data capture?"""
 		pass
 
+	def length(self):
+		"""Number of rows of data."""
+		return len(self.data)
+
+	def index_to_timestamp(self, selection_index):
+		"""Return the time stamp for the index."""
+		return self.data[selection_index]['timestamp']
+
+	def timestamp_to_index(self, timestamp):
+		"""Return the time stamp for the index."""
+		for i, d in enumerate(self.data):
+			if d['timestamp'] > timestamp:
+				return i - 1
+		raise LookupError('No timestamp found.')
+
 
 class DataSignal(Signal):
 	"""Data signals. Anything text based."""
@@ -207,13 +223,24 @@ class DataSignal(Signal):
 		super(DataSignal, self).__init__(UDP_PORT + port_offset, name)
 		self.line = line
 		self.seperator = u''
+		self.timeline_format_string = u'{}'
+		self.timeline_format_width = 1
 
 	def set_seperator(self, seperator):
+		"""If the out put needs a seperator character set it here."""
 		self.seperator = seperator
+	
+	def set_timeline_format_string(self, format_string, width):
+		"""How are we presenting the data and how wide will if be."""
+		self.timeline_format_string = format_string
+		self.timeline_format_width = width
 
-	def present_table(self, skip=0, limit=-1, context=None):
+	def set_selection_index(self, index):
+		self.selection_index = index
+
+	def present_table(self, skip=0, limit=-1):
 		"""Return the most recent cached data in table form."""
-		skip = max(0, min(skip, len(self.data)))
+		skip = clamp(0, skip, len(self.data) - 1)
 
 		if limit < 0:
 			limit = len(self.data)
@@ -245,29 +272,34 @@ class DataSignal(Signal):
 		return lines
 
 	def present_timeline(self, skip=0, limit=-1):
-		"""Return the most recent cached data upto the width."""
-		skip = min(skip, len(self.data))
+		""""""
+		skip = clamp(0, skip, self.length() - 1)
+		
+		data = list()
+		counter = 0
+		for d in self.data[skip:]:
+			if d['data'] != '':
+				data.append(self.timeline_format_string.format(d['data']))
+				counter += 1
+			if counter >= limit:
+				break
 
-		label_width = 11
-		limit -= label_width
 		if limit < 0:
-			limit = len(self.data)
-		limit = min(limit, len(self.data) - skip)
-		
-		data = list(reversed(self.data))[skip:skip + limit]
-		data = [d['data'] for d in reversed(data)]
-		
+			limit = len(data) - 1
+		limit = clamp(0, limit, len(data) - 1)
+
 		label = u'{label:<10}'.format(
 			label=self.name,
-			)
-		data_string = '{data}'.format(
-			data=self.seperator.join([d if isinstance(d, basestring) else u'{:#02x}'.format(d) for d in data if d != ''])
 		)
+		data_string = self.seperator.join(data)
 		return label, data_string
 
-	def length(self):
-		"""Number of rows of data."""
-		return len(self.data)
+	def width_to_limit(self, display_width):
+		"""Return the max limit of data items that will fit in display_width."""
+		label_width = 11
+		timeline_width = display_width - label_width
+		max_data_item_count = timeline_width // self.timeline_format_width
+		return max_data_item_count
 
 
 class PinSignal(Signal):
@@ -279,38 +311,50 @@ class PinSignal(Signal):
 		self.line = self.pin = pin
 
 	def present_timeline(self, skip=0, limit=-1):
-		"""Return the most recent cached data upto the limit.
-		
-		For the skip value 0 is most recent.
-		"""
-		skip = min(skip, len(self.data))
-
-		label_width = 11
-		limit -= label_width
-		if limit < 0:
-			limit = len(self.data)
-		limit = min(limit, len(self.data) - skip)
+		"""Return the most recent cached data upto the limit."""
+		skip = clamp(0, skip, self.length() - 1)
+		limit = clamp(0, limit, self.length() - 1 - skip)
 
 		self.new_data = False
 		label = u'{name}({pin})'.format(name=self.name, pin=self.pin)
 
-		data = list(reversed(self.data))[skip:skip + limit]
-		data = [d['data'] for d in reversed(data)]
+		data = [d['data'] for d in self.data[skip:skip + limit]]
 		
 		label = u'{label:<10}'.format(
 			label=self.name,
-			)
+		)
 		data_string = u'{data}'.format(
 			data=u''.join(data)
 		)
 		return label, data_string
 
+	def width_to_limit(self, display_width):
+		"""Return the max limit of data items that will fit in display_width."""
+		label_width = 11
+		timeline_width = display_width - label_width
+		data_format_width = 1
+		max_data_item_count = timeline_width // data_format_width
+		return max_data_item_count
+
 
 class Window(object):
+	"""Curses Window."""
 
 	status_window = None
 
-	def __init__(self):
+	def __init__(self, stdscr):
+		"""Init."""
+		self.stdscr = stdscr
+
+		self.quit = False
+		self.paused = False
+		self.selection_index = -1
+		self.selection_timestamp = -1
+
+		self.detail_length = 0
+		self.detail_data_window = None
+
+		self.timeline_data_window = dict()
 
 		self.sections = list()
 
@@ -329,8 +373,12 @@ class Window(object):
 		self.height, self.width = get_terminal_size()
 
 		self.create()
+		self.content()
+		self.border()
+		self.refresh()
 
 	def create(self):
+		"""Create the windows."""
 		self.layout()
 		self.header_win = curses.newwin(*self.header_layout)
 		self.windows.append(self.header_win)
@@ -341,12 +389,12 @@ class Window(object):
 		self.status_win = curses.newwin(*self.status_layout)
 		self.windows.append(self.status_win)
 		Window.status_window = self.status_win
-		self.refresh()
 
 	def layout(self):
+		"""Calculate the sizes and locations of the windows."""
 		self.width, self.height = get_terminal_size()
 		
-		header_height = 4
+		header_height = 3
 		timeline_height = 8
 		status_height = 4
 		details_height = self.height - header_height - timeline_height - status_height
@@ -362,6 +410,7 @@ class Window(object):
 		self.status_layout = (status_height, self.width, status_start, 0)
 
 	def resize(self):
+		"""Re-apply the layouts to the windows."""
 		self.layout()
 
 		for window in self.windows:
@@ -382,9 +431,11 @@ class Window(object):
 		self.refresh()
 
 	def border(self):
-		# self.header_win.border()
-		self.timeline_win.border()
-		self.details_win.border()
+		"""Add the borders"""
+		self.header_win.border(0, 0, 0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE)
+		self.timeline_win.border(0, 0, ' ', 0, curses.ACS_VLINE, curses.ACS_VLINE, curses.ACS_VLINE, curses.ACS_VLINE)
+		self.details_win_border = (0, 0, ' ', 0, curses.ACS_VLINE, curses.ACS_VLINE, 0, 0)
+		self.details_win.border(*self.details_win_border)
 		self.status_win.border()
 
 	def refresh(self):
@@ -397,10 +448,8 @@ class Window(object):
 		self.status_content()
 	
 	def header_content(self):
-		self.header_win.addstr(0, 0, '*' * self.width)
-		self.header_win.addstr(1, 1, 'I2C Watcher')
-		self.header_win.addstr(2, 0, '*' * self.width)
-	
+		self.header_win.addstr(1, 1, 'I2C Watcher', curses.color_pair(2) | curses.A_BOLD)
+		
 	def details_content(self):
 		details_header = '{:>14} {:>12s} {:>10} {:>10} {:>10} {:>10}'.format(
 			'Timestamp',
@@ -410,41 +459,133 @@ class Window(object):
 			'Decimal',
 			'ASCII'
 		)
-		self.details_win.addstr(1, 1, encoder(clip(details_header, self.width - 2)))
+		self.details_win.addstr(0, 1, encoder(clip(details_header, self.width - 2)), curses.color_pair(2) | curses.A_BOLD)
 	
 	def status_content(self):
 		help_text = u'Commands: (P)ause, (←) Scrub Left, (→) Scrub Right, (Q)uit'
 		self.status_win.addstr(1, 1, encoder(clip(help_text, self.width - 2)))
 
 	def timeline(self, timeline_signals):
-		"""Pump the timeline"""
-		for s in timeline_signals:
-			content_width = self.width - 2
-			label, stream = s.present_timeline(0, content_width)
+		"""Pump the timeline."""
+		content_width = self.width - 2
+		for i, s in enumerate(timeline_signals):
+
+			limit = s.width_to_limit(content_width)
+
+			if self.paused:
+				offset, limit = self.timeline_data_window[i]
+				if self.selection_timestamp != -1:
+					offset = s.timestamp_to_index(self.selection_timestamp)
+			else:
+				limit = min(limit, s.length())
+				offset = max(0, s.length() - limit)
+				self.timeline_data_window[i] = offset, limit
+
+			if i == 3:
+				type(self).set_status(u'offset = {}, limit = {}, s.length() = {}, self.paused = {}'.format(offset, limit, s.length(), self.paused))
+
+			label, stream = s.present_timeline(offset, limit)
+			# if i == 3:
+			# 	type(self).set_status(s.data)
+			
+			# Handle when the data samples are not exactly 1 char wide and we need to clip to prevent overflow.
 			padding = content_width - len(label) - 1 - len(stream)
-			if padding:
+			if padding > 0:
 				stream = (u' ' * padding) + stream
-			self.timeline_win.addstr(s.line_hint() - 1, 1, encoder(label + ' ' + stream))
+
+			self.timeline_win.addstr(s.line_hint(), 1, encoder(label + ' ' + stream))
 		self.timeline_win.refresh()
 
 	def details(self, detail_signal):
-		hy, hx = self.details_win.getmaxyx()
-		hy -= 3  # Heading + borders
-		offset = max(0, detail_signal.length() - hy)
-		limit = hy
+
+		if self.selection_index != -1:
+			self.selection_timestamp = detail_signal.index_to_timestamp(self.selection_index)
+
+		self.detail_length = detail_signal.length()
+
+		if self.paused:
+			offset, limit = self.detail_data_window
+		else:
+			hy, hx = self.details_win.getmaxyx()
+			hy -= 3  # Heading + borders
+			offset = max(0, detail_signal.length() - hy)
+			limit = min(hy, detail_signal.length())
+			self.detail_data_window = offset, limit
 
 		table = detail_signal.present_table(offset, limit)
-
-		for row_num, row_text in enumerate(table):
-			self.details_win.move(row_num + 2, 1)
+		
+		row_number = offset
+		for line_number, row_text in enumerate(table):
+			self.details_win.move(line_number + 2, 1)
 			self.details_win.clrtoeol()
-			self.details_win.addstr(row_num + 2, 1, row_text)
+
+			if self.selection_index >= 0 and row_number == self.selection_index:
+				self.details_win.addstr(line_number + 2, 1, row_text, curses.color_pair(1) | curses.A_BOLD)
+			else:
+				self.details_win.addstr(line_number + 2, 1, row_text, curses.color_pair(2))
+
+			row_number += 1
 			
-		self.details_win.border()
+		self.details_win.border(*self.details_win_border)
+		self.details_content()
 		self.details_win.refresh()
+
+	def update_selection(self, up=True):
+		"""Update the selections."""
+		# Move the selection in details.
+		offset, limit = self.detail_data_window
+
+		if up:
+			self.selection_index -= 1
+			if self.selection_index > (offset + limit):
+				self.selection_index = (offset + limit)
+		else:
+			self.selection_index += 1
+			if self.selection_index < offset:
+				self.selection_index = offset
+		self.selection_index = clamp(0, self.selection_index, self.detail_length - 1)
+
+		# Bump scroll the details list.
+		if self.selection_index >= (offset + limit):
+			offset += 1
+			self.detail_data_window = (offset, limit)
+		elif self.selection_index < offset:
+			offset -= 1
+			self.detail_data_window = (offset, limit)
+
+	def process_input(self):
+		"""Process key presses."""
+		self.stdscr.nodelay(True)
+
+		KEY_UP = 0x41
+		KEY_DOWN = 0x42
+		KEY_RIGHT = 0x43
+		KEY_LEFT = 0x44
+
+		try:
+			c = self.stdscr.getch()
+		except curses.ERR:
+			return
+
+		if c in (KEY_LEFT, KEY_RIGHT):
+			pass
+		elif c == KEY_UP:
+			self.update_selection(True)
+		elif c == KEY_DOWN:
+			self.update_selection(False)
+		elif c == curses.KEY_RESIZE:
+			self.resize()
+		elif c == curses.KEY_HOME:
+			return
+		elif c in (ord('q'), ord('Q')):
+			self.quit = True
+		elif c in (ord('p'), ord('P')):
+			self.paused = not self.paused
+			type(self).set_status(u'pause = {}'.format(self.paused))
 
 	@classmethod
 	def set_status(cls, *args):
+		"""Put text in the status line."""
 		width, _ = get_terminal_size()
 		text = u' '.join([unicode(a) for a in args])
 		text = clip(text, width - 2)
@@ -455,8 +596,16 @@ class Window(object):
 		cls.status_window.border()
 		cls.status_window.refresh()
 
+
 def clip(text, width):
+	"""Clip text to a fixed width."""
 	return text[:min(len(text), width)]
+
+
+def clamp(minimum, value, maximum):
+	"""Clamp the value between the min and max."""
+	return min(max(minimum, value), maximum)
+
 
 def main():
 	ur"""Setup a window to work in.
@@ -476,64 +625,30 @@ def main():
 	"""
 	stdscr = curses.initscr()
 	curses.start_color()
+	curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
+	curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLACK)
+	
 	curses.noecho()
 	curses.cbreak()
 	curses.curs_set(False)
 	
 	try:
-		w = Window()
-		header_win = w.header_win
-		timeline_win = w.timeline_win
-		details_win = w.details_win
-		status_win = w.status_win		
+		w = Window(stdscr)
 
 		data_signal = DataSignal('DATA', 101, 6)  # The data in hex
-		data_signal.set_seperator(u' ')
 		timeline_signals = [
 			PinSignal('SDA', 2),  # SDA signal pin
 			PinSignal('SCL', 3),  # SCL signal pin
 			DataSignal('BIT   ', 100, 4),  # The bits as they get read
-			data_signal,
 		]
 
 		# Start listening
 		Signal.listen()
 
-		# Input
-		stdscr.nodelay(True)
-
-		KEY_UP = 0x41
-		KEY_DOWN = 0x42
-		KEY_RIGHT = 0x43
-		KEY_LEFT = 0x44
-
-		# Update the data streams
-		pause = False
-		
-		while True:
-
+		while not w.quit:
+			w.process_input()
 			w.timeline(timeline_signals)
 			w.details(data_signal)
-			try:
-				c = stdscr.getch()
-			except curses.ERR:
-				continue
-
-			if c in (KEY_LEFT, KEY_RIGHT):
-				return
-			elif c in (KEY_UP, KEY_DOWN):
-				return
-			elif c == curses.KEY_RESIZE:
-				w.resize()
-			elif c == curses.KEY_HOME:
-				return
-			elif c in (ord('q'), ord('Q')):
-				return
-			elif c in (ord('p'), ord('P')):
-				pause = not pause
-				Status.write(u'pause = {}'.format(pause))
-				for s in timeline_signals:
-					s.pause(pause)
 
 	finally:
 		stdscr.keypad(0)
