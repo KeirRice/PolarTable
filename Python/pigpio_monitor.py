@@ -368,6 +368,11 @@ class Window(object):
 		self.details_win = None
 		self.status_win = None
 
+		self.header_win_border = (0, 0, 0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE)
+		self.timeline_win_border = (0, 0, ' ', 0, curses.ACS_VLINE, curses.ACS_VLINE, curses.ACS_VLINE, curses.ACS_VLINE)
+		self.details_win_border = (0, 0, ' ', 0, curses.ACS_VLINE, curses.ACS_VLINE, 0, 0)
+		self.status_win_border = (0, 0, 0, 0, 0, 0, 0, 0)
+		
 		self.windows = list()
 
 		self.height, self.width = get_terminal_size()
@@ -431,12 +436,11 @@ class Window(object):
 		self.refresh()
 
 	def border(self):
-		"""Add the borders"""
-		self.header_win.border(0, 0, 0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE)
-		self.timeline_win.border(0, 0, ' ', 0, curses.ACS_VLINE, curses.ACS_VLINE, curses.ACS_VLINE, curses.ACS_VLINE)
-		self.details_win_border = (0, 0, ' ', 0, curses.ACS_VLINE, curses.ACS_VLINE, 0, 0)
+		"""Add the borders."""
+		self.header_win.border(*self.header_win_border)
+		self.timeline_win.border(*self.timeline_win_border)
 		self.details_win.border(*self.details_win_border)
-		self.status_win.border()
+		self.status_win.border(*self.status_win_border)
 
 	def refresh(self):
 		for window in self.windows:
@@ -467,6 +471,7 @@ class Window(object):
 
 	def timeline(self, timeline_signals):
 		"""Pump the timeline."""
+		self.timeline_win.erase()
 		content_width = self.width - 2
 		for i, s in enumerate(timeline_signals):
 
@@ -494,9 +499,13 @@ class Window(object):
 				stream = (u' ' * padding) + stream
 
 			self.timeline_win.addstr(s.line_hint(), 1, encoder(label + ' ' + stream))
+
+		self.timeline_win.border(*self.timeline_win_border)
+		self.details_content()
 		self.timeline_win.refresh()
 
 	def details(self, detail_signal):
+		self.timeline_win.erase()
 
 		if self.selection_index != -1:
 			self.selection_timestamp = detail_signal.index_to_timestamp(self.selection_index)
@@ -555,7 +564,7 @@ class Window(object):
 
 	def process_input(self):
 		"""Process key presses."""
-		self.stdscr.nodelay(True)
+		self.status_win.nodelay(True)
 
 		KEY_UP = 0x41
 		KEY_DOWN = 0x42
@@ -563,7 +572,7 @@ class Window(object):
 		KEY_LEFT = 0x44
 
 		try:
-			c = self.stdscr.getch()
+			c = self.status_win.getch()
 		except curses.ERR:
 			return
 
@@ -646,9 +655,10 @@ def main():
 		Signal.listen()
 
 		while not w.quit:
-			w.process_input()
 			w.timeline(timeline_signals)
 			w.details(data_signal)
+			w.process_input()
+			pass
 
 	finally:
 		stdscr.keypad(0)
