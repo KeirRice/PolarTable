@@ -111,7 +111,11 @@ speed = 0.1
 
 def _recieve_i2c():
 	"""Mock up the pins recieving an I2C signal."""
+	while True:
+		__recieve_i2c()
 
+
+def __recieve_i2c():
 	SCL = 3
 	SDA = 2
 
