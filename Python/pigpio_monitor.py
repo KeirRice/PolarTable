@@ -52,11 +52,12 @@ class Probe(threading.Thread):
 		"""Main loop catches data and broadcasts it."""
 		return NotImplemented
 
-	def broadcast(self, char, tag=''):
+	def broadcast(self, char, tag='', timestamp=None):
 		"""Send char out over UDP, hopfully to a listening monitor."""
 		outgoing = json.dumps({
 			'data': char,
-			'tag': tag.encode('utf-8')
+			'tag': tag.encode('utf-8'),
+			'timestamp': timestamp or millis(),
 		})
 		self.sock.sendto(outgoing, self.address)
 
@@ -118,19 +119,19 @@ class DataProbe(Probe):
 
 	def data(self, char, tag=''):
 		"""Call this with data you want to monitor."""
-		self.char.put((char, tag))
+		self.char.put((char, tag, millis()))
 
 	def run(self):
 		"""Main loop catches data and broadcasts it."""
 		while True:
 			if self.char.empty():
 				if self.compact is False:
-					self.broadcast(' ')
+					self.broadcast(' ', '', millis())
 			else:
 				try:
 					while True:
-						char, tag = self.char.get_nowait()
-						self.broadcast(char, tag)
+						data = self.char.get_nowait()
+						self.broadcast(*data)
 				except Queue.Empty:
 					pass
 			time.sleep(SAMPLE_SPEED)
@@ -183,7 +184,7 @@ class Signal(threading.Thread):
 		while True:
 			data, addr = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
 			incomming = json.loads(data.decode('utf-8'))
-			incomming['timestamp'] = millis()
+			incomming['arrived'] = millis()
 			self.data.append(incomming)
 			self.new_data = True
 
