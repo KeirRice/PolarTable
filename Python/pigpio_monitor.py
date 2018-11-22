@@ -451,6 +451,8 @@ class Window(object):
 	
 	def header_content(self):
 		self.header_win.addstr(1, 1, 'I2C Watcher', curses.color_pair(2) | curses.A_BOLD)
+		address = ip_address()
+		self.header_win.addstr(1, self.width - 1 - len(address), address)
 		
 	def details_content(self):
 		details_header = '{:>14} {:>12s} {:>10} {:>10} {:>10} {:>10}'.format(
@@ -612,6 +614,13 @@ def clip(text, width):
 def clamp(minimum, value, maximum):
 	"""Clamp the value between the min and max."""
 	return min(max(minimum, value), maximum)
+
+def ip_address():
+	"""Return out IP address."""
+	local_ips = [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")]
+	socket_message = [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]
+	remote_ips = [[(s.connect(("8.8.8.8", 53)), s.getsockname()[0], s.close()) for s in socket_message][0][1]]
+	return ((local_ips or remote_ips) + ["no IP found"])[0]
 
 
 def main():
