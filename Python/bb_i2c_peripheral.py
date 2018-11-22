@@ -349,6 +349,8 @@ class Peripheral(object):
 			self.cb1.cancel()
 			self.cb2.cancel()
 
+			pigpio.pi().close()
+
 		if ENABLE_RPI:
 			GPIO.remove_event_detect(self.SDA)
 			GPIO.remove_event_detect(self.SCL)
@@ -786,10 +788,11 @@ def main():
 
 	try:
 		reg = Registers(wire)
-		threading.Thread(target=pigpio._recieve_i2c).start()
+		t = threading.Thread(target=pigpio._recieve_i2c)
+		t.start()
 
-		# while True:
-		# 	pass
+		while True:
+			pass
 		# reg.write(REG_MOTOR_THETA, 654654)
 		# reg.write(REG_MOTOR_RADIUS, 654654)
 
