@@ -202,9 +202,9 @@ class Signal(threading.Thread):
 		"""Number of rows of data."""
 		return len(self.data)
 
-	def index_to_timestamp(self, selection_index):
-		"""Return the time stamp for the index."""
-		return self.data[selection_index]['timestamp']
+	def index_to_timestamp(self, index):
+		"""Return the timestamp for the index."""
+		return self.data[index]['timestamp']
 
 	def timestamp_to_index(self, timestamp):
 		"""Return the time stamp for the index."""
