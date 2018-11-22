@@ -163,7 +163,6 @@ class Signal(threading.Thread):
 
 		self.data = list()
 		self.line = 0
-		self.new_data = False
 		self.selection_index = -1
 
 		Signal.__signals.append(self)
@@ -186,8 +185,7 @@ class Signal(threading.Thread):
 			incomming = json.loads(data.decode('utf-8'))
 			incomming['arrived'] = millis()
 			self.data.append(incomming)
-			self.new_data = True
-
+	
 	def present_timeline(self, skip=0, limit=-1):
 		"""Return the most recent cached data upto the width."""
 		return NotImplemented
@@ -316,7 +314,6 @@ class PinSignal(Signal):
 		skip = clamp(0, skip, self.length() - 1)
 		limit = clamp(0, limit, self.length() - 1 - skip)
 
-		self.new_data = False
 		label = u'{name}({pin})'.format(name=self.name, pin=self.pin)
 
 		data = [d['data'] for d in self.data[skip:skip + limit]]
