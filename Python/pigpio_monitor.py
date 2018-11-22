@@ -234,9 +234,6 @@ class DataSignal(Signal):
 		self.timeline_format_string = format_string
 		self.timeline_format_width = width
 
-	def set_selection_index(self, index):
-		self.selection_index = index
-
 	def present_table(self, skip=0, limit=-1):
 		"""Return the most recent cached data in table form."""
 		skip = clamp(0, skip, len(self.data) - 1)
