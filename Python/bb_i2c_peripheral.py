@@ -83,8 +83,9 @@ SUBSYSTEM=="gpio*", PROGRAM="/bin/sh -c 'chown -R root:gpio /sys/class/gpio && c
 
 import Queue
 import struct
+import time
 import threading
-import pigpio_monitor
+from pigpio_monitor_probes import SignalProbe, DataProbe
 
 
 class PinBase(object):
@@ -160,7 +161,7 @@ class PiPin(PinBase):
 
 	def setup(self):
 		"""Initial setup."""
-		self.pi.set_pull_up_down(self.pin, pigpio.PUD_OFF)
+		self.pi.set_pull_up_down(self.pin, pigpio.PUD_UP)
 
 	def set_mode(self, mode):
 		"""Update the pin mode if it needs to change.
@@ -218,8 +219,8 @@ ENABLE_RPI = False
 
 if ENABLE_PIGPIO:
 
-	import pigpio_mock as pigpio
-	# import pigpio
+	# import pigpio_mock as pigpio
+	import pigpio
 
 	Pin = PiPin
 
@@ -277,8 +278,8 @@ class Peripheral(object):
 		if ENABLE_RPI:
 			pi = GPIO
 	
-		pigpio_monitor.SignalProbe(SDA, pi.read).start()
-		pigpio_monitor.SignalProbe(SCL, pi.read).start()
+		SignalProbe(SDA, pi.read).start()
+		SignalProbe(SCL, pi.read).start()
 		
 		# Pins and address
 		self.SCL = Pin(SCL, pi)
@@ -330,9 +331,9 @@ class Peripheral(object):
 			GPIO.add_event_detect(int(self.SCL), GPIO.BOTH)
 			GPIO.add_event_callback(int(self.SCL), hardware_callback_scl)
 
-		self.bit_monitor = pigpio_monitor.DataProbe('Bits', 100, False)
+		self.bit_monitor = DataProbe('Bits', 100, False)
 		self.bit_monitor.start()
-		self.data_monitor = pigpio_monitor.DataProbe('Data', 101)
+		self.data_monitor = DataProbe('Data', 101)
 		self.data_monitor.start()
 
 	def post_bit_monitor_char(self, char):
@@ -786,10 +787,11 @@ def main():
 
 	try:
 		reg = Registers(wire)
-		threading.Thread(target=pigpio._recieve_i2c).start()
+		# threading.Thread(target=pigpio._recieve_i2c).start()
 
-		# while True:
-		# 	pass
+		while True:
+			time.sleep(1)
+
 		# reg.write(REG_MOTOR_THETA, 654654)
 		# reg.write(REG_MOTOR_RADIUS, 654654)
 
