@@ -86,6 +86,7 @@ import struct
 import time
 import threading
 from pigpio_monitor_probes import SignalProbe, DataProbe
+import argparse
 
 
 class PinBase(object):
@@ -349,6 +350,8 @@ class Peripheral(object):
 		if ENABLE_PIGPIO:
 			self.cb1.cancel()
 			self.cb2.cancel()
+
+			pigpio.pi().close()
 
 		if ENABLE_RPI:
 			GPIO.remove_event_detect(self.SDA)
@@ -781,7 +784,50 @@ class Registers(object):
 
 def main():
 	"""Run."""
-	ADDRESS = 0x14
+
+	parser = argparse.ArgumentParser()
+	
+	parser.add_argument(
+		"-s",
+		"--server-ip",
+		help="IP address of the server running the PGIO Monitor")
+	
+	parser.add_argument(
+		"-a",
+		"--i2c-address",
+		help="Our device address in hex.")
+
+	parser.add_argument(
+		"-d",
+		"--sda",
+		help="SDA Pin.")
+	parser.add_argument(
+		"-c",
+		"--scl",
+		help="SCL Pin.")
+
+	args = parser.parse_args()
+	
+	global SERVER
+	if args.server_ip:
+		SERVER = (args.server_ip, pigpio_monitor.UDP_PORT)
+	else:
+		SERVER = None
+
+	global ADDRESS
+	if args.i2c_address:
+		ADDRESS = int(args.server_ip, 16)
+	else:
+		ADDRESS = 0x14
+
+	global SDA, SCL
+	if args.sda:
+		SDA = args.sda
+		PIN_NAMES[SDA] = 'SDA'
+	if args.scl:
+		SCL = args.scl
+		PIN_NAMES[SCL] = 'SCL'
+
 	print 'listening: Address = ', ADDRESS, 'PINS', SDA, SCL
 	wire = Peripheral(SCL, SDA, ADDRESS)
 

@@ -26,6 +26,8 @@ SAMPLE_SPEED = SIMULATION_SPEED / 10.0
 
 START_TIME = time.time()
 
+NUDGE = 'nudge'
+DETAIL = 'detail'
 
 def millis():
 	"""Milli seconds since script start."""
@@ -52,8 +54,7 @@ class Signal(threading.Thread):
 
 		self.data = list()
 		self.line = 0
-		self.new_data = False
-		self.selection_index = -1
+		self.detail_selection_index = -1
 
 		Signal.__signals.append(self)
 
@@ -73,10 +74,9 @@ class Signal(threading.Thread):
 		while True:
 			data, addr = self.sock.recvfrom(1024)  # buffer size is 1024 bytes
 			incomming = json.loads(data.decode('utf-8'))
-			incomming['timestamp'] = millis()
+			incomming['arrived'] = millis()
 			self.data.append(incomming)
-			self.new_data = True
-
+	
 	def present_timeline(self, skip=0, limit=-1):
 		"""Return the most recent cached data upto the width."""
 		return NotImplemented
@@ -93,16 +93,25 @@ class Signal(threading.Thread):
 		"""Number of rows of data."""
 		return len(self.data)
 
-	def index_to_timestamp(self, selection_index):
-		"""Return the time stamp for the index."""
-		return self.data[selection_index]['timestamp']
+	def index_to_timestamp(self, index):
+		"""Return the timestamp for the index."""
+		return self.data[index]['timestamp']
 
 	def timestamp_to_index(self, timestamp):
 		"""Return the time stamp for the index."""
+		closet_time = 99999999
+		closet_index = -1
+		last_time = closet_time
+
 		for i, d in enumerate(self.data):
-			if d['timestamp'] > timestamp:
-				return i - 1
-		raise LookupError('No timestamp found.')
+			test_time = abs(d['timestamp'] - timestamp)
+			if test_time < closet_time:
+				closet_time = test_time
+				closet_index = i
+			if test_time > last_time:
+				break
+			last_time = test_time
+		return closet_index
 
 
 class DataSignal(Signal):
@@ -124,9 +133,6 @@ class DataSignal(Signal):
 		"""How are we presenting the data and how wide will if be."""
 		self.timeline_format_string = format_string
 		self.timeline_format_width = width
-
-	def set_selection_index(self, index):
-		self.selection_index = index
 
 	def present_table(self, skip=0, limit=-1):
 		"""Return the most recent cached data in table form."""
@@ -205,7 +211,6 @@ class PinSignal(Signal):
 		skip = clamp(0, skip, self.length() - 1)
 		limit = clamp(0, limit, self.length() - 1 - skip)
 
-		self.new_data = False
 		label = u'{name}({pin})'.format(name=self.name, pin=self.pin)
 
 		data = [d['data'] for d in self.data[skip:skip + limit]]
@@ -238,12 +243,17 @@ class Window(object):
 
 		self.quit = False
 		self.paused = False
-		self.selection_index = -1
-		self.selection_timestamp = -1
+		
+		self.selection_mode = None
+		self.timeline_selection_index = -1
+		self.timeline_selection_timestamp = -1
+		self.detail_selection_index = -1
+		self.detail_selection_timestamp = -1
+
+		self.detail_selection_timestamp = -1
 
 		self.detail_length = 0
 		self.detail_data_window = None
-
 		self.timeline_data_window = dict()
 
 		self.sections = list()
@@ -258,6 +268,11 @@ class Window(object):
 		self.details_win = None
 		self.status_win = None
 
+		self.header_win_border = (0, 0, 0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE)
+		self.timeline_win_border = (0, 0, ' ', 0, curses.ACS_VLINE, curses.ACS_VLINE, curses.ACS_VLINE, curses.ACS_VLINE)
+		self.details_win_border = (0, 0, ' ', 0, curses.ACS_VLINE, curses.ACS_VLINE, 0, 0)
+		self.status_win_border = (0, 0, 0, 0, 0, 0, 0, 0)
+		
 		self.windows = list()
 
 		self.height, self.width = get_terminal_size()
@@ -321,12 +336,11 @@ class Window(object):
 		self.refresh()
 
 	def border(self):
-		"""Add the borders"""
-		self.header_win.border(0, 0, 0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE)
-		self.timeline_win.border(0, 0, ' ', 0, curses.ACS_VLINE, curses.ACS_VLINE, curses.ACS_VLINE, curses.ACS_VLINE)
-		self.details_win_border = (0, 0, ' ', 0, curses.ACS_VLINE, curses.ACS_VLINE, 0, 0)
+		"""Add the borders."""
+		self.header_win.border(*self.header_win_border)
+		self.timeline_win.border(*self.timeline_win_border)
 		self.details_win.border(*self.details_win_border)
-		self.status_win.border()
+		self.status_win.border(*self.status_win_border)
 
 	def refresh(self):
 		for window in self.windows:
@@ -339,6 +353,8 @@ class Window(object):
 	
 	def header_content(self):
 		self.header_win.addstr(1, 1, 'I2C Watcher', curses.color_pair(2) | curses.A_BOLD)
+		address = ip_address()
+		self.header_win.addstr(1, self.width - 1 - len(address), address)
 		
 	def details_content(self):
 		details_header = '{:>14} {:>12s} {:>10} {:>10} {:>10} {:>10}'.format(
@@ -357,26 +373,41 @@ class Window(object):
 
 	def timeline(self, timeline_signals):
 		"""Pump the timeline."""
+		self.timeline_win.erase()
 		content_width = self.width - 2
+		content_center = content_width // 2
+		label_size = 11
+
 		for i, s in enumerate(timeline_signals):
 
 			limit = s.width_to_limit(content_width)
 
 			if self.paused:
 				offset, limit = self.timeline_data_window[i]
-				if self.selection_timestamp != -1:
-					offset = s.timestamp_to_index(self.selection_timestamp)
+				
+				self.timeline_selection_index = offset + content_center - label_size
+				self.timeline_selection_timestamp = timeline_signals[i].index_to_timestamp(self.timeline_selection_index)
+
+				if self.selection_mode == NUDGE:
+					pass
+				elif self.selection_mode == DETAIL:
+					offset = s.timestamp_to_index(self.detail_selection_timestamp) - content_center + label_size
+					self.timeline_data_window[i] = offset, limit
+				else:
+					pass
+				
 			else:
 				limit = min(limit, s.length())
 				offset = max(0, s.length() - limit)
 				self.timeline_data_window[i] = offset, limit
 
-			if i == 3:
-				type(self).set_status(u'offset = {}, limit = {}, s.length() = {}, self.paused = {}'.format(offset, limit, s.length(), self.paused))
+			max_padding = (content_center - label_size)
+			if (offset + max_padding) >= 0:
+				pass
+			else:
+				offset = -max_padding
 
 			label, stream = s.present_timeline(offset, limit)
-			# if i == 3:
-			# 	type(self).set_status(s.data)
 			
 			# Handle when the data samples are not exactly 1 char wide and we need to clip to prevent overflow.
 			padding = content_width - len(label) - 1 - len(stream)
@@ -384,17 +415,45 @@ class Window(object):
 				stream = (u' ' * padding) + stream
 
 			self.timeline_win.addstr(s.line_hint(), 1, encoder(label + ' ' + stream))
+
+		# Reset the selection timestamp so it doesn't override the nudge each frame.
+		self.detail_selection_timestamp = -1
+
+		if self.paused:
+			height, width = self.timeline_win.getmaxyx()
+			center = width // 2
+			for line in range(1, height - 1):
+				self.timeline_win.chgat(line, center, 1, curses.A_REVERSE)
+			try:
+				offset, limit = self.timeline_data_window[0]
+				timestamp = timeline_signals[0].index_to_timestamp(offset)
+				self.timeline_win.addstr(6, center + 1, encoder('{:d}ms'.format(timestamp)))
+			except IndexError:
+				pass
+
+		self.timeline_win.border(*self.timeline_win_border)
+		self.details_content()
 		self.timeline_win.refresh()
 
 	def details(self, detail_signal):
+		self.timeline_win.erase()
 
-		if self.selection_index != -1:
-			self.selection_timestamp = detail_signal.index_to_timestamp(self.selection_index)
+		if self.detail_selection_index != -1:
+			self.detail_selection_timestamp = detail_signal.index_to_timestamp(self.detail_selection_index)
 
 		self.detail_length = detail_signal.length()
 
 		if self.paused:
 			offset, limit = self.detail_data_window
+
+			if self.selection_mode == NUDGE:
+				self.detail_selection_index = detail_signal.timestamp_to_index(self.timeline_selection_timestamp)
+
+			elif self.selection_mode == DETAIL:
+				pass
+			else:
+				pass
+
 		else:
 			hy, hx = self.details_win.getmaxyx()
 			hy -= 3  # Heading + borders
@@ -409,7 +468,7 @@ class Window(object):
 			self.details_win.move(line_number + 2, 1)
 			self.details_win.clrtoeol()
 
-			if self.selection_index >= 0 and row_number == self.selection_index:
+			if self.detail_selection_index >= 0 and row_number == self.detail_selection_index:
 				self.details_win.addstr(line_number + 2, 1, row_text, curses.color_pair(1) | curses.A_BOLD)
 			else:
 				self.details_win.addstr(line_number + 2, 1, row_text, curses.color_pair(2))
@@ -423,55 +482,89 @@ class Window(object):
 	def update_selection(self, up=True):
 		"""Update the selections."""
 		# Move the selection in details.
+		if not self.paused:
+			return
+
+		self.selection_mode = DETAIL
 		offset, limit = self.detail_data_window
 
 		if up:
-			self.selection_index -= 1
-			if self.selection_index > (offset + limit):
-				self.selection_index = (offset + limit)
+			self.detail_selection_index -= 1
+			if self.detail_selection_index > (offset + limit):
+				self.detail_selection_index = (offset + limit)
 		else:
-			self.selection_index += 1
-			if self.selection_index < offset:
-				self.selection_index = offset
-		self.selection_index = clamp(0, self.selection_index, self.detail_length - 1)
+			self.detail_selection_index += 1
+			if self.detail_selection_index < offset:
+				self.detail_selection_index = offset
+		self.detail_selection_index = clamp(0, self.detail_selection_index, self.detail_length - 1)
 
 		# Bump scroll the details list.
-		if self.selection_index >= (offset + limit):
+		if self.detail_selection_index >= (offset + limit):
 			offset += 1
 			self.detail_data_window = (offset, limit)
-		elif self.selection_index < offset:
+		elif self.detail_selection_index < offset:
 			offset -= 1
 			self.detail_data_window = (offset, limit)
 
+	def nudge_timeline(self, left=True, boost=False):
+		# TODO: Make a nice acceleration based on hold time.
+		if not self.paused:
+			return
+		self.selection_mode = NUDGE
+		move = -1 if left else 1
+		if boost:
+			move *= 10
+		for row, (offset, limit) in self.timeline_data_window.iteritems():
+			self.timeline_data_window[row] = (max(0, offset + move), limit)
+
 	def process_input(self):
 		"""Process key presses."""
-		self.stdscr.nodelay(True)
+		# self.status_win.nodelay(False)
+		# curses.halfdelay(10)
 
 		KEY_UP = 0x41
 		KEY_DOWN = 0x42
 		KEY_RIGHT = 0x43
 		KEY_LEFT = 0x44
+		KEY_ESC = 27
 
-		try:
-			c = self.stdscr.getch()
-		except curses.ERR:
-			return
+		while not self.quit:
+			try:
+				c = self.status_win.getch()
+			except curses.ERR:
+				continue
 
-		if c in (KEY_LEFT, KEY_RIGHT):
-			pass
-		elif c == KEY_UP:
-			self.update_selection(True)
-		elif c == KEY_DOWN:
-			self.update_selection(False)
-		elif c == curses.KEY_RESIZE:
-			self.resize()
-		elif c == curses.KEY_HOME:
-			return
-		elif c in (ord('q'), ord('Q')):
-			self.quit = True
-		elif c in (ord('p'), ord('P')):
-			self.paused = not self.paused
-			type(self).set_status(u'pause = {}'.format(self.paused))
+			if c == KEY_ESC:  # Esc or Alt
+				self.status_win.nodelay(True)
+				n = self.status_win.getch()
+				if n == -1:
+					self.quit = True  # Escape
+				self.status_win.nodelay(False)
+				# self.status_win.halfdelay(10)
+
+			elif c == KEY_UP:
+				self.update_selection(True)
+			elif c == KEY_DOWN:
+				self.update_selection(False)
+			elif c == KEY_LEFT:
+				self.nudge_timeline(True)
+			elif c == KEY_RIGHT:
+				self.nudge_timeline(False)
+			# elif c == KEY_SLEFT:
+			# 	self.nudge_timeline(True, True)
+			# elif c == KEY_SRIGHT:
+			# 	self.nudge_timeline(False, True)
+			elif c == curses.KEY_RESIZE:
+				self.resize()
+			elif c == curses.KEY_HOME:
+				return
+			elif c in (ord('q'), ord('Q')):
+				self.quit = True
+			elif c in (ord('p'), ord('P')):
+				self.paused = not self.paused
+				if not self.paused:
+					self.selection_mode = None
+				type(self).set_status(u'pause = {}'.format(self.paused))
 
 	@classmethod
 	def set_status(cls, *args):
@@ -495,6 +588,13 @@ def clip(text, width):
 def clamp(minimum, value, maximum):
 	"""Clamp the value between the min and max."""
 	return min(max(minimum, value), maximum)
+
+def ip_address():
+	"""Return out IP address."""
+	local_ips = [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")]
+	socket_message = [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]
+	remote_ips = [[(s.connect(("8.8.8.8", 53)), s.getsockname()[0], s.close()) for s in socket_message][0][1]]
+	return ((local_ips or remote_ips) + ["no IP found"])[0]
 
 
 def main():
@@ -535,10 +635,15 @@ def main():
 		# Start listening
 		Signal.listen()
 
+		threading.Thread()
+		t = threading.Thread(target=w.process_input)
+		t.start()
+
 		while not w.quit:
-			w.process_input()
 			w.timeline(timeline_signals)
 			w.details(data_signal)
+			# w.process_input()
+			pass
 
 	finally:
 		stdscr.keypad(0)
