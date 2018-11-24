@@ -14,6 +14,22 @@ UDP_PORT = 6000
 SIMULATION_SPEED = 0.1
 SAMPLE_SPEED = SIMULATION_SPEED / 10.0
 
+START_TIME = time.time()
+
+NUDGE = 'nudge'
+DETAIL = 'detail'
+
+def millis():
+	"""Milli seconds since script start."""
+	return int((time.time() - START_TIME) * 1000)
+
+
+def set_server(server):
+	global SERVER_IP
+	global UDP_PORT
+	SERVER_IP, UDP_PORT = server[0], int(server[1])
+
+
 # Client Side
 
 class Probe(threading.Thread):
@@ -32,11 +48,12 @@ class Probe(threading.Thread):
 		"""Main loop catches data and broadcasts it."""
 		return NotImplemented
 
-	def broadcast(self, char, tag=''):
+	def broadcast(self, char, tag='', timestamp=None):
 		"""Send char out over UDP, hopfully to a listening monitor."""
 		outgoing = json.dumps({
 			'data': char,
-			'tag': tag.encode('utf-8')
+			'tag': tag.encode('utf-8'),
+			'timestamp': timestamp or millis(),
 		})
 		self.sock.sendto(outgoing, self.address)
 
@@ -98,7 +115,7 @@ class DataProbe(Probe):
 
 	def data(self, char, tag=''):
 		"""Call this with data you want to monitor."""
-		self.char.put((char, tag))
+		self.char.put((char, tag, millis()))
 
 	def run(self):
 		"""Main loop catches data and broadcasts it."""
@@ -109,8 +126,8 @@ class DataProbe(Probe):
 			else:
 				try:
 					while True:
-						char, tag = self.char.get_nowait()
-						self.broadcast(char, tag)
+						payload = self.char.get_nowait()
+						self.broadcast(*payload)
 				except Queue.Empty:
 					pass
 			time.sleep(SAMPLE_SPEED)

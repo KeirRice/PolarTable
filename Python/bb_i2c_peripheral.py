@@ -85,6 +85,7 @@ import Queue
 import struct
 import time
 import threading
+import pigpio_monitor_probes
 from pigpio_monitor_probes import SignalProbe, DataProbe
 import argparse
 
@@ -810,22 +811,21 @@ def main():
 	
 	global SERVER
 	if args.server_ip:
-		SERVER = (args.server_ip, pigpio_monitor.UDP_PORT)
-	else:
-		SERVER = None
+		SERVER = (args.server_ip, pigpio_monitor_probes.UDP_PORT)
+		pigpio_monitor_probes.set_server(SERVER)
 
 	global ADDRESS
 	if args.i2c_address:
-		ADDRESS = int(args.server_ip, 16)
+		ADDRESS = int(args.i2c_address, 16)
 	else:
 		ADDRESS = 0x14
 
 	global SDA, SCL
 	if args.sda:
-		SDA = args.sda
+		SDA = int(args.sda)
 		PIN_NAMES[SDA] = 'SDA'
 	if args.scl:
-		SCL = args.scl
+		SCL = int(args.scl)
 		PIN_NAMES[SCL] = 'SCL'
 
 	print 'listening: Address = ', ADDRESS, 'PINS', SDA, SCL
