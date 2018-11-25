@@ -221,56 +221,9 @@ class PiPin(PinBase):
 		self.set_mode(pigpio.OUTPUT)
 		return self.pi.write(self.pin, value)
 
-class RpiPin(PinBase):
-	"""Wrapper to swap modes when we need to read and write."""
 
-	def __init__(self, pin, pi):
-		"""Init."""
-		super(RpiPin, self).__init__(pin, pi)
+Pin = PiPin
 
-	def setup(self):
-		"""Initial setup."""
-		self.pi.setup(self.pin, self.pi.OUT, self.pi.PUD_OFF)
-
-	def set_mode(self, mode):
-		"""Update the pin mode if it needs to change.
-		
-		We keep a local cache of the value and assume it wont get changed
-		externally.
-		"""
-		if self.mode != mode:
-			self.pi.setup(self.pin, mode, PUD_OFF)
-			self.mode = mode
-
-	def read(self):
-		"""Read from the pin."""
-		# self.set_mode(self.pin, self.pi.IN)
-		return self.pi.input(self.pin)
-
-	def write(self, output):
-		"""Write to the pin."""
-		# self.set_mode(self.pin, self.pi.OUT)
-		return self.pi.output(self.pin, output)
-
-ENABLE_PIGPIO = True
-ENABLE_RPI = False
-
-if ENABLE_PIGPIO:
-
-	# import pigpio_mock as pigpio
-	import pigpio
-
-	Pin = PiPin
-
-if ENABLE_RPI:
-
-	import RPi.GPIO as GPIO
-	GPIO.setmode(GPIO.BCM)
-	HIGH = GPIO.HIGH
-	LOW = GPIO.LOW
-	PUD_OFF = GPIO.PUD_OFF
-
-	Pin = RpiPin
 
 class Peripheral(object):
 	"""Peripheral is a class for bit-bashing an I2C "slave" connection."""
@@ -297,13 +250,9 @@ class Peripheral(object):
 
 	def __init__(self, SCL, SDA, address):
 		"""Init."""
-		if ENABLE_PIGPIO:
-			pi = pigpio.pi()             # exit script if no connection
-			if not pi.connected:
-				raise RuntimeError('No Connection')
-
-		if ENABLE_RPI:
-			pi = GPIO
+		pi = pigpio.pi()             # exit script if no connection
+		if not pi.connected:
+			raise RuntimeError('No Connection')
 	
 		SignalProbe(SDA, pi.read).start()
 		SignalProbe(SCL, pi.read).start()
@@ -341,22 +290,9 @@ class Peripheral(object):
 		self.debug_scl = u' '
 		self.debug_sda = u' '
 
-		if ENABLE_PIGPIO:
-			# Callbacks from the hardware side
-			self.cb1 = pi.callback(int(self.SDA), pigpio.EITHER_EDGE, self.hardware_callback)
-			self.cb2 = pi.callback(int(self.SCL), pigpio.EITHER_EDGE, self.hardware_callback)
-
-		if ENABLE_RPI:
-			def hardware_callback_sda():
-				self.hardware_callback(self.SDA, self.SDA.read(), 0)
-
-			def hardware_callback_scl():
-				self.hardware_callback(self.SCL, self.SCL.read(), 0)
-
-			GPIO.add_event_detect(int(self.SDA), GPIO.BOTH)
-			GPIO.add_event_callback(int(self.SDA), hardware_callback_sda)
-			GPIO.add_event_detect(int(self.SCL), GPIO.BOTH)
-			GPIO.add_event_callback(int(self.SCL), hardware_callback_scl)
+		# Callbacks from the hardware side
+		self.cb1 = pi.callback(int(self.SDA), pigpio.EITHER_EDGE, self.hardware_callback)
+		self.cb2 = pi.callback(int(self.SCL), pigpio.EITHER_EDGE, self.hardware_callback)
 
 		self.bit_monitor = DataProbe('Bits', 100, False)
 		self.bit_monitor.start()
@@ -373,15 +309,10 @@ class Peripheral(object):
 
 	def cancel(self):
 		"""Clean up the callbacks."""
-		if ENABLE_PIGPIO:
-			self.cb1.cancel()
-			self.cb2.cancel()
+		self.cb1.cancel()
+		self.cb2.cancel()
 
-			pigpio.pi().close()
-
-		if ENABLE_RPI:
-			GPIO.remove_event_detect(self.SDA)
-			GPIO.remove_event_detect(self.SCL)
+		pigpio.pi().close()
 
 	def reset_state(self):
 		"""Clear out any state for a next transaction."""
