@@ -89,6 +89,20 @@ import pigpio_monitor_probes
 from pigpio_monitor_probes import SignalProbe, DataProbe
 import argparse
 
+# import pigpio_mock as pigpio
+import pigpio
+
+
+# Globals
+NACK = 1
+ACK = 0
+
+SDA, SCL = 2, 3
+PIN_NAMES = {
+	SDA: 'SDA',
+	SCL: 'SCL',
+}
+
 
 class PinBase(object):
 	"""Wrapper to swap modes when we need to read and write."""
@@ -257,17 +271,6 @@ if ENABLE_RPI:
 	PUD_OFF = GPIO.PUD_OFF
 
 	Pin = RpiPin
-
-# Globals
-NACK = 1
-ACK = 0
-
-SDA, SCL = 2, 3
-PIN_NAMES = {
-	SDA: 'SDA',
-	SCL: 'SCL',
-}
-
 
 class Peripheral(object):
 	"""Peripheral is a class for bit-bashing an I2C "slave" connection."""
