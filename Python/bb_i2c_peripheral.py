@@ -128,31 +128,53 @@ class PinBase(object):
 		return NotImplemented
 
 	def __int__(self):
-		"""Int."""
+		"""Cast to interger."""
 		return self.pin
 
 	def __radd__(self, other):
+		"""Right hand add."""
 		return other + int(self)
+
 	def __rsub__(self, other):
+		"""Right hand subtract."""
 		return other - int(self)
+
 	def __rmul__(self, other):
+		"""Right hand mulitply."""
 		return other * int(self)
+
 	def __rmod__(self, other):
+		"""Right hand modulus."""
 		return other % int(self)
+
 	def __rdivmod__(self, other):
+		"""Right hand divmod."""
 		return divmod(other, int(self))
+
 	def __rpow__(self, other):
+		"""Right hand power."""
 		return other ** int(self)
+
 	def __rlshift__(self, other):
+		"""Right hand shift left."""
 		return other << int(self)
+
 	def __rrshift__(self, other):
+		"""Right hand shift right."""
 		return other >> int(self)
+
 	def __rand__(self, other):
+		"""Right hand logic AND."""
 		return other & int(self)
+
 	def __rxor__(self, other):
+		"""Right hand logic XOR."""
 		return other ^ int(self)
+
 	def __ror__(self, other):
+		"""Right hand logic OR."""
 		return other | int(self)
+
 
 class PiPin(PinBase):
 	"""Wrapper to swap modes when we need to read and write."""
