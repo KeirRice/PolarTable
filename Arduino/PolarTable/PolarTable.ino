@@ -66,13 +66,7 @@ void setup()
   DEBUG_PRINTLN("Setup serial.");
   DEBUG_WHERE();
 
-//  if (!io.begin(SX1509_I2C_ADDRESS))
-//  {
-//    DEBUG_PRINTLN("Failed to begin SX1509 coms.");
-//    evtManager.trigger(ERROR_EVENT, ERROR_SX1509);
-//    while (1);
-//  }
-  
+  pin_setup();
   raspberry_setup();
   raspberry_manager_setup();
   button_setup();
