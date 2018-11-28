@@ -77,8 +77,7 @@ void system_shutdown_enter(){
   evtManager.trigger(MOTOR_SHUTDOWN);
   evtManager.trigger(LIGHTING_TURN_OFF);
   
-  // SX1509 shutdown? We don't have a hardware reset line so use software.
-  io.reset(false);
+  shutdown();
 }
 
 /* OFF */
@@ -91,6 +90,7 @@ void system_off_state(){
   DEBUG_PRINTLN("Sleeping.");
   sleepNow();
   DEBUG_PRINTLN("Waking.");
+  startup();
   fsm_system.trigger(SYSTEM_WAKE_ACTION);
 }
 
@@ -100,7 +100,6 @@ void system_off_state(){
 
 void button_setup()
 {
-  pinMode(PIN_INTERUPT, INPUT);
   pinMode(PIN_WAKE_SWITCH, INPUT_PULLUP);
     
   char debounce_time = 5; // Milliseconds

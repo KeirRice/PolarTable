@@ -13,6 +13,7 @@ typedef unsigned int uint;
 
 #ifdef MEGA
 #include "PinsMega.h"
+void sx1509_shutdown(){}
 #else
 #include "Pins.h"
 #endif // MEGA
@@ -23,7 +24,6 @@ typedef unsigned int uint;
 
 #include "Event.h"
 EventManager evtManager;
-
 
 #include <Fsm.h>
 
@@ -82,18 +82,33 @@ void setup()
   DEBUG_WHERE();
 }
 
+void shutdown()
+{
+  DEBUG_PRINTLN("Shutting down.");
+  DEBUG_WHERE();
+
+  sx1509_shutdown();
+}
+
+
+void startup()
+{
+  DEBUG_PRINTLN("Powering on.");
+  DEBUG_WHERE();
+}
+
 void loop()
 {
-//  raspberry_loop();
-//  raspberry_manager_loop();
-//  button_loop();
-//  button_led_loop();
-//  lighting_loop();
-//  encoder_relative_loop();
-//  encoder_absolute_loop();
-//  motor_loop();
+  raspberry_loop();
+  raspberry_manager_loop();
+  button_loop();
+  button_led_loop();
+  lighting_loop();
+  encoder_relative_loop();
+  encoder_absolute_loop();
+  motor_loop();
   i2c_loop();
-//  calibration_loop();
+  calibration_loop();
 }
 //void setup(){}
 //void loop(){}
