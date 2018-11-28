@@ -34,15 +34,11 @@ void motor_enable(boolean enable)
   digitalWrite(PIN_MOTOR_ENABLEY, enable ? 0 : 1);
 }
 
-void motor_wake_and_enable() {
-  /* Optimised version below
- 
-    // SLEEP active on low
-    motor_sleep(false);
-    // ENABLE active on low
-    motor_enable(true);
-  */
-
+void motor_wake_and_enable() { 
+//    motor_sleep(false);
+//    motor_enable(true);
+  
+  // Optimised version
   PORTA = (PORTA & 0b11110000) | 0b00000101
 }
 
@@ -62,8 +58,16 @@ void motor_settings_setup() {
   pinMode(PIN_MOTOR_YMS1, OUTPUT);
   pinMode(PIN_MOTOR_YMS2, OUTPUT); 
 
+//  // Full steps
+//  PIN_MOTOR_XMS1.digitalWrite(FULL_STEP & 0x01);
+//  PIN_MOTOR_XMS2.digitalWrite(FULL_STEP >> 1);
+//  PIN_MOTOR_YMS1.digitalWrite(FULL_STEP & 0x01);
+//  PIN_MOTOR_YMS2.digitalWrite(FULL_STEP >> 1);
+//  motor_wake_and_enable();
+
+  // Optimised version
   // Wake, enable, and set full steps
-  PORTA = 0b00000101;
+  PORTA = 0b00000101; // ;
 }
 
 #endif // DISABLE_MOTORS
