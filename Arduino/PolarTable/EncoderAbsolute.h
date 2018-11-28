@@ -263,18 +263,16 @@ void encoder_absolute_setup()
   assert(PIN_I_IR == SX1509_B10);
   assert(PIN_J_IR == SX1509_B11);
 
-  // The SX1509 has built-in debounce.
-  char debounce_time = 2; // <time_ms> can be either 0, 1, 2, 4, 8, 16, 32, or 64 ms.
-  io.debounceTime(debounce_time);
-
   // Use io.pinMode(<pin>, <mode>) to set our absolute encoder switches
-  io.pinMode(PIN_G_IR, INPUT_PULLUP);
-  io.pinMode(PIN_H_IR, INPUT_PULLUP);
-  io.pinMode(PIN_I_IR, INPUT_PULLUP);
-  io.pinMode(PIN_J_IR, INPUT_PULLUP);
+  PIN_G_IR.pinMode(INPUT_PULLUP);
+  PIN_H_IR.pinMode(INPUT_PULLUP);
+  PIN_I_IR.pinMode(INPUT_PULLUP);
+  PIN_J_IR.pinMode(INPUT_PULLUP);
 
   // Prime our values
   UpdateAbsolutePosition();
+
+  // TODO: How to abstract away the interupts?
 
   // Interupts on
   io.enableInterrupt(PIN_G_IR, CHANGE);

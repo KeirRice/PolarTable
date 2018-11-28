@@ -15,9 +15,6 @@ void button_led_loop() {}
 #include "Error.h"
 #include "ProjectEvents.h"
 
-#include "SparkFunSX1509.h"
-extern SX1509 io;
-
 extern EventManager evtManager;
 
 
@@ -47,18 +44,18 @@ Fsm fsm_button_led(&state_led_on);
 void on_led_enter()
 {
   DEBUG_WHERE();
-  io.digitalWrite(PIN_WAKE_LED, 1);
+  PIN_WAKE_LED.digitalWrite(1);
   // io.blink(PIN_WAKE_LED, 1000, 500);
 }
 
 void off_led_enter(){
   DEBUG_WHERE();
-  io.digitalWrite(PIN_WAKE_LED, 0);
+  PIN_WAKE_LED.digitalWrite(0);
 }
 
 void pulse_led_enter(){
   DEBUG_WHERE();
-  io.blink(PIN_WAKE_LED, 1000, 500);
+  PIN_WAKE_LED.blink(1000, 500);
 //  int low_ms = 1000;
 //  int high_ms = 1000;
 //  int rise_ms = 500;
@@ -67,7 +64,7 @@ void pulse_led_enter(){
 }
 
 void pulse_led_exit(){
-  io.setupBlink(PIN_WAKE_LED, 0, 0, 255);
+  PIN_WAKE_LED.setupBlink(PIN_WAKE_LED, 0, 0, 255);
 }
 
 void pulse_led_state(){}
@@ -80,24 +77,24 @@ void pulse_off_led_enter(){}
 
 void fade_in()
 {
-  io.breathe(PIN_WAKE_LED,    //pin
+  PIN_WAKE_LED.breathe(
     0,  // tOn , time on ms, needs to be 0 for static mode
     1,  // tOff, time off ms, need to be != 0 for static mode
     8000, // fade in, raise time in ms
     0 // fade out fall time in ms
     );
-  io.digitalWrite(PIN_WAKE_LED, 0); // turn led on, it will slowly fade in
+  PIN_WAKE_LED.digitalWrite(PIN_WAKE_LED, 0); // turn led on, it will slowly fade in
 }
 
 void fade_out()
 {
-  io.breathe(PIN_WAKE_LED,    //pin
+  PIN_WAKE_LED.breathe(
     0,  // tOn , time on ms, needs to be 0 for static mode
     1,  // tOff, time off ms, need to be != 0 for static mode
     8000, // fade out, fall time / speed ms
     0 // fade out fall time in ms
   );
-  io.digitalWrite(PIN_WAKE_LED, 1); // turn led off, it will slowly fade out
+  PIN_WAKE_LED.digitalWrite(1); // turn led off, it will slowly fade out
 }
 
 
@@ -110,7 +107,7 @@ void button_led_setup()
   // Use the internal 2MHz oscillator.
   // Set LED clock to 500kHz (2MHz / (2^(3-1)):
   io.clock(INTERNAL_CLOCK_2MHZ, 4);
-  io.pinMode(PIN_WAKE_LED, OUTPUT);
+  PIN_WAKE_LED.pinMode(OUTPUT);
   // io.ledDriverInit(PIN_WAKE_LED);
   
   // Off => On, On => OFF

@@ -39,7 +39,7 @@ Fsm fsm_raspberry(&state_raspberry_on);
 
 void set_raspberry_power(bool power_on){
   // Pull low to disconnect the power.
-  digitalWrite(PIN_PI_POWER, power_on ? HIGH : LOW);  
+  PIN_PI_POWER.digitalWrite(power_on ? HIGH : LOW);  
 }
 
 void raspberry_startup_enter(){
@@ -82,7 +82,7 @@ void raspberry_on_state(){
 void raspberry_manager_setup() {
   
   pinMode(PIN_PI_POWER, OUTPUT);
-  digitalWrite(PIN_PI_POWER, HIGH);
+  PIN_PI_POWER.digitalWrite(HIGH);
   
   fsm_raspberry.add_transition(&state_raspberry_on, &state_raspberry_shutdown, RASPBERRY_SHUTDOWN, NULL);
   fsm_raspberry.add_timed_transition(&state_raspberry_shutdown, &state_raspberry_off, 3000, NULL);

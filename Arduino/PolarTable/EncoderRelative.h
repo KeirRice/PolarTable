@@ -146,13 +146,14 @@ void encoder_relative_setup()
   assert(PIN_E_SWITCH == ARDUINO_D8);
   assert(PIN_F_SWITCH == ARDUINO_D9);
 
-  // Use io.pinMode(<pin>, <mode>) to set our relative encoder switches
-  io.pinMode(PIN_E_SWITCH, INPUT_PULLUP);
-  io.pinMode(PIN_F_SWITCH, INPUT_PULLUP);
+  PIN_E_SWITCH.pinMode(INPUT_PULLUP);
+  PIN_F_SWITCH.pinMode(INPUT_PULLUP);
 
   // Read the encoder state to get us started. On init current and previous can be the same.
-  relative_encoder_state = (io.digitalRead(PIN_F_SWITCH) << 1) | io.digitalRead(PIN_E_SWITCH);
+  relative_encoder_state = (PIN_F_SWITCH.digitalRead() << 1) | PIN_E_SWITCH.digitalRead();
   relative_encoder_state = (relative_encoder_state << 2) | relative_encoder_state;
+  
+  // TODO: On mega we have dedicated interupt lines
   attachInterrupt(digitalPinToInterrupt(PIN_INTERUPT), relativeISR, CHANGE);
 }
 

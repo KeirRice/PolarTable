@@ -20,15 +20,15 @@ typedef struct Register {
   public:
     Register(const EventID &_event, unsigned char _register_adderess, const byte _mask_width=1) : set_event(_event), packed_register_mask(_register_adderess | (_mask_width << 6)) {}
     
-    const EventID *set_event;  // Callback for when we have a value
+    const EventID &set_event;  // Callback for when we have a value
 
-    const byte get_address(){
+    byte get_address(){
       return packed_register_mask & 0b00111111;
     }
-    const byte get_bytes(){
+    byte get_bytes(){
       return packed_register_mask >> 6;
     }
-    const long get_mask(){
+    long get_mask(){
       return 1; // return offset_bitmask(this->get_bytes(), this->get_adderess());
     }
     
@@ -135,7 +135,7 @@ int read_word(byte peripheral_address, byte register_address){
   return data_word;
 }
 
-write_byte(byte peripheral_address, byte register_address, byte value){
+void write_byte(byte peripheral_address, byte register_address, byte value){
   Wire.beginTransmission(peripheral_address);
   Wire.write(register_address);
   Wire.write(value);
@@ -152,7 +152,7 @@ void write_bytes(byte peripheral_address, byte register_address, byte data[], by
   Wire.endTransmission(true);
 }
 
-write_word(byte peripheral_address, byte register_address, long value){
+void write_word(byte peripheral_address, byte register_address, long value){
   byte data[2];
   data[0] = value >> 8;
   data[1] = value & 255;
@@ -178,13 +178,14 @@ REG_INTERUPTS_1 = Register('REG_INTERUPTS_1')  # Interupts Bank1
  */
 
 const char raspberry_register_count = 4;
-const Register raspberry_registers[raspberry_register_count] = {
-  // REG_STATUS = Register(0);
-  Register(LIGHTING_SET_STATE, 2, 1), // REG_LIGHTING_ON
-  Register(LIGHTING_SET_COLOUR, 3, 3),  // REG_LIGHTING_COLOUR 
-  Register(LIGHTING_SET_BLEND_TIME, 6, 1),  // REG_LIGHTING_BLEND_TIME 
-  Register(MOTOR_SET, 7, 4) // REG_MOTOR 
-};
+
+//const Register raspberry_registers[raspberry_register_count] = {
+//  // REG_STATUS = Register(0);
+//  Register(LIGHTING_SET_STATE, 2, 1), // REG_LIGHTING_ON
+//  Register(LIGHTING_SET_COLOUR, 3, 3),  // REG_LIGHTING_COLOUR 
+//  Register(LIGHTING_SET_BLEND_TIME, 6, 1),  // REG_LIGHTING_BLEND_TIME 
+//  Register(MOTOR_SET, 7, 4) // REG_MOTOR 
+// };
 
 void push_settings() {
   byte peripheral_address = RASPBERRY_I2C_ADDRESS;
@@ -204,7 +205,7 @@ void push_settings() {
   Wire.write(1);
   
   // char *colors = get_lighting_color();
-  char colors[3] = {0x22, 0xEE, 0x22};
+  unsigned char colors[3] = {0x22, 0xEE, 0x22};
   Wire.write(colors[0]);
   Wire.write(colors[1]);
   Wire.write(colors[2]);
@@ -235,10 +236,10 @@ long poll_interupt() {
   return read_word(peripheral_address, register_address);
 }
 
-long clear_interupts() {
+void clear_interupts() {
   byte peripheral_address = RASPBERRY_I2C_ADDRESS;
   byte register_address = 10;  
-  return write_word(peripheral_address, register_address, 0);
+  write_word(peripheral_address, register_address, 0);
 }
 
 void i2c_controller_setup(){
@@ -247,7 +248,7 @@ void i2c_controller_setup(){
 
 void i2c_controller_loop(){
 
-  static int timer = 0;
+  static unsigned int timer = 0;
   if(timer < millis()){
     send_raspberry_shutdown();
     timer = millis() + 5000;

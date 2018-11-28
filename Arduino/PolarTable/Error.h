@@ -10,9 +10,9 @@ void error_LED(int code){
     for(unsigned int i = 0; i < (sizeof(code) * 8); ++i)
     {
       DEBUG_PRINT_VAR(i, code);
-      digitalWrite(PIN_ERROR_LED, HIGH);
+      PIN_ERROR_LED.digitalWrite(HIGH);
       delay((code & (1 << i)) ? 1000 : 500);
-      digitalWrite(PIN_ERROR_LED, LOW);
+      PIN_ERROR_LED.digitalWrite(LOW);
       delay(500);
     }
     delay(3000);

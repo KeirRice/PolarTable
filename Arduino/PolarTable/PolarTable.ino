@@ -11,7 +11,7 @@ typedef unsigned int uint;
 #define THETA_MAX_TRAVEL 1000
 #define RADIUS_MAX_TRAVEL 1000
 
-#ifndef MEGA
+#ifdef MEGA
 #include "PinsMega.h"
 #else
 #include "Pins.h"
@@ -24,10 +24,6 @@ typedef unsigned int uint;
 #include "Event.h"
 EventManager evtManager;
 
-#ifndef MEGA
-#include "SparkFunSX1509.h"
-SX1509 io;
-#endif // MEGA
 
 #include <Fsm.h>
 
