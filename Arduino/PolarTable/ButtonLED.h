@@ -14,9 +14,13 @@ void button_led_loop() {}
 #include "Event.h"
 #include "Error.h"
 #include "ProjectEvents.h"
+#include <jled.h>
 
 extern EventManager evtManager;
 
+jled wake_led(PIN_WAKE_LED);
+
+#define FADE_TIME = 1000
 
 /*************************************************************
   State
@@ -25,51 +29,41 @@ extern EventManager evtManager;
 void on_led_enter();
 void off_led_enter();
 void pulse_led_enter();
-void pulse_led_state();
-void pulse_led_exit();
-void pulse_on_led_enter();
-void pulse_off_led_enter();
+void led_update();
 
 State state_led_on(&on_led_enter, NULL, NULL);
 State state_led_off(&off_led_enter, NULL, NULL);
-State state_led_pulse(&pulse_led_enter, NULL, &pulse_led_exit);
+State state_led_pulse(&pulse_led_enter, &led_update, NULL);
 State state_button_led_error(NULL, NULL, NULL);
 
 // New states so we can add timed transitions, but reuse use the pulse functions.
-State state_led_pulse_on(&pulse_on_led_enter, NULL, NULL);
-State state_led_pulse_off(&pulse_off_led_enter, NULL, NULL);
+State state_led_pulse_on(&pulse_led_enter, &led_update, NULL);
+State state_led_pulse_off(&pulse_led_enter, &led_update, NULL);
 
 Fsm fsm_button_led(&state_led_on);
 
 void on_led_enter()
 {
   DEBUG_WHERE();
-  PIN_WAKE_LED.digitalWrite(1);
-  // io.blink(PIN_WAKE_LED, 1000, 500);
+  wake_led.On();
+  wake_led.Update();
 }
 
 void off_led_enter(){
   DEBUG_WHERE();
-  PIN_WAKE_LED.digitalWrite(0);
+  wake_led.Off();
+  wake_led.Update();
 }
 
 void pulse_led_enter(){
   DEBUG_WHERE();
-  PIN_WAKE_LED.blink(1000, 500);
-//  int low_ms = 1000;
-//  int high_ms = 1000;
-//  int rise_ms = 500;
-//  int fall_ms = 250;
-//  io.breathe(PIN_WAKE_LED, low_ms, high_ms, rise_ms, fall_ms);
+  wake_led.Breathe(2000).DelayAfter(500).Forever();
 }
 
-void pulse_led_exit(){
-  PIN_WAKE_LED.setupBlink(PIN_WAKE_LED, 0, 0, 255);
+void led_update(){
+  wake_led.update();
 }
 
-void pulse_led_state(){}
-void pulse_on_led_enter(){}
-void pulse_off_led_enter(){}
 
 /*************************************************************
   Helpers
@@ -77,24 +71,12 @@ void pulse_off_led_enter(){}
 
 void fade_in()
 {
-  PIN_WAKE_LED.breathe(
-    0,  // tOn , time on ms, needs to be 0 for static mode
-    1,  // tOff, time off ms, need to be != 0 for static mode
-    8000, // fade in, raise time in ms
-    0 // fade out fall time in ms
-    );
-  PIN_WAKE_LED.digitalWrite(PIN_WAKE_LED, 0); // turn led on, it will slowly fade in
+  wake_led = wake_led.FadeOn(FADE_TIME);
 }
 
 void fade_out()
 {
-  PIN_WAKE_LED.breathe(
-    0,  // tOn , time on ms, needs to be 0 for static mode
-    1,  // tOff, time off ms, need to be != 0 for static mode
-    8000, // fade out, fall time / speed ms
-    0 // fade out fall time in ms
-  );
-  PIN_WAKE_LED.digitalWrite(1); // turn led off, it will slowly fade out
+  wake_led = wake_led.FadeOff(FADE_TIME);
 }
 
 
@@ -102,29 +84,21 @@ void fade_out()
   Setup and main loop.
 *************************************************************/
 
+
+
 void button_led_setup()
-{  
-  // Use the internal 2MHz oscillator.
-  // Set LED clock to 500kHz (2MHz / (2^(3-1)):
-  io.clock(INTERNAL_CLOCK_2MHZ, 4);
-  PIN_WAKE_LED.pinMode(OUTPUT);
-  // io.ledDriverInit(PIN_WAKE_LED);
-  
+{    
   // Off => On, On => OFF
-  fsm_button_led.add_transition(&state_led_off, &state_led_on, BUTTON_ON, NULL); // , &fade_in
-  fsm_button_led.add_transition(&state_led_on, &state_led_off, BUTTON_OFF, NULL); // , &fade_out
+  fsm_button_led.add_transition(&state_led_off, &state_led_on, BUTTON_ON, NULL);
+  fsm_button_led.add_transition(&state_led_on, &state_led_off, BUTTON_OFF, NULL);
 
-  // Off/On => Blink, Blink => Off/On
-  fsm_button_led.add_transition(&state_led_off, &state_led_pulse, BUTTON_PULSE, NULL);  
-  fsm_button_led.add_transition(&state_led_on, &state_led_pulse, BUTTON_PULSE, NULL);  
-  fsm_button_led.add_transition(&state_led_pulse, &state_led_off, BUTTON_OFF, NULL);  
-  fsm_button_led.add_transition(&state_led_pulse, &state_led_on, BUTTON_ON, NULL);  
-
+  // Off => Pulse => On
   fsm_button_led.add_transition(&state_led_off, &state_led_pulse_on, BUTTON_PULSE_ON, NULL);
-  fsm_button_led.add_timed_transition(&state_led_pulse_on, &state_led_on, 3000, NULL);
+  fsm_button_led.add_timed_transition(&state_led_pulse_on, &state_led_on, FADE_TIME, NULL);
   
+  // On => Pulse => Off
   fsm_button_led.add_transition(&state_led_on, &state_led_pulse_off, BUTTON_PULSE_OFF, NULL);  
-  fsm_button_led.add_timed_transition(&state_led_pulse_off, &state_led_off, 3000, NULL);
+  fsm_button_led.add_timed_transition(&state_led_pulse_off, &state_led_off, FADE_TIME, NULL);
 
   // Create the bridge from the event system to the button LED fsm
   struct FsmEventDriver button_LED_listener = FsmEventDriver(&fsm_button_led);
