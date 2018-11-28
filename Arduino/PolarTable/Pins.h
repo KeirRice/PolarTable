@@ -8,22 +8,22 @@ typedef struct PinID {
   PinID(byte _pin): pin(_pin) {};
 
   template <class T>
-  void pinMode(T mode){
+  void pinMode(T mode) const{
     return ::pinMode(pin, mode);
   }
   
-  int digitalRead() {
+  int digitalRead() const {
     return ::digitalRead(pin);
   }
   
-  template <class T>
-  void digitalWrite(T value) {
+  void digitalWrite(const int value) const {
     ::digitalWrite(pin, value);
   }
   
-  operator uint8_t() {
-    return (uint8_t) pin;
+  operator uint8_t() const {
+    return pin;
   }
+  
 } PinID;
 
 

@@ -8,11 +8,11 @@ typedef struct PinID {
   PinID(uint8_t _pin): pin(_pin) {};
 
   template <class T>
-  void pinMode(T mode){
+  void pinMode(T mode) const{
     return ::pinMode(pin, mode);
   }
   
-  int digitalRead() {
+  int digitalRead() const {
     return ::digitalRead(pin);
   }
   

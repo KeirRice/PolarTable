@@ -43,12 +43,10 @@ typedef struct ShiftPinID : public PinID {
     return (shifter.get_port() >> pin) & 0x0001;
   }
   
-  template <class T>
-  void digitalWrite(T value) {
+  void digitalWrite(const int value) {
     // Clamp the value to a single bit and shift into position
-    value = ((value & 0x0001) << pin);
     byte mask = (1 << pin);
-    byte port = (shifter.get_port() & ~mask) & value;
+    byte port = (shifter.get_port() & ~mask) & ((value & 0x0001) << pin);
     shifter.set_port(port);
     shifter.send_state();
   }
