@@ -147,18 +147,18 @@ static const PinID PIN_MOTOR_XDIR = ARDUINO_D8;
 static const PinID PIN_RADIO_RXDATA = ARDUINO_D9;
 
 // Switches for homing
-static const PinID PIN_A_SWITCH = ARDUINO_D10;
-static const PinID PIN_B_SWITCH = ARDUINO_D11;
-static const PinID PIN_C_SWITCH = ARDUINO_D12;
-static const PinID PIN_D_SWITCH = ARDUINO_D13;
+static const PinID PIN_A_SWITCH = ARDUINO_D68;
+static const PinID PIN_B_SWITCH = ARDUINO_D69;
+//static const PinID PIN_C_SWITCH = ARDUINO_D12;
+//static const PinID PIN_D_SWITCH = ARDUINO_D13;
 
 // LED controller
 static const PinID PIN_LED_SCIN = ARDUINO_ICSP_SCK;
 static const PinID PIN_LED_SDIN = ARDUINO_ICSP_MOSI;
 
 // Switches for relative encoding
-static const PinID PIN_E_SWITCH = ARDUINO_INT3; // ARDUINO_D18
-static const PinID PIN_F_SWITCH = ARDUINO_INT2; // ARDUINO_D19
+static const PinID PIN_E_SWITCH = ARDUINO_D66;
+static const PinID PIN_F_SWITCH = ARDUINO_D67;
 
 // Motor Settings
 static const PinID PIN_MOTOR_SLEEPX = ARDUINO_D22;
@@ -178,3 +178,5 @@ static const PinID PIN_G_IR = ARDUINO_A8;
 static const PinID PIN_H_IR = ARDUINO_A9;
 static const PinID PIN_I_IR = ARDUINO_A10;
 static const PinID PIN_J_IR = ARDUINO_A11;
+
+void pin_setup(){}

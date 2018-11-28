@@ -86,24 +86,8 @@ long get_relative_position() {
   Interupt
 *************************************************************/
 
-void relativeISR() {
-  /*
-    PORTB maps to Arduino digital pins 8 to 13 The two high bits (6 & 7) map to the crystal pins and are not usable
-    DDRB - The Port B Data Direction Register - read/write
-    PORTB - The Port B Data Register - read/write
-    PINB - The Port B Input Pins Register - read only
-
-    PIN_E_SWITCH == ARDUINO_D8;
-    PIN_F_SWITCH == ARDUINO_D9;
-  */
-
-  // Read directly from the PINB port
-  // Mask off just pins D9 (bit 2) and D10 (bit 3)
-  // Shift the read data to fill bits 1 & 2
-  // Clear the last state high bits, keeping only bits 1 & 2
-  // Shift the last state up to bits 3 & 4
-  // OR togeather the old and new data into their correct bit locations
-  relative_encoder_state = (relative_encoder_state << 2) | (PINB & relative_port_read_mask);
+void process_new_relative_data(byte new_data) {
+  relative_encoder_state = (relative_encoder_state << 2) | new_data;
   byte new_direction = relativeDirectionLookup[relative_encoder_state & relative_lower_nibble_mask];
   if (new_direction == 2) {
     // Don't do anything for errors
@@ -140,6 +124,44 @@ boolean encoder_error(boolean reset_flag = true) {
   Setup and main loop.
 *************************************************************/
 
+#ifdef MEGA
+
+void relativeISR(){
+  process_new_relative_data((PORTK >> 4) 0b00000011);
+}
+
+void encoder_relative_setup()
+{
+  // Check the pins as relativeISR is hardcoded to them.
+  assert(PIN_E_SWITCH == ARDUINO_D66);
+  assert(PIN_F_SWITCH == ARDUINO_D67);
+
+  PIN_E_SWITCH.pinMode(INPUT_PULLUP);
+  PIN_F_SWITCH.pinMode(INPUT_PULLUP);
+
+  // Read the encoder state to get us started. On init current and previous can be the same.
+  relative_encoder_state = (PIN_F_SWITCH.digitalRead() << 1) | PIN_E_SWITCH.digitalRead();
+  relative_encoder_state = (relative_encoder_state << 2) | relative_encoder_state;
+  
+  enableInterrupt(PIN_E_SWITCH, relativeISR, CHANGE);
+  enableInterrupt(PIN_F_SWITCH, relativeISR, CHANGE);
+}
+
+#else // Not MEGA
+
+void relativeISR(){
+  /*
+    PORTB maps to Arduino digital pins 8 to 13 The two high bits (6 & 7) map to the crystal pins and are not usable
+    DDRB - The Port B Data Direction Register - read/write
+    PORTB - The Port B Data Register - read/write
+    PINB - The Port B Input Pins Register - read only
+
+    PIN_E_SWITCH == ARDUINO_D8;
+    PIN_F_SWITCH == ARDUINO_D9;
+  */  
+  process_new_relative_data(PORTB & relative_port_read_mask)
+}
+
 void encoder_relative_setup()
 {
   // Check the pins as relativeISR is hardcoded to them.
@@ -153,9 +175,11 @@ void encoder_relative_setup()
   relative_encoder_state = (PIN_F_SWITCH.digitalRead() << 1) | PIN_E_SWITCH.digitalRead();
   relative_encoder_state = (relative_encoder_state << 2) | relative_encoder_state;
   
-  // TODO: On mega we have dedicated interupt lines
+  pinMode(PIN_INTERUPT, INPUT);
   attachInterrupt(digitalPinToInterrupt(PIN_INTERUPT), relativeISR, CHANGE);
 }
+
+#endif // MEGA
 
 void encoder_relative_loop() {
   sync_interupt_counts();
@@ -163,5 +187,4 @@ void encoder_relative_loop() {
     evtManager.trigger(ERROR_REL_DIRECTION);
   }
 }
-
 #endif // DISABLE_ENCODER_RELATIVE

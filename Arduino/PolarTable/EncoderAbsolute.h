@@ -11,17 +11,13 @@ void encoder_absolute_loop() {}
 
 #else
 
-#include "SparkFunSX1509.h"
-#define REG_DATA_B 0x10 // From sx1509_register.h
+#define DEBOUNCE_DELAY 5
 
-extern SX1509 io; // Create an SX1509 object to be used throughout
 
 /*************************************************************
   State variables.
 *************************************************************/
 
-// Global variables:
-volatile bool SX1509Interrupt = false; // Track Interrupts in ISR
 
 static char absolute_position;
 
@@ -200,7 +196,7 @@ char absoluteDirectionLookup(char previous_segment, char current_segment) {
   Functions
 *************************************************************/
 
-void UpdateAbsolutePosition()
+void UpdateAbsolutePosition(byte new_reading)
 {
   // Encoder state packed into a byte so we can use it as an index into the direction array.
   // bits 7-4 == previous values
@@ -213,11 +209,10 @@ void UpdateAbsolutePosition()
   // Mask out the data keeping only pins 11-8
   // Shift the last data we got left four bits
   // OR the values togeather
-  absolute_encoder_state = (absolute_encoder_state << 4) | (io.readByte(REG_DATA_B) & absolute_port_read_mask);
+  absolute_encoder_state = (absolute_encoder_state << 4) | new_reading;
 
   // Clear the iterrupt flag.
-  // TODO: Add a function to the SX1509 library to clear without reading.
-  io.interruptSource();
+  clear_interrupt()
 
   byte absolute_position_index = absolute_encoder_state & absolute_lower_nibble_mask;
   absolute_position = absolute_position_table[absolute_position_index];
@@ -238,9 +233,57 @@ void UpdateAbsolutePosition()
   }
 }
 
+
 /*************************************************************
-  Interupt
+  Setup and main loop.
 *************************************************************/
+
+#ifdef MEGA
+
+#define LIBCALL_ENABLEINTERRUPT 
+#include <EnableInterrupt.h>
+
+void isr_handler(){
+  static uint32_t last_interrupt_time = 0;
+  uint32_t interrupt_time = millis();
+  if (interrupt_time - last_interrupt_time > DEBOUNCE_DELAY) {
+    UpdateAbsolutePosition(PORTK & absolute_port_read_mask);
+  }
+  last_interrupt_time = interrupt_time; 
+}
+
+void encoder_absolute_setup()
+{
+  // Check the pins as we are hardcoded to them in the port_read_mask and UpdateAbsolutePosition.
+  assert(PIN_G_IR == ARDUINO_A8);
+  assert(PIN_H_IR == ARDUINO_A9);
+  assert(PIN_I_IR == ARDUINO_A10);
+  assert(PIN_J_IR == ARDUINO_A11);
+  
+  PIN_G_IR.pinMode(INPUT_PULLUP);
+  PIN_H_IR.pinMode(INPUT_PULLUP);
+  PIN_I_IR.pinMode(INPUT_PULLUP);
+  PIN_J_IR.pinMode(INPUT_PULLUP);
+
+  // Prime our values
+  UpdateAbsolutePosition(PORTK & absolute_port_read_mask);
+
+  // Interupts on
+  enableInterrupt(PIN_G_IR, isr_handler, CHANGE);
+  enableInterrupt(PIN_H_IR, isr_handler, CHANGE);
+  enableInterrupt(PIN_I_IR, isr_handler, CHANGE);
+  enableInterrupt(PIN_J_IR, isr_handler, CHANGE);
+}
+
+void encoder_absolute_loop() {
+}
+
+#else // Not MEGA
+
+#include "SparkFunSX1509.h"
+#define REG_DATA_B 0x10 // From sx1509_register.h
+extern SX1509 io; // Create an SX1509 object to be used throughout
+volatile bool SX1509Interrupt = false; // Track Interrupts in ISR
 
 void encoderISR()
 {
@@ -250,10 +293,10 @@ void encoderISR()
   SX1509Interrupt = true; // Set the SX1509Interrupts flag
 }
 
-
-/*************************************************************
-  Setup and main loop.
-*************************************************************/
+void clear_interrupt(){
+  // TODO: Add a function to the SX1509 library to clear without reading.
+  io.interruptSource();
+}
 
 void encoder_absolute_setup()
 {
@@ -293,9 +336,12 @@ void encoder_absolute_setup()
 void encoder_absolute_loop() {
   if (SX1509Interrupt) // If the encoderISR was executed called
   {
-    UpdateAbsolutePosition();
+    UpdateAbsolutePosition(io.readByte(REG_DATA_B) & absolute_port_read_mask);
     SX1509Interrupt = false;
   }
 }
+
+#endif // MEGA
+
 
 #endif // DISABLE_ENCODER_ABSOLUTE
