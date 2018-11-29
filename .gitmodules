@@ -16,3 +16,6 @@
 [submodule "Arduino/libraries/arduino-fsm"]
 	path = Arduino/libraries/arduino-fsm
 	url = https://github.com/jonblack/arduino-fsm.git
+[submodule "Arduino/libraries/Flash"]
+	path = Arduino/libraries/Flash
+	url = https://github.com/schinken/Flash.git
