@@ -13,3 +13,6 @@
 [submodule "Python/simpleRPC"]
 	path = Python/simpleRPC
 	url = https://github.com/jfjlaros/simpleRPC.git
+[submodule "Arduino/libraries/arduino-fsm"]
+	path = Arduino/libraries/arduino-fsm
+	url = https://github.com/jonblack/arduino-fsm.git
