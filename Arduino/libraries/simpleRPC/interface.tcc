@@ -104,8 +104,8 @@ template<class... Args>
 void rpcInterface(Args... args) {
   byte command;
 
-  if (Serial.available()) {
-    command = Serial.read();
+  if (SIMPLE_RPC_PORT.available()) {
+    command = SIMPLE_RPC_PORT.read();
 
     if (command == _LIST_REQ) {
       _describe(args...);

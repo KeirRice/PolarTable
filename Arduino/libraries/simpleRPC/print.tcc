@@ -19,7 +19,7 @@ void multiPrint(void) {}
  */
 template<class T, class... Args>
 void multiPrint(T arg, Args... args) {
-  Serial.write(arg);
+  SIMPLE_RPC_PORT.write(arg);
   multiPrint(args...);
 }
 

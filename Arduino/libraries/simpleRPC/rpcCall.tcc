@@ -12,7 +12,7 @@
  */
 template<class T>
 void _return(T data) {
-  Serial.write((byte *)&data, sizeof(T));
+  SIMPLE_RPC_PORT.write((byte *)&data, sizeof(T));
 }
 
 // Write a return value of type {char *}.

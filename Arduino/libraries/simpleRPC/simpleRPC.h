@@ -1,6 +1,10 @@
 #ifndef __SIMPLE_RPC_H__
 #define __SIMPLE_RPC_H__
 
+#ifndef SIMPLE_RPC_PORT
+#define SIMPLE_RPC_PORT Serial
+#endif // SIMPLE_RPC_PORT
+
 #include "interface.tcc"
 
 #define _VERSION "2.0.1"
