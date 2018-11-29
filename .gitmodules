@@ -19,3 +19,6 @@
 [submodule "Arduino/libraries/Flash"]
 	path = Arduino/libraries/Flash
 	url = https://github.com/schinken/Flash.git
+[submodule "Arduino/libraries/WiFiManager"]
+	path = Arduino/libraries/WiFiManager
+	url = https://github.com/tzapu/WiFiManager.git
