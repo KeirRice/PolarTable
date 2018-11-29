@@ -13,6 +13,9 @@ typedef unsigned int uint;
 
 #ifdef MEGA
 #include "PinsMega.h"
+
+#define SIMPLE_RPC_PORT Serial3
+#include <simpleRPC.h>
 void sx1509_shutdown(){}
 #else
 #include "Pins.h"
@@ -43,6 +46,7 @@ struct FsmEventDriver : public EventTask
 };
 
 #include "Error.h"
+#include "ESPcoms.h"
 #include "ButtonLED.h"
 #include "Button.h"
 #include "Calibration.h"
@@ -66,6 +70,7 @@ void setup()
   DEBUG_PRINTLN("Setup serial.");
   DEBUG_WHERE();
 
+  // esp_setup();
   pin_setup();
   raspberry_setup();
   raspberry_manager_setup();
@@ -99,6 +104,7 @@ void startup()
 
 void loop()
 {
+  esp_loop();
   raspberry_loop();
   raspberry_manager_loop();
   button_loop();
