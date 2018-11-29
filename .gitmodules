@@ -10,3 +10,6 @@
 [submodule "Arduino/libraries/SX1509"]
 	path = Arduino/libraries/SX1509
 	url = https://github.com/sparkfun/SparkFun_SX1509_Arduino_Library.git
+[submodule "Python/simpleRPC"]
+	path = Python/simpleRPC
+	url = https://github.com/jfjlaros/simpleRPC.git
