@@ -28,6 +28,3 @@
 [submodule "ESP/esptool"]
 	path = ESP/esptool
 	url = https://github.com/themadinventor/esptool.git
-[submodule "Arduino/libraries/el-client"]
-	path = Arduino/libraries/el-client
-	url = https://github.com/jeelabs/el-client.git
