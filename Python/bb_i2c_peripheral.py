@@ -199,26 +199,27 @@ class PiPin(PinBase):
 
 	def setup(self):
 		"""Initial setup."""
-		self.pi.set_pull_up_down(self.pin, pigpio.PUD_UP)
+		self.set_mode(pigpio.OUTPUT)
+		if self.pin not in (2, 3):
+			self.pi.set_pull_up_down(self.pin, pigpio.PUD_UP)
 
-	def set_mode(self, mode):
-		"""Update the pin mode if it needs to change.
+	# def set_mode(self, mode):
+	# 	"""Update the pin mode if it needs to change.
 		
-		We keep a local cache of the value and assume it wont get changed
-		externally.
-		"""
-		if self.mode != mode:
-			self.pi.set_mode(self.pin, mode)
-			self.mode = mode
+	# 	We keep a local cache of the value and assume it wont get changed
+	# 	externally.
+	# 	"""
+	# 	retu
+	# 	if self.mode != mode:
+	# 		self.pi.set_mode(self.pin, mode)
+	# 		self.mode = mode
 
 	def read(self):
 		"""Read from the pin."""
-		self.set_mode(pigpio.INPUT)
 		return self.pi.read(self.pin)
 
 	def write(self, value):
 		"""Write to the pin."""
-		self.set_mode(pigpio.OUTPUT)
 		return self.pi.write(self.pin, value)
 
 
@@ -240,17 +241,17 @@ class Peripheral(object):
 
 		def __enter__(self):
 			"""Pull low for clock streching."""
-			# self.pin.write(LOW)
+			self.pin.write(pigpio.LOW)
 			return self
 
 		def __exit__(self, *args):
 			"""Release control of the clock."""
-			# self.pin.write(HIGH)
+			self.pin.write(pigpio.HIGH)
 			pass
 
 	def __init__(self, SCL, SDA, address):
 		"""Init."""
-		pi = pigpio.pi()             # exit script if no connection
+		self.pi = pi = pigpio.pi()             # exit script if no connection
 		if not pi.connected:
 			raise RuntimeError('No Connection')
 	
@@ -312,7 +313,7 @@ class Peripheral(object):
 		self.cb1.cancel()
 		self.cb2.cancel()
 
-		pigpio.pi().close()
+		self.pi.close()
 
 	def reset_state(self):
 		"""Clear out any state for a next transaction."""
