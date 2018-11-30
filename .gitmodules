@@ -25,3 +25,6 @@
 [submodule "Arduino/libraries/PacketSerial"]
 	path = Arduino/libraries/PacketSerial
 	url = https://github.com/bakercp/PacketSerial.git
+[submodule "ESP/esptool"]
+	path = ESP/esptool
+	url = https://github.com/themadinventor/esptool.git
