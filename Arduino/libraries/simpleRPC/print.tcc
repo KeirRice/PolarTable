@@ -2,6 +2,7 @@
 #define __SIMPLE_RPC_PRINT_TCC__
 
 #include <Arduino.h>
+#include <Stream.h>
 
 #define _END_OF_STRING '\0'
 
@@ -9,7 +10,7 @@
 /**
  * Recursion terminator for {multiPrint}.
  */
-void multiPrint(void) {}
+void multiPrint(Stream &s) {}
 
 /**
  * Write a list of parameters to serial.
@@ -18,9 +19,9 @@ void multiPrint(void) {}
  * @arg {Args...} args... - Remaining parameters.
  */
 template<class T, class... Args>
-void multiPrint(T arg, Args... args) {
-  SIMPLE_RPC_PORT.write(arg);
-  multiPrint(args...);
+void multiPrint(Stream &s, T arg, Args... args) {
+  s.write(arg);
+  multiPrint(s, args...);
 }
 
 #endif

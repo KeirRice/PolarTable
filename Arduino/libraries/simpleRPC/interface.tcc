@@ -26,15 +26,15 @@
  * @arg {const char *} doc - Function documentation.
  */
 template<class F>
-void _writeDescription(F f, const char *doc) {
-  multiPrint(signature(f).c_str(), ";", doc, _END_OF_STRING);
+void _writeDescription(Stream &s, F f, const char *doc) {
+  multiPrint(s, signature(f).c_str(), ";", doc, _END_OF_STRING);
 }
 
 
 /**
  * Recursion terminator for {_describe}.
  */
-void _describe(void) {}
+void _describe(Stream &s) {}
 
 /**
  * Describe a list of functions.
@@ -48,23 +48,23 @@ void _describe(void) {}
  * @arg {Args...} args - Remaining parameters.
  */
 template<class F, class... Args>
-void _describe(F f, const char *doc, Args... args) {
-  _writeDescription(f, doc);
-  _describe(args...);
+void _describe(Stream &s, F f, const char *doc, Args... args) {
+  _writeDescription(s, f, doc);
+  _describe(s, args...);
 }
 
 // Class member function.
 template<class U, class V, class... Args>
-void _describe(Tuple <U, V>t, const char *doc, Args... args) {
-  _writeDescription(t.tail.head, doc);
-  _describe(args...);
+void _describe(Stream &s, Tuple <U, V>t, const char *doc, Args... args) {
+  _writeDescription(s, t.tail.head, doc);
+  _describe(s, args...);
 }
 
 
 /**
  * Recursion terminator for {_select}.
  */
-void _select(byte, byte) {}
+void _select(Stream &s, byte, byte) {}
 
 /**
  * Select and call a function indexed by {number}.
@@ -80,12 +80,12 @@ void _select(byte, byte) {}
  * @arg {Args...} args - Remaining parameters.
  */
 template<class F, class... Args>
-void _select(byte number, byte depth, F f, const char *, Args... args) {
+void _select(Stream &s, byte number, byte depth, F f, const char *, Args... args) {
   if (depth == number) {
-    rpcCall(f);
+    rpcCall(s, f);
     return;
   }
-  _select(number, depth + 1, args...);
+  _select(s, number, depth + 1, args...);
 }
 
 
@@ -101,18 +101,18 @@ void _select(byte number, byte depth, F f, const char *, Args... args) {
  * @arg {Args...} args - Parameter pairs (function pointer, documentation).
  */
 template<class... Args>
-void rpcInterface(Args... args) {
+void rpcInterface(Stream &s, Args... args) {
   byte command;
 
-  if (SIMPLE_RPC_PORT.available()) {
-    command = SIMPLE_RPC_PORT.read();
+  if (s.available()) {
+    command = s.read();
 
     if (command == _LIST_REQ) {
-      _describe(args...);
-      multiPrint(_END_OF_STRING); // Empty string marks end of list.
+      _describe(s, args...);
+      multiPrint(s, _END_OF_STRING); // Empty string marks end of list.
       return;
     }
-    _select(command, 0, args...);
+    _select(s, command, 0, args...);
   }
 }
 

@@ -11,18 +11,18 @@
  * @arg {T} data - Data.
  */
 template<class T>
-void _return(T data) {
-  SIMPLE_RPC_PORT.write((byte *)&data, sizeof(T));
+void _return(Stream &s, T data) {
+  s.write((byte *)&data, sizeof(T));
 }
 
 // Write a return value of type {char *}.
-void _return(char *data) {
-  multiPrint(data, _END_OF_STRING);
+void _return(Stream &s, char *data) {
+  multiPrint(s, data, _END_OF_STRING);
 }
 
 // Write a return value of type {const char *}.
-void _return(const char *data) {
-  multiPrint(data, _END_OF_STRING);
+void _return(Stream &s, const char *data) {
+  multiPrint(s, data, _END_OF_STRING);
 }
 
 /**
@@ -36,25 +36,25 @@ void _return(const char *data) {
  * @arg {Args...} args... - Parameter pack for {f}.
  */
 template<class R, class... Tail, class... Args>
-void _call(void (*)(void), R (*f)(Tail...), Args... args) {
-  _return(f(args...));
+void _call(Stream &s, void (*)(void), R (*f)(Tail...), Args... args) {
+  _return(s, f(args...));
 }
 
 // Void function.
 template<class... Tail, class... Args>
-void _call(void (*)(void), void (*f)(Tail...), Args... args) {
+void _call(Stream &s, void (*)(void), void (*f)(Tail...), Args... args) {
   f(args...);
 }
 
 // Class member function.
 template<class C, class R, class... Tail, class... Args>
-void _call(void (*)(void), Tuple <C, R (C::*)(Tail...)>t, Args... args) {
-  _return(((t.head).*t.tail.head)(args...));
+void _call(Stream &s, void (*)(void), Tuple <C, R (C::*)(Tail...)>t, Args... args) {
+  _return(s, ((t.head).*t.tail.head)(args...));
 }
 
 // Void class member function.
 template<class C, class... Tail, class... Args>
-void _call(void (*)(void), Tuple <C, void (C::*)(Tail...)>t, Args... args) {
+void _call(Stream &s, void (*)(void), Tuple <C, void (C::*)(Tail...)>t, Args... args) {
   ((t.head).*t.tail.head)(args...);
 }
 
@@ -72,27 +72,29 @@ void _call(void (*)(void), Tuple <C, void (C::*)(Tail...)>t, Args... args) {
  * @arg {Args...} args... - Parameter pack for {f}.
  */
 template<class T, class... Tail, class F, class... Args>
-void _call(void (*f_)(T, Tail...), F f, Args... args) {
+void _call(Stream &s, void (*f_)(T, Tail...), F f, Args... args) {
   T data;
 
-  Serial.readBytes((char *)&data, sizeof(T));
-  _call((void (*)(Tail...))f_, f, args..., data);
+  s.readBytes((char *)&data, sizeof(T));
+  _call(s, (void (*)(Tail...))f_, f, args..., data);
 }
 
 // Parameter of type {char *}.
 template<class... Tail, class F, class... Args>
-void _call(void (*f_)(char *, Tail...), F f, Args... args) {
+void _call(Stream &s, void (*f_)(char *, Tail...), F f, Args... args) {
   _call(
+    s,
     (void (*)(Tail...))f_, f, args...,
-    (char *)Serial.readStringUntil(_END_OF_STRING).c_str());
+    (char *)SIMPLE_RPC_PORT.readStringUntil(_END_OF_STRING).c_str());
 }
 
 // Parameter of type {const char *}.
 template<class... Tail, class F, class... Args>
-void _call(void (*f_)(const char *, Tail...), F f, Args... args) {
+void _call(Stream &s, void (*f_)(const char *, Tail...), F f, Args... args) {
   _call(
+    s,
     (void (*)(Tail...))f_, f, args...,
-    (const char *)Serial.readStringUntil(_END_OF_STRING).c_str());
+    (const char *)SIMPLE_RPC_PORT.readStringUntil(_END_OF_STRING).c_str());
 }
 
 /**
@@ -106,14 +108,14 @@ void _call(void (*f_)(const char *, Tail...), F f, Args... args) {
  * @arg {R (*)(Args...)} f - Function pointer.
  */
 template<class R, class... Args>
-void rpcCall(R (*f)(Args...)) {
-  _call((void (*)(Args...))f, f);
+void rpcCall(Stream &s, R (*f)(Args...)) {
+  _call(s, (void (*)(Args...))f, f);
 }
 
 // Class member function.
 template<class C, class R, class... Args>
-void rpcCall(Tuple <C, R (C::*)(Args...)>t) {
-  _call((void (*)(Args...))t.tail.head, t);
+void rpcCall(Stream &s, Tuple <C, R (C::*)(Args...)>t) {
+  _call(s, (void (*)(Args...))t.tail.head, t);
 }
 
 #endif
