@@ -42,46 +42,46 @@ typedef struct Register {
   Controller mode (master)
 *************************************************************/
 
-void send_raspberry_shutdown() {
-  /*
-     0: Successful send.
-     1: Send buffer too large for the twi buffer. This should not happen, as the TWI buffer length set in twi.h is equivalent to the send buffer length set in Wire.h.
-     2: Address was sent and a NACK received. This is an issue, and the master should send a STOP condition.
-     3: Data was sent and a NACK received. This means the slave has no more to send. The master can send a STOP condition, or a repeated START.
-     4: Another twi error took place (eg, the master lost bus arbitration).
-  */
-  Wire.beginTransmission(RASPBERRY_I2C_ADDRESS);
-  byte payload = 0b10101010;
-  Wire.write(payload);
-  byte ack = Wire.endTransmission();
-  if (ack != 0) {
-    DEBUG_PRINT("I2C send failed: ");
-    DEBUG_PRINT_VAR(RASPBERRY_I2C_ADDRESS, payload, ack);
-    // evtManager.trigger(ERROR_RASPBERRY_SEND);
-  }
-  else {
-    DEBUG_PRINT("I2C send success: ");
-    DEBUG_PRINT_VAR(RASPBERRY_I2C_ADDRESS, payload, ack);    
-  }
-}
-
-void send_motor_ready() {
-  /*
-     0: Successful send.
-     1: Send buffer too large for the twi buffer. This should not happen, as the TWI buffer length set in twi.h is equivalent to the send buffer length set in Wire.h.
-     2: Address was sent and a NACK received. This is an issue, and the master should send a STOP condition.
-     3: Data was sent and a NACK received. This means the slave has no more to send. The master can send a STOP condition, or a repeated START.
-     4: Another twi error took place (eg, the master lost bus arbitration).
-  */
-  Wire.beginTransmission(RASPBERRY_I2C_ADDRESS);
-  Wire.write(2);
-  byte ack = Wire.endTransmission();
-  if (ack != 0) {
-    DEBUG_PRINT("I2C send failed: ");
-    DEBUG_PRINT_VAR(ack);
-    evtManager.trigger(ERROR_RASPBERRY_SEND);
-  }
-}
+//void send_raspberry_shutdown() {
+//  /*
+//     0: Successful send.
+//     1: Send buffer too large for the twi buffer. This should not happen, as the TWI buffer length set in twi.h is equivalent to the send buffer length set in Wire.h.
+//     2: Address was sent and a NACK received. This is an issue, and the master should send a STOP condition.
+//     3: Data was sent and a NACK received. This means the slave has no more to send. The master can send a STOP condition, or a repeated START.
+//     4: Another twi error took place (eg, the master lost bus arbitration).
+//  */
+//  Wire.beginTransmission(RASPBERRY_I2C_ADDRESS);
+//  byte payload = 0b10101010;
+//  Wire.write(payload);
+//  byte ack = Wire.endTransmission();
+//  if (ack != 0) {
+//    DEBUG_PRINT("I2C send failed: ");
+//    DEBUG_PRINT_VAR(RASPBERRY_I2C_ADDRESS, payload, ack);
+//    // evtManager.trigger(ERROR_RASPBERRY_SEND);
+//  }
+//  else {
+//    DEBUG_PRINT("I2C send success: ");
+//    DEBUG_PRINT_VAR(RASPBERRY_I2C_ADDRESS, payload, ack);    
+//  }
+//}
+//
+//void send_motor_ready() {
+//  /*
+//     0: Successful send.
+//     1: Send buffer too large for the twi buffer. This should not happen, as the TWI buffer length set in twi.h is equivalent to the send buffer length set in Wire.h.
+//     2: Address was sent and a NACK received. This is an issue, and the master should send a STOP condition.
+//     3: Data was sent and a NACK received. This means the slave has no more to send. The master can send a STOP condition, or a repeated START.
+//     4: Another twi error took place (eg, the master lost bus arbitration).
+//  */
+//  Wire.beginTransmission(RASPBERRY_I2C_ADDRESS);
+//  Wire.write(2);
+//  byte ack = Wire.endTransmission();
+//  if (ack != 0) {
+//    DEBUG_PRINT("I2C send failed: ");
+//    DEBUG_PRINT_VAR(ack);
+//    evtManager.trigger(ERROR_RASPBERRY_SEND);
+//  }
+//}
 
 
 #define ACK_POLL_TIMEOUT 1

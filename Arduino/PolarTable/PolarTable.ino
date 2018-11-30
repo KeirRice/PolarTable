@@ -13,9 +13,6 @@ typedef unsigned int uint;
 
 #ifdef MEGA
 #include "PinsMega.h"
-
-#define SIMPLE_RPC_PORT Serial3
-#include <simpleRPC.h>
 void sx1509_shutdown(){}
 #else
 #include "Pins.h"
@@ -27,7 +24,7 @@ void sx1509_shutdown(){}
 
 #include "Event.h"
 EventManager evtManager;
-
+#include "ESPcoms.h"
 #include <Fsm.h>
 
 struct FsmEventDriver : public EventTask

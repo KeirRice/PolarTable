@@ -3,17 +3,12 @@
 *************************************************************/
 #pragma once
 
-#ifdef DISABLE_I2C_COMS
+#ifdef DISABLE_COMS_REGISTERS
 
 void i2c_peripheral_setup() {}
 void i2c_peripheral_loop() {}
 
 #else
-
-#include "Wire.h"
-#include "Helpers.h"
-#include <util/atomic.h> // this library includes the ATOMIC_BLOCK macro.
-
 
 /*
    I2C Registers
@@ -67,70 +62,8 @@ const RegMask i2c_reg_change_events[i2c_reg_change_events_size] = {
   RegMask(MOTOR_SET, 6, 4),
 };
 
-static const char reg_size = 10;
-volatile uint8_t i2c_regs[reg_size];
-volatile byte reg_position;
-volatile long int i2c_reg_changed;
 
 
-
-
-
-/*
-   I2C Handelers
-*/
-void i2cReceiveEvent(int howMany)
-{
-  if (howMany < 1 || !Wire.available())
-  {
-    return; // Sanity-check
-  }
-
-  reg_position = Wire.read();
-  --howMany;
-  if (!howMany)
-  {
-    return; // This write was only to set the buffer for next read
-  }
-
-  while (howMany-- && Wire.available())
-  {
-    //Store the recieved data in the currently selected register
-    i2c_regs[reg_position] = Wire.read();
-    ++reg_position;
-    i2c_reg_changed |= 1 << reg_position;
-    reg_position = (reg_position >= reg_size) ? reg_position : 0;
-  }
-} //End i2cReceiveEvent()
-
-
-void i2cRequestEvent()
-{
-  // send_size is from register position to the end of the buffer
-  size_t send_size = reg_size - reg_position;
-
-  // Take a copy of the volitile register so they don't change under us.
-  byte send_buffer[send_size];
-  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-    memcpy((void*) &send_buffer, (void*) &i2c_regs[reg_position], send_size);
-  }
-
-  // Ready to send
-  Wire.write(send_buffer, send_size);
-  reg_position = 0;
-} //End i2cRequestEvent
-
-
-/*
-   Initialize instances/classes
-*/
-
-void i2c_peripheral_setup()
-{
-  // Define callbacks for i2c peripheral mode communication
-  Wire.onReceive(i2cReceiveEvent);
-  Wire.onRequest(i2cRequestEvent);
-}
 
 void i2c_peripheral_loop()
 {
@@ -162,4 +95,4 @@ void i2c_peripheral_loop()
   }
 }
 
-#endif // DISABLE_I2C_COMS
+#endif // DISABLE_COMS_REGISTERS
