@@ -106,7 +106,7 @@ static const EventID LIGHTING_BLEND = LIGHTING | BLEND;
 static const EventID LIGHTING_SET_RED = LIGHTING | RED;
 static const EventID LIGHTING_SET_GREEN = LIGHTING | GREEN;
 static const EventID LIGHTING_SET_BLUE = LIGHTING | BLUE;
-static const EventID LIGHTING_SET_COLOUR = LIGHTING | BLUE;
+static const EventID LIGHTING_SET_COLOUR = LIGHTING | RED | GREEN | BLUE;
 static const EventID LIGHTING_SET_BLEND_TIME = LIGHTING | SETCOLOR;
 
 // Lighting States
