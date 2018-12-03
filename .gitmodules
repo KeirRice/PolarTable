@@ -28,3 +28,9 @@
 [submodule "ESP/esptool"]
 	path = ESP/esptool
 	url = https://github.com/themadinventor/esptool.git
+[submodule "Arduino/libraries/CmdMessenger"]
+	path = Arduino/libraries/CmdMessenger
+	url = https://github.com/thijse/Arduino-CmdMessenger.git
+[submodule "Python/PyCmdMessanger"]
+	path = Python/PyCmdMessanger
+	url = https://github.com/zlite/PyCmdMessenger.git
