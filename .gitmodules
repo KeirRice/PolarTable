@@ -34,3 +34,6 @@
 [submodule "Python/PyCmdMessanger"]
 	path = Python/PyCmdMessanger
 	url = https://github.com/zlite/PyCmdMessenger.git
+[submodule "Arduino/libraries/jled"]
+	path = Arduino/libraries/jled
+	url = https://github.com/jandelgado/jled.git
