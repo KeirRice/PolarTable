@@ -16,7 +16,7 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 
 void setup() {
   Serial.begin(115200);
-   
+     
   WiFiManager wifiManager;
   //reset settings - for testing
   //wifiManager.resetSettings();
