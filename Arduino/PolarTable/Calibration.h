@@ -21,14 +21,14 @@ void motors_calibration_enter(){
 void motors_calibration_active(){
   // Run the motors until we hit our stops
   bool still_going = false;
-  // PIN_C_SWITCH is the refrence point
-  if(io.digitalRead(PIN_C_SWITCH)){
-    theta_stepper.run();
-    still_going |= true;
-  }
+//  // PIN_C_SWITCH is the refrence point
+//  if(PIN_C_SWITCH.digitalRead()){
+//    theta_stepper.run();
+//    still_going |= true;
+//  }
   
   // PIN_A_SWITCH is center, PIN_B_SWITCH is outside
-  if(io.digitalRead(PIN_A_SWITCH) && io.digitalRead(PIN_B_SWITCH)) {
+  if(PIN_A_SWITCH.digitalRead() && PIN_B_SWITCH.digitalRead()) {
     radius_stepper.run();
     still_going |= true;
   }
@@ -46,18 +46,18 @@ void motors_calibration_exit(){
 
 void calibration_setup() {
   // Use io.pinMode(<pin>, <mode>) to set our relative encoder switches
-  io.pinMode(PIN_A_SWITCH, INPUT_PULLUP);
-  io.pinMode(PIN_B_SWITCH, INPUT_PULLUP);
+  PIN_A_SWITCH.pinMode(INPUT_PULLUP);
+  PIN_B_SWITCH.pinMode(INPUT_PULLUP);
 }
 
 void calibration_loop() {
   // Safety checks
-  if(io.digitalRead(PIN_A_SWITCH)){
+  if(PIN_A_SWITCH.digitalRead()){
     theta_stepper.move(-1);
     theta_stepper.run();
     evtManager.trigger(MOTOR_STOP);
   }
-  if(io.digitalRead(PIN_B_SWITCH)){
+  if(PIN_B_SWITCH.digitalRead()){
     theta_stepper.move(1);
     theta_stepper.run();
     evtManager.trigger(MOTOR_STOP);

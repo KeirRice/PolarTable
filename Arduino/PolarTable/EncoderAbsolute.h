@@ -211,9 +211,6 @@ void UpdateAbsolutePosition(byte new_reading)
   // OR the values togeather
   absolute_encoder_state = (absolute_encoder_state << 4) | new_reading;
 
-  // Clear the iterrupt flag.
-  clear_interrupt()
-
   byte absolute_position_index = absolute_encoder_state & absolute_lower_nibble_mask;
   absolute_position = absolute_position_table[absolute_position_index];
 

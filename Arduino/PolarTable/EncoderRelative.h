@@ -127,7 +127,7 @@ boolean encoder_error(boolean reset_flag = true) {
 #ifdef MEGA
 
 void relativeISR(){
-  process_new_relative_data((PORTK >> 4) 0b00000011);
+  process_new_relative_data((PORTK >> 4) & 0b00000011);
 }
 
 void encoder_relative_setup()

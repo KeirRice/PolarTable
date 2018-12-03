@@ -39,7 +39,7 @@ void motor_wake_and_enable() {
 //    motor_enable(true);
   
   // Optimised version
-  PORTA = (PORTA & 0b11110000) | 0b00000101
+  PORTA = (PORTA & 0b11110000) | 0b00000101;
 }
 
 /*************************************************************

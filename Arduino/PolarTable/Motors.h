@@ -8,6 +8,14 @@
 void motor_setup() {}
 void motor_loop() {}
 
+long get_theta_motor_steps(){
+  return 0;
+}
+
+long get_radius_motor_steps(){
+  return 0;
+}
+
 #else
 
 #include <AccelStepper.h>
@@ -15,7 +23,7 @@ void motor_loop() {}
 #include <Fsm.h>
 #include "Event.h"
 #include "ProjectEvents.h"
-#include "MotorsSettings.h"
+#include "MotorSettings.h"
 
 extern EventManager evtManager;
 

@@ -153,7 +153,9 @@ struct LightingEventDriver : public FsmEventDriver
 *************************************************************/
 
 void lighting_setup() {
-  FastLED.addLeds<P9813, PIN_LED_SDIN, PIN_LED_SCIN, RGB>(leds, NUM_LEDS);
+  assert(PIN_LED_SDIN == 51);
+  assert(PIN_LED_SCIN == 52);
+  FastLED.addLeds<P9813, 51 /*PIN_LED_SDIN.pin*/, 52 /*PIN_LED_SCIN.pin*/, RGB>(leds, NUM_LEDS);
 
   fsm_button_led.add_transition(&state_lighting_on, &state_lighting_blend, LIGHTING_BLEND, NULL);
   fsm_button_led.add_transition(&state_lighting_blend, &state_lighting_blend, LIGHTING_BLEND, NULL);
