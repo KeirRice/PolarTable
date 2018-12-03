@@ -4,7 +4,7 @@
 #pragma once
 
 typedef struct PinID {
-  uint8_t pin;
+  const uint8_t pin;
   PinID(uint8_t _pin): pin(_pin) {};
 
   template <class T>
@@ -19,7 +19,9 @@ typedef struct PinID {
   void digitalWrite(const int value) const{
     return ::digitalWrite(pin, value);
   }
-  
+
+  // TODO: Look at const expression version using templates.
+  // https://stackoverflow.com/questions/31493886/using-constant-struct-members-in-array-declaration
   operator uint8_t() const {
     return pin;
   }
