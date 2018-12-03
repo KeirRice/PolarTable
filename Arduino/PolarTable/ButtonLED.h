@@ -18,9 +18,9 @@ void button_led_loop() {}
 
 extern EventManager evtManager;
 
-jled wake_led(PIN_WAKE_LED);
+JLed wake_led(PIN_WAKE_LED);
 
-#define FADE_TIME = 1000
+#define FADE_TIME 1000
 
 /*************************************************************
   State
@@ -61,7 +61,7 @@ void pulse_led_enter(){
 }
 
 void led_update(){
-  wake_led.update();
+  wake_led.Update();
 }
 
 
