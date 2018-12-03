@@ -37,3 +37,6 @@
 [submodule "Arduino/libraries/jled"]
 	path = Arduino/libraries/jled
 	url = https://github.com/jandelgado/jled.git
+[submodule "Arduino/libraries/EnableInterrupt"]
+	path = Arduino/libraries/EnableInterrupt
+	url = https://github.com/GreyGnome/EnableInterrupt.git
