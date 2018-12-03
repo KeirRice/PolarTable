@@ -117,9 +117,10 @@ void FireEvent(const uint8_t* buffer, size_t howMany){
 
 static const byte REGISTER_MODE = 0x20;
 static const byte EVENT_MODE = 0x21;
-static const byte FUNCTION_MODE = 0x22;
+static const byte ECHO_MODE = 0x22;
 void onPacketReceived(const void* sender, const uint8_t* buffer, size_t size)
 {
+   DEBUG_PRINTLN("onPacketReceived");
     if (sender == &myPacketSerial)
     {
         // Do something with the packet from myPacketSerial.
@@ -142,8 +143,10 @@ void onPacketReceived(const void* sender, const uint8_t* buffer, size_t size)
         else if(address == EVENT_MODE){
           FireEvent(buffer, size);
         }
-        else if(address == FUNCTION_MODE){
-          
+        else {
+          for (uint i = 0; i < size; ++i){
+            DEBUG_PRINT_VAR(i, buffer[i]);
+          }
         }
     }
 //    else if (sender == &myOtherPacketSerial)
@@ -155,15 +158,42 @@ void onPacketReceived(const void* sender, const uint8_t* buffer, size_t size)
 
 void esp_setup(){
   Serial3.begin(115200);
-  myPacketSerial.setStream(&Serial3);
-  myPacketSerial.setPacketHandler(&onPacketReceived);
 
-  rpc.begin(Serial3);
+
+  // rpc.begin(Serial3);
 }
 
 
 void esp_loop(){
-  rpc.interface(
-    send_raspberry_shutdown, "send_raspberry_shutdown: Shutdown the raspberry pi.",
-    send_motor_ready, "send_motor_ready: Signal the motor is ready for the next command.");
+  // put your main code  here, to run repeatedly:
+  static boolean setup_already = true;
+  
+  char *search = {"OFF uart log"};
+  int index = 0;
+  
+  while(Serial3.available()){
+    char current_character = Serial3.read();
+    if(search[index++] != current_character){
+      index = 0;
+    }
+    if(index == 11){
+      setup_already = false;
+    }
+    Serial.write(current_character);
+  }
+  while(Serial.available()){
+    Serial3.write(Serial.read());
+  }
+  
+  
+  if (not setup_already){
+    myPacketSerial.setStream(&Serial3);
+    myPacketSerial.setPacketHandler(&onPacketReceived);
+    setup_already = true;
+  }
+
+  
+//  rpc.interface(
+//    send_raspberry_shutdown, "send_raspberry_shutdown: Shutdown the raspberry pi.",
+//    send_motor_ready, "send_motor_ready: Signal the motor is ready for the next command.");
 }

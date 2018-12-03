@@ -76,8 +76,9 @@ void system_shutdown_enter(){
   evtManager.trigger(RASPBERRY_SHUTDOWN);
   evtManager.trigger(MOTOR_SHUTDOWN);
   evtManager.trigger(LIGHTING_TURN_OFF);
-  
-  shutdown();
+
+  DEBUG_PRINTLN("Shutting down.");
+  DEBUG_WHERE();
 }
 
 /* OFF */
@@ -90,7 +91,7 @@ void system_off_state(){
   DEBUG_PRINTLN("Sleeping.");
   sleepNow();
   DEBUG_PRINTLN("Waking.");
-  startup();
+  DEBUG_WHERE();
   fsm_system.trigger(SYSTEM_WAKE_ACTION);
 }
 

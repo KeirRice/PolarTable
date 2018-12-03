@@ -2,10 +2,6 @@
 
 #define MEGA
 
-const byte ARDUINO_I2C_ADDRESS = 0x04;
-const byte RASPBERRY_I2C_ADDRESS = 0x14;
-const byte SX1509_I2C_ADDRESS = 0x3E;
-
 typedef unsigned int uint;
 
 #define THETA_MAX_TRAVEL 1000
@@ -13,7 +9,7 @@ typedef unsigned int uint;
 
 #ifdef MEGA
 #include "PinsMega.h"
-void sx1509_shutdown(){}
+
 #else
 #include "Pins.h"
 #endif // MEGA
@@ -24,7 +20,6 @@ void sx1509_shutdown(){}
 
 #include "Event.h"
 EventManager evtManager;
-#include "ESPcoms.h"
 #include <Fsm.h>
 
 struct FsmEventDriver : public EventTask
@@ -42,8 +37,7 @@ struct FsmEventDriver : public EventTask
   }
 };
 
-#include "Error.h"
-#include "ESPcoms.h"
+#include "blah.h"
 #include "ButtonLED.h"
 #include "Button.h"
 #include "Calibration.h"
@@ -51,67 +45,43 @@ struct FsmEventDriver : public EventTask
 #include "EncoderRelative.h"
 #include "Lighting.h"
 #include "Motors.h"
-
-#include "I2C.h"
-#include "RaspberryManager.h"
-#include "Raspberry.h"
+#include "Commands.h"
 
 
 void setup()
 {
-  error_setup();
-  
   if (DEBUG) {
-    Serial.begin(19200);
+    Serial.begin(115200);
   }
   DEBUG_PRINTLN("Setup serial.");
   DEBUG_WHERE();
 
-  // esp_setup();
+  esp_setup();
   pin_setup();
-  raspberry_setup();
-  raspberry_manager_setup();
   button_setup();
   button_led_setup();
   encoder_absolute_setup();
   encoder_relative_setup();
   lighting_setup();
   motor_setup();
-  i2c_setup();
   calibration_setup();
+  command_setup();
   
   // testing_setup();
-  DEBUG_WHERE();
-}
-
-void shutdown()
-{
-  DEBUG_PRINTLN("Shutting down.");
-  DEBUG_WHERE();
-
-  sx1509_shutdown();
-}
-
-
-void startup()
-{
-  DEBUG_PRINTLN("Powering on.");
   DEBUG_WHERE();
 }
 
 void loop()
 {
   esp_loop();
-  raspberry_loop();
-  raspberry_manager_loop();
   button_loop();
   button_led_loop();
   lighting_loop();
   encoder_relative_loop();
   encoder_absolute_loop();
   motor_loop();
-  i2c_loop();
   calibration_loop();
+  command_loop();
 }
 //void setup(){}
 //void loop(){}

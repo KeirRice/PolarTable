@@ -130,11 +130,27 @@ struct LightingEventDriver : public FsmEventDriver
         fsm->trigger(LIGHTING_TURN_OFF);
       }
     }
-    else if (evt->label == LIGHTING_SET_RED || evt->label == LIGHTING_SET_GREEN || evt->label == LIGHTING_SET_BLUE) {
-      uint8_t *data = (uint8_t*)evt->extra;
-      incomingColorTarget = rgb2hsv_approximate(CRGB(data[0], data[1], data[2]));
-      fsm->trigger(LIGHTING_BLEND);
+    else{
+      CRGB new_color = CRGB(leds[0]);
+      if (evt->label == LIGHTING_SET_RED && evt->label == LIGHTING_SET_GREEN && evt->label == LIGHTING_SET_BLUE) {      
+        uint8_t *data = (uint8_t*)evt->extra;
+        new_color.r = data[0];
+        new_color.g = data[1];
+        new_color.b = data[2];
+      }
+      else if (evt->label == LIGHTING_SET_RED) {      
+        new_color.r = (byte)evt->extra;
+      }
+      else if (evt->label == LIGHTING_SET_GREEN) {      
+        new_color.g = (byte)evt->extra;
+      }
+      else if (evt->label == LIGHTING_SET_BLUE) {      
+        new_color.b = (byte)evt->extra;
+      }
+      incomingColorTarget = rgb2hsv_approximate(new_color);
+      fsm->trigger(LIGHTING_BLEND);      
     }
+    
 //    else if(evt->label == LIGHTING_SET_BLEND_TIME) {
 //        
 //    }
