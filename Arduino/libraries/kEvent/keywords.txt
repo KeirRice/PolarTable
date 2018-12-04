@@ -1,0 +1,28 @@
+#######################################
+# Syntax Coloring Map For Arduration
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+Event	KEYWORD1
+EventTask	KEYWORD1
+Subscriber	KEYWORD1
+TimedTask	KEYWORD1
+EventManager	KEYWORD1
+EventID	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+subscribe	KEYWORD2
+trigger	KEYWORD2
+tick	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+INTERVAL_SLOT_COUNT	LITERAL1
+SUBSCRIBER_SLOT_COUNT	LITERAL1

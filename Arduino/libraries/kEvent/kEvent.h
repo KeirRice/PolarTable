@@ -4,15 +4,32 @@
   This class serves as a "callback" manager to register events
   to happen on certain triggers or after certain intervals.
 *************************************************************/
+
 #pragma once
 
 #include "Arduino.h"
-#include "EventTypes.h"
+#include "EventID.h"
 
+#ifndef INTERVAL_SLOT_COUNT
 #define INTERVAL_SLOT_COUNT 1
+#endif  // INTERVAL_SLOT_COUNT
+#ifndef SUBSCRIBER_SLOT_COUNT
 #define SUBSCRIBER_SLOT_COUNT 3
+#endif  // SUBSCRIBER_SLOT_COUNT
 
+#ifndef ENABLE_DEBUG_STRINGS
+#define ENABLE_DEBUG_STRINGS 0
+#endif  // ENABLE_DEBUG_STRINGS
+
+#ifndef MAX_LONG
 #define MAX_LONG 2147483647
+#endif  // MAX_LONG
+
+
+static long event_id_mask =   0b00000000000000000000000001111111;
+static long action_id_mask =  0b00000000000000000000000010000000;
+static long state_id_mask =   0b00000000000000000000000100000000;
+static long system_id_mask =  0b11111111111111111111111000000000;
 
 
 /**
@@ -27,6 +44,7 @@ struct Event
   const void *extra;
 };
 
+
 /**
  * EventTask is a structure that serves as an
  * abstract class of a "dispatchable" object.
@@ -34,17 +52,6 @@ struct Event
 struct EventTask
 {
   virtual void execute(Event *evt) = 0;
-};
-
-
-struct EventListener : public EventTask
-{
-  using EventTask::execute;
-  
-  void execute(Event /* *evt */){
-    // fsm_system.trigger((int)*(evt->extra));
-  }
-
 };
 
 
@@ -76,6 +83,7 @@ struct TimedTask
   Event *evt;
 };
 
+
 /**
  * The EventManager is responsible for gathering subscribers
  * and dispatching them when the requested Event is
@@ -86,11 +94,13 @@ class EventManager
   public:
     EventManager();
     void subscribe(Subscriber sub);
+
     void trigger(Event *evt);
     void trigger(const EventID cLabel);
     void trigger(const EventID cLabel, void *cExtra);
     void trigger(const EventID cLabel, const void *cExtra);
     void trigger(const EventID cLabel, const EventID cExtra);
+    
     void triggerInterval(TimedTask *timed);
     void tick();
 
@@ -105,6 +115,9 @@ class EventManager
     unsigned int _intervalCount;
 
     // Keep a cache of the next timer up so we don't need to test them all.
+    inline void setNextEventMS(long next_event_ms);
+    // Set only if smaller than existing valuec
+    inline void minSetNextEventMS(long next_event_ms);
     unsigned long _next_event_ms;
     
     Subscriber* _sub[SUBSCRIBER_SLOT_COUNT];

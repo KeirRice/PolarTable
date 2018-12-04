@@ -5,8 +5,13 @@
   to happen on certain triggers or after certain intervals.
 *************************************************************/
 
-#include "Event.h"
- 
+#include "kEvent.h"
+
+#if INTERVAL_SLOT_COUNT > 10
+#define ENABLE_FANCY_TIMER
+#endif //INTERVAL_SLOT_COUNT > 10
+
+
 /**
    Event structure is the basic Event
    object that can be dispatched by the
@@ -45,7 +50,7 @@ EventManager::EventManager()
   _subCount = sizeof(_sub) / sizeof(Subscriber);
   _subPos = 0;
 
-  _next_event_ms = 0;
+  setNextEventMS(0);
 }
 
 /**
@@ -74,12 +79,13 @@ void EventManager::trigger(Event *evt)
     Subscriber *sub = _sub[i];
     if (sub)
     {
-      if (sub->label == label)
+      if (sub->label == label)  // Check for exact match
       {
         // Execute event
         (sub->task->execute)(evt);
       }
       else {
+        // Check for match in just the system_id bits.
         bool sub_wants_system_labels = (sub->label & system_id_mask) == 0;
         if(sub_wants_system_labels and (system_label == label)){
           // Execute event
@@ -123,7 +129,7 @@ void EventManager::triggerInterval(TimedTask *task)
   unsigned char slot = getFreeSlot();
   if (slot != 255){
     _interval[slot] = task;
-    _next_event_ms = min(_next_event_ms, task->target_ms);
+    minSetNextEventMS(task->target_ms);
   }
 }
 
@@ -135,8 +141,7 @@ unsigned char EventManager::getFreeSlot(){
       return i;
     }
   }
-  DEBUG_PRINTLN("No free timer event slots.");
-//  error_listener(ERROR_EVENT_SYSTEM); // Event system can't really use it's self...
+  // DEBUG_PRINTLN("No free timer event slots.");
   return 255;
 }
 
@@ -152,11 +157,14 @@ void EventManager::clearSlot(unsigned char  slot){
 */
 void EventManager::tick()
 {
+  // Fancy sorting and caching of times only makes sense if there are heaps of misses per tick
+#if INTERVAL_SLOT_COUNT > 0
+#if INTERVAL_SLOT_COUNT > 10
   if(_next_event_ms != 0  && _next_event_ms <= millis()){
     unsigned long currentMs = millis();
     TimedTask *task;
 
-    _next_event_ms = MAX_LONG;
+    setNextEventMS(MAX_LONG);
     
     for(unsigned char i = 0; i < _intervalCount ; ++i){
       task = _interval[i];
@@ -166,16 +174,40 @@ void EventManager::tick()
       }
       else {
         // Re cache our next timer.
-        _next_event_ms = min(_next_event_ms, task->target_ms);
+        minSetNextEventMS(task->target_ms);
       }
     }
   }
+#else // INTERVAL_SLOT_COUNT > 10
+  unsigned long currentMs = millis();
+  TimedTask *task;
+  for(unsigned char i = 0; i < _intervalCount ; ++i){
+    task = _interval[i];
+    if (currentMs >= task->target_ms){
+        trigger(task->evt);
+        clearSlot(i);
+    }
+  }
+#endif // INTERVAL_SLOT_COUNT > 10
+#endif // INTERVAL_SLOT_COUNT > 0
 }
 
 void EventManager::resetIntervals()
 {
-  _next_event_ms = MAX_LONG;
+  setNextEventMS(MAX_LONG);
   for(unsigned char i = 0; i < _intervalCount ; ++i){
     clearSlot(i);
   }
+}
+
+
+inline void EventManager::setNextEventMS(long next_event_ms){
+#ifdef ENABLE_FANCY_TIMER
+  _next_event_ms = next_event_ms;
+#endif // ENABLE_FANCY_TIMER
+}
+inline void EventManager::minSetNextEventMS(long next_event_ms){
+#ifdef ENABLE_FANCY_TIMER
+  _next_event_ms = min(_next_event_ms, next_event_ms);
+#endif // ENABLE_FANCY_TIMER
 }
