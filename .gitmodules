@@ -40,3 +40,6 @@
 [submodule "Arduino/libraries/EnableInterrupt"]
 	path = Arduino/libraries/EnableInterrupt
 	url = https://github.com/GreyGnome/EnableInterrupt.git
+[submodule "Arduino/libraries/kEvent"]
+	path = Arduino/libraries/kEvent
+	url = https://github.com/KeirRice/kEvent.git
