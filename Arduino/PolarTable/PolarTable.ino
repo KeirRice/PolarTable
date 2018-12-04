@@ -7,17 +7,10 @@ typedef unsigned int uint;
 #define THETA_MAX_TRAVEL 1000
 #define RADIUS_MAX_TRAVEL 1000
 
-#ifdef MEGA
 #include "PinsMega.h"
 
 #include <kEvent.h>
 #include "EventTypes.h"
-#endif // MEGA
-
-#include "ProjectEvents.h"
-
-#include "Helpers.h"
-
 EventManager evtManager;
 #include <Fsm.h>
 
@@ -35,6 +28,9 @@ typedef struct FsmEventDriver : public EventTask
     fsm->trigger(*(EventID*)evt->extra);
   }
 } FsmEventDriver;
+
+#include "ProjectEvents.h"
+#include "Helpers.h"
 
 #include "blah.h"
 #include "ButtonLED.h"

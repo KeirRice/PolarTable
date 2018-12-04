@@ -21,6 +21,9 @@ void encoder_relative_loop() {}
 
 #else
 
+#define LIBCALL_ENABLEINTERRUPT 
+#include <EnableInterrupt.h>
+
 #include "Helpers.h"
 #include <util/atomic.h> // this library includes the ATOMIC_BLOCK macro.
 
@@ -124,8 +127,6 @@ boolean encoder_error(boolean reset_flag = true) {
   Setup and main loop.
 *************************************************************/
 
-#ifdef MEGA
-
 void relativeISR(){
   process_new_relative_data((PORTK >> 4) & 0b00000011);
 }
@@ -143,43 +144,11 @@ void encoder_relative_setup()
   relative_encoder_state = (PIN_F_SWITCH.digitalRead() << 1) | PIN_E_SWITCH.digitalRead();
   relative_encoder_state = (relative_encoder_state << 2) | relative_encoder_state;
   
-  enableInterrupt(PIN_E_SWITCH, relativeISR, CHANGE);
-  enableInterrupt(PIN_F_SWITCH, relativeISR, CHANGE);
+//  attachPinChangeInterrupt(PIN_E_SWITCH, relativeISR, CHANGE);
+//  attachPinChangeInterrupt(PIN_F_SWITCH, relativeISR, CHANGE);
 }
 
-#else // Not MEGA
 
-void relativeISR(){
-  /*
-    PORTB maps to Arduino digital pins 8 to 13 The two high bits (6 & 7) map to the crystal pins and are not usable
-    DDRB - The Port B Data Direction Register - read/write
-    PORTB - The Port B Data Register - read/write
-    PINB - The Port B Input Pins Register - read only
-
-    PIN_E_SWITCH == ARDUINO_D8;
-    PIN_F_SWITCH == ARDUINO_D9;
-  */  
-  process_new_relative_data(PORTB & relative_port_read_mask)
-}
-
-void encoder_relative_setup()
-{
-  // Check the pins as relativeISR is hardcoded to them.
-  assert(PIN_E_SWITCH == ARDUINO_D8);
-  assert(PIN_F_SWITCH == ARDUINO_D9);
-
-  PIN_E_SWITCH.pinMode(INPUT_PULLUP);
-  PIN_F_SWITCH.pinMode(INPUT_PULLUP);
-
-  // Read the encoder state to get us started. On init current and previous can be the same.
-  relative_encoder_state = (PIN_F_SWITCH.digitalRead() << 1) | PIN_E_SWITCH.digitalRead();
-  relative_encoder_state = (relative_encoder_state << 2) | relative_encoder_state;
-  
-  pinMode(PIN_INTERUPT, INPUT);
-  attachInterrupt(digitalPinToInterrupt(PIN_INTERUPT), relativeISR, CHANGE);
-}
-
-#endif // MEGA
 
 void encoder_relative_loop() {
   sync_interupt_counts();

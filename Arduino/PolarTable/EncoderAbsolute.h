@@ -13,6 +13,9 @@ void encoder_absolute_loop() {}
 
 #define DEBOUNCE_DELAY 5
 
+#define LIBCALL_ENABLEINTERRUPT 
+#include <EnableInterrupt.h>
+
 
 /*************************************************************
   State variables.
@@ -235,11 +238,6 @@ void UpdateAbsolutePosition(byte new_reading)
   Setup and main loop.
 *************************************************************/
 
-#ifdef MEGA
-
-#define LIBCALL_ENABLEINTERRUPT 
-#include <EnableInterrupt.h>
-
 void isr_handler(){
   static uint32_t last_interrupt_time = 0;
   uint32_t interrupt_time = millis();
@@ -266,79 +264,14 @@ void encoder_absolute_setup()
   UpdateAbsolutePosition(PORTK & absolute_port_read_mask);
 
   // Interupts on
-  enableInterrupt(PIN_G_IR, isr_handler, CHANGE);
-  enableInterrupt(PIN_H_IR, isr_handler, CHANGE);
-  enableInterrupt(PIN_I_IR, isr_handler, CHANGE);
-  enableInterrupt(PIN_J_IR, isr_handler, CHANGE);
+  
+//  attachPinChangeInterrupt(PIN_G_IR, isr_handler, CHANGE);
+//  attachPinChangeInterrupt(PIN_H_IR, isr_handler, CHANGE);
+//  attachPinChangeInterrupt(PIN_I_IR, isr_handler, CHANGE);
+//  attachPinChangeInterrupt(PIN_J_IR, isr_handler, CHANGE);
 }
 
 void encoder_absolute_loop() {
 }
-
-#else // Not MEGA
-
-#include "SparkFunSX1509.h"
-#define REG_DATA_B 0x10 // From sx1509_register.h
-extern SX1509 io; // Create an SX1509 object to be used throughout
-volatile bool SX1509Interrupt = false; // Track Interrupts in ISR
-
-void encoderISR()
-{
-  // We can't do I2C communication in an Arduino ISR. The best
-  // we can do is set a flag, to tell the loop() to check next
-  // time through.
-  SX1509Interrupt = true; // Set the SX1509Interrupts flag
-}
-
-void clear_interrupt(){
-  // TODO: Add a function to the SX1509 library to clear without reading.
-  io.interruptSource();
-}
-
-void encoder_absolute_setup()
-{
-  // Check the pins as we are hardcoded to them in the port_read_mask and UpdateAbsolutePosition.
-  assert(PIN_G_IR == SX1509_B8);
-  assert(PIN_H_IR == SX1509_B9);
-  assert(PIN_I_IR == SX1509_B10);
-  assert(PIN_J_IR == SX1509_B11);
-
-  // Use io.pinMode(<pin>, <mode>) to set our absolute encoder switches
-  PIN_G_IR.pinMode(INPUT_PULLUP);
-  PIN_H_IR.pinMode(INPUT_PULLUP);
-  PIN_I_IR.pinMode(INPUT_PULLUP);
-  PIN_J_IR.pinMode(INPUT_PULLUP);
-
-  // Prime our values
-  UpdateAbsolutePosition();
-
-  // TODO: How to abstract away the interupts?
-
-  // Interupts on
-  io.enableInterrupt(PIN_G_IR, CHANGE);
-  io.enableInterrupt(PIN_H_IR, CHANGE);
-  io.enableInterrupt(PIN_I_IR, CHANGE);
-  io.enableInterrupt(PIN_J_IR, CHANGE);
-
-  // Don't forget to configure your Arduino pins! Set the
-  // Arduino's interrupt input to INPUT_PULLUP. The SX1509's
-  // interrupt output is active-low.
-  pinMode(PIN_SX1509_INT, INPUT_PULLUP);
-
-  // Attach an Arduino interrupt to the interrupt pin. Call
-  // the encodeInterupt function, whenever the pin goes from HIGH to LOW.
-  attachInterrupt(digitalPinToInterrupt(PIN_SX1509_INT), encoderISR, FALLING);
-}
-
-void encoder_absolute_loop() {
-  if (SX1509Interrupt) // If the encoderISR was executed called
-  {
-    UpdateAbsolutePosition(io.readByte(REG_DATA_B) & absolute_port_read_mask);
-    SX1509Interrupt = false;
-  }
-}
-
-#endif // MEGA
-
 
 #endif // DISABLE_ENCODER_ABSOLUTE
