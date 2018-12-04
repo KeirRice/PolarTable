@@ -10,15 +10,14 @@ typedef unsigned int uint;
 #ifdef MEGA
 #include "PinsMega.h"
 
-#else
-#include "Pins.h"
+#include <kEvent.h>
+#include "EventTypes.h"
 #endif // MEGA
 
 #include "ProjectEvents.h"
 
 #include "Helpers.h"
 
-#include "Event.h"
 EventManager evtManager;
 #include <Fsm.h>
 

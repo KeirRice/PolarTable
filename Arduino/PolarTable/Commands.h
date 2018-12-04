@@ -25,7 +25,7 @@ enum
   
   kStatus,
   kListEvents,
-  kEvent,
+  kEventTrigger,
   
   kListRegisters,
   kGetRegister,
@@ -305,7 +305,7 @@ void attachCommandCallbacks()
   cmdMessenger.attach(kCommandList, ShowCommands);
   cmdMessenger.attach(kPing, OnPing);
   cmdMessenger.attach(kStatus, OnStatus);
-  cmdMessenger.attach(kEvent, OnEvent);
+  cmdMessenger.attach(kEventTrigger, OnEvent);
   cmdMessenger.attach(kSetRegister, OnSetRegister);
   cmdMessenger.attach(kGetRegister, OnGetRegister);
   cmdMessenger.attach(kSetRegisters, OnSetRegisters);

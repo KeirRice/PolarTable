@@ -4,7 +4,7 @@
 #pragma once
 
 #include <Flash.h>
-#include "EventTypes.h"
+#include <kEvent.h>
 
 // BuildSystem uses one (high) bit per entry so these values can be ORed and masked.
 BuildSystem(SystemID, GLOBAL);
