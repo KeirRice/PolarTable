@@ -113,9 +113,7 @@ void lighting_blend_state(){
 
 struct LightingEventDriver : public FsmEventDriver
 {
-  Fsm *fsm;
-  LightingEventDriver();
-  LightingEventDriver(Fsm *statemachine) : fsm(statemachine) {}
+  LightingEventDriver(Fsm *statemachine) : FsmEventDriver(statemachine) {}
 
   using EventTask::execute;
   

@@ -162,9 +162,7 @@ void motors_sleep_exit() {
 
 struct MotorEventDriver : public FsmEventDriver
 {
-  Fsm *fsm;
-  MotorEventDriver();
-  MotorEventDriver(Fsm *statemachine) : fsm(statemachine) {}
+  MotorEventDriver(Fsm *statemachine) : FsmEventDriver(statemachine) {}
 
   using EventTask::execute;
 

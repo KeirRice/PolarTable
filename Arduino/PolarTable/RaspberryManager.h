@@ -102,7 +102,7 @@ void raspberry_manager_setup() {
   fsm_raspberry.add_transition(&state_raspberry_off, &state_raspberry_restart, RASPBERRY_RESTART, NULL);
   
   // Create the bridge from the event system to the raspberry fsm.
-  struct FsmEventDriver raspberry_event_listner = FsmEventDriver(&fsm_raspberry);
+  FsmEventDriver raspberry_event_listner = FsmEventDriver(&fsm_raspberry);
   evtManager.subscribe(Subscriber(RASPBERRY, &raspberry_event_listner ));
 }
 

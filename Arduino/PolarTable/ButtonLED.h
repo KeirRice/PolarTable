@@ -100,7 +100,7 @@ void button_led_setup()
   fsm_button_led.add_timed_transition(&state_led_pulse_off, &state_led_off, FADE_TIME, NULL);
 
   // Create the bridge from the event system to the button LED fsm
-  struct FsmEventDriver button_LED_listener = FsmEventDriver(&fsm_button_led);
+  FsmEventDriver button_LED_listener = FsmEventDriver(&fsm_button_led);
   evtManager.subscribe(Subscriber(BUTTON, &button_LED_listener));
 }
 

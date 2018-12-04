@@ -114,7 +114,7 @@ void button_setup()
   fsm_system.add_timed_transition(&state_system_wake, &state_system_on, 100, NULL);
 
   // Create the bridge from the event system to the system fsm.
-  struct FsmEventDriver system_event_listner = FsmEventDriver(&fsm_system);
+  FsmEventDriver system_event_listner = FsmEventDriver(&fsm_system);
   evtManager.subscribe(Subscriber(SYSTEM, &system_event_listner));
 }
 

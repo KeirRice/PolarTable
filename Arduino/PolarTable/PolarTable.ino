@@ -21,7 +21,7 @@ typedef unsigned int uint;
 EventManager evtManager;
 #include <Fsm.h>
 
-struct FsmEventDriver : public EventTask
+typedef struct FsmEventDriver : public EventTask
 {
   Fsm *fsm;
   FsmEventDriver();
@@ -34,7 +34,7 @@ struct FsmEventDriver : public EventTask
     // DEBUG_PRINT_VAR("FsmEventDriver ", *(EventID*)evt->extra);
     fsm->trigger(*(EventID*)evt->extra);
   }
-};
+} FsmEventDriver;
 
 #include "blah.h"
 #include "ButtonLED.h"
