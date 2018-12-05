@@ -43,3 +43,6 @@
 [submodule "Arduino/libraries/kEvent"]
 	path = Arduino/libraries/kEvent
 	url = https://github.com/KeirRice/kEvent.git
+[submodule "Arduino/libraries/kEncoder"]
+	path = Arduino/libraries/kEncoder
+	url = https://github.com/KeirRice/kEncoder.git
