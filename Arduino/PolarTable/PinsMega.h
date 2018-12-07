@@ -3,9 +3,10 @@
 *************************************************************/
 #pragma once
 
+/*
 typedef struct PinID {
   const uint8_t pin;
-  PinID(uint8_t _pin): pin(_pin) {};
+  PinID(const uint8_t _pin): pin(_pin) {};
 
   template <class T>
   void pinMode(T mode) const{
@@ -22,14 +23,45 @@ typedef struct PinID {
 
   // TODO: Look at const expression version using templates.
   // https://stackoverflow.com/questions/31493886/using-constant-struct-members-in-array-declaration
-  operator uint8_t() const {
+  constexpr operator uint8_t() const {
     return pin;
   }
 } PinID;
+*/
+
+struct PinID {
+  const uint8_t mPin;
+
+  constexpr PinID(const uint8_t _pin) : mPin(_pin){};
+
+  constexpr uint8_t pin() const{
+    return mPin;
+  }
+
+  template <class T>
+  void pinMode(T mode) const{
+    return ::pinMode(mPin, mode);
+  }
+  
+  int digitalRead() const {
+    return ::digitalRead(mPin);
+  }
+  
+  void digitalWrite(const int value) const{
+    return ::digitalWrite(mPin, value);
+  }
+  
+  // TODO: Look at const expression version using templates.
+  // https://stackoverflow.com/questions/31493886/using-constant-struct-members-in-array-declaration
+  constexpr operator uint8_t() const {
+    return mPin;
+  }
+};
+typedef PinID PinID;
 
 
 // Arduino
-static const PinID ARDUINO_D0 = PinID(0); const PinID& ARDUINO_PE0 = ARDUINO_D0, ARDUINO_PCINT8 = ARDUINO_D0;
+static const PinID ARDUINO_D0 = PinID<D0>(); const PinID& ARDUINO_PE0 = ARDUINO_D0, ARDUINO_PCINT8 = ARDUINO_D0;
 static const PinID ARDUINO_D1 = PinID(1); const PinID& ARDUINO_PE1 = ARDUINO_D1;
 static const PinID ARDUINO_D2 = PinID(2); const PinID& ARDUINO_PE4 = ARDUINO_D2, ARDUINO_INT4 = ARDUINO_D2;
 static const PinID ARDUINO_D3 = PinID(3); const PinID& ARDUINO_PE5 = ARDUINO_D3, ARDUINO_INT5 = ARDUINO_D3;

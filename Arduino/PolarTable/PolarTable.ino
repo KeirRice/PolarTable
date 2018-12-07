@@ -32,8 +32,9 @@ typedef struct FsmEventDriver : public EventTask
 // #define LIBCALL_ENABLEINTERRUPT  // Shouldn't need this but I think I have a library conflict.
 #include <EnableInterrupt.h>
 #include <kEncoder.h>
-kEncoder::AbsoluteEncoder abs_encoder;
-kEncoder::RelativeEncoder rel_encoder;
+kEncoder::AbsoluteEncoder abs_encoder((kEncoder::PinCollectionInterface) kEncoder::PinBank<PIN_G_IR, PIN_H_IR, PIN_I_IR, PIN_J_IR>());
+kEncoder::RelativeEncoder rel_encoder((kEncoder::PinCollectionInterface) kEncoder::PinBank<PIN_E_SWITCH, PIN_F_SWITCH>());
+
 void abs_encoder_isr(){
   abs_encoder.interputHandler();
 }
@@ -72,13 +73,9 @@ void setup()
 
   // Encode setup.
 #ifndef DISABLE_ENCODER_ABSOLUTE
-  abs_encoder.setPins(PIN_G_IR, PIN_H_IR, PIN_I_IR, PIN_J_IR);
-  abs_encoder.setPort(&PORTK, 0b00001111);
   abs_encoder.setup(&abs_encoder_isr);
 #endif // DISABLE_ENCODER_ABSOLUTE
 #ifndef DISABLE_ENCODER_RELATIVE
-  rel_encoder.setPins(PIN_E_SWITCH, PIN_F_SWITCH);
-  rel_encoder.setPort(&PORTK, 0b00110000);
   rel_encoder.setup(&rel_encoder_isr);
 #endif // DISABLE_ENCODER_RELATIVE
   
