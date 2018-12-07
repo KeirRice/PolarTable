@@ -29,15 +29,26 @@ typedef struct FsmEventDriver : public EventTask
   }
 } FsmEventDriver;
 
+// #define LIBCALL_ENABLEINTERRUPT  // Shouldn't need this but I think I have a library conflict.
+#include <EnableInterrupt.h>
+#include <kEncoder.h>
+kEncoder::AbsoluteEncoder abs_encoder((kEncoder::PinCollectionInterface) kEncoder::PinBank<PIN_G_IR, PIN_H_IR, PIN_I_IR, PIN_J_IR>());
+kEncoder::RelativeEncoder rel_encoder((kEncoder::PinCollectionInterface) kEncoder::PinBank<PIN_E_SWITCH, PIN_F_SWITCH>());
+
+void abs_encoder_isr(){
+  abs_encoder.interputHandler();
+}
+void rel_encoder_isr(){
+  rel_encoder.interputHandler();
+}
+
 #include "ProjectEvents.h"
 #include "Helpers.h"
 
-#include "blah.h"
+#include "ESP.h"
 #include "ButtonLED.h"
 #include "Button.h"
 #include "Calibration.h"
-#include "EncoderAbsolute.h"
-#include "EncoderRelative.h"
 #include "Lighting.h"
 #include "Motors.h"
 #include "Commands.h"
@@ -55,12 +66,18 @@ void setup()
   pin_setup();
   button_setup();
   button_led_setup();
-  encoder_absolute_setup();
-  encoder_relative_setup();
   lighting_setup();
   motor_setup();
   calibration_setup();
   command_setup();
+
+  // Encode setup.
+#ifndef DISABLE_ENCODER_ABSOLUTE
+  abs_encoder.setup(&abs_encoder_isr);
+#endif // DISABLE_ENCODER_ABSOLUTE
+#ifndef DISABLE_ENCODER_RELATIVE
+  rel_encoder.setup(&rel_encoder_isr);
+#endif // DISABLE_ENCODER_RELATIVE
   
   // testing_setup();
   DEBUG_WHERE();
@@ -72,8 +89,6 @@ void loop()
   button_loop();
   button_led_loop();
   lighting_loop();
-  encoder_relative_loop();
-  encoder_absolute_loop();
   motor_loop();
   calibration_loop();
   command_loop();
