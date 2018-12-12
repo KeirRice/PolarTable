@@ -29,11 +29,11 @@ typedef struct FsmEventDriver : public EventTask
   }
 } FsmEventDriver;
 
-// #define LIBCALL_ENABLEINTERRUPT  // Shouldn't need this but I think I have a library conflict.
+#define LIBCALL_ENABLEINTERRUPT  // Shouldn't need this but I think I have a library conflict.
 #include <EnableInterrupt.h>
 #include <kEncoder.h>
-kEncoder::AbsoluteEncoder abs_encoder((kEncoder::PinCollectionInterface) kEncoder::PinBank<PIN_G_IR, PIN_H_IR, PIN_I_IR, PIN_J_IR>());
-kEncoder::RelativeEncoder rel_encoder((kEncoder::PinCollectionInterface) kEncoder::PinBank<PIN_E_SWITCH, PIN_F_SWITCH>());
+kEncoder::AbsoluteEncoder abs_encoder((kEncoder::PinCollectionInterface) kEncoder::PinBank<1, 2, 3, 4>()); // PIN_G_IR, PIN_H_IR, PIN_I_IR, PIN_J_IR
+kEncoder::RelativeEncoder rel_encoder((kEncoder::PinCollectionInterface) kEncoder::PinBank<5, 6>()); // PIN_E_SWITCH, PIN_F_SWITCH
 
 void abs_encoder_isr(){
   abs_encoder.interputHandler();

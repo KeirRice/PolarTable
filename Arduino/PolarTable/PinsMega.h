@@ -61,7 +61,7 @@ typedef PinID PinID;
 
 
 // Arduino
-static const PinID ARDUINO_D0 = PinID<D0>(); const PinID& ARDUINO_PE0 = ARDUINO_D0, ARDUINO_PCINT8 = ARDUINO_D0;
+static const PinID ARDUINO_D0 = PinID(0); const PinID& ARDUINO_PE0 = ARDUINO_D0, ARDUINO_PCINT8 = ARDUINO_D0;
 static const PinID ARDUINO_D1 = PinID(1); const PinID& ARDUINO_PE1 = ARDUINO_D1;
 static const PinID ARDUINO_D2 = PinID(2); const PinID& ARDUINO_PE4 = ARDUINO_D2, ARDUINO_INT4 = ARDUINO_D2;
 static const PinID ARDUINO_D3 = PinID(3); const PinID& ARDUINO_PE5 = ARDUINO_D3, ARDUINO_INT5 = ARDUINO_D3;
