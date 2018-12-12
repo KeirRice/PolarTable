@@ -9,7 +9,7 @@ typedef unsigned int uint;
 
 #include "PinsMega.h"
 
-#include <kPins.h>
+#include <kPin.h>
 
 #include <kEvent.h>
 #include "EventTypes.h"
@@ -34,13 +34,8 @@ typedef struct FsmEventDriver : public EventTask
 #define EI_NOTEXTERNAL
 #include <EnableInterrupt.h>
 #include <kEncoder.h>
-kEncoder::AbsoluteEncoder abs_encoder((kEncoder::PinCollectionInterface) kEncoder::PinBank<1, 2, 3, 4>()); // PIN_G_IR, PIN_H_IR, PIN_I_IR, PIN_J_IR
-kEncoder::RelativeEncoder rel_encoder((kEncoder::PinCollectionInterface) kEncoder::PinBank<5, 6>()); // PIN_E_SWITCH, PIN_F_SWITCH
-
-
-
-kEncoder::AbsoluteEncoder abs_encoder(kEncoder::PinPort(kPins::PK, 0b00001111));
-kEncoder::RelativeEncoder rel_encoder(kEncoder::PinPort(kPins::PK, 0b00110000));
+kEncoder::AbsoluteEncoder abs_encoder(kEncoder::PinPort(kPin::PORT_K, 0b00001111));
+kEncoder::RelativeEncoder rel_encoder(kEncoder::PinPort(kPin::PORT_K, 0b00110000));
 
 void abs_encoder_isr(){
   abs_encoder.interputHandler();

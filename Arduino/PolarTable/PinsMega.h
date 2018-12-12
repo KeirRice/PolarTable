@@ -4,9 +4,9 @@
 *************************************************************/
 #pragma once
 
-#include <kPins.h>
+#include <kPin.h>
 
-using namespace kPins;
+using namespace kPin;
 
 
 /*************************************************************
