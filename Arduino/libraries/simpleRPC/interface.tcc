@@ -34,7 +34,7 @@ void _writeDescription(Stream &s, F f, const char *doc) {
 /**
  * Recursion terminator for {_describe}.
  */
-void _describe(Stream &s) {}
+void _describe(Stream &) {}
 
 /**
  * Describe a list of functions.
@@ -64,7 +64,7 @@ void _describe(Stream &s, Tuple <U, V>t, const char *doc, Args... args) {
 /**
  * Recursion terminator for {_select}.
  */
-void _select(Stream &s, byte, byte) {}
+void _select(Stream &, byte, byte) {}
 
 /**
  * Select and call a function indexed by {number}.

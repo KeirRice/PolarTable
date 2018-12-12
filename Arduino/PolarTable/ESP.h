@@ -13,6 +13,17 @@ extern EventManager evtManager;
 PacketSerial myPacketSerial;
 SimpleRPC rpc;
 
+static const byte REGISTER_MODE = 0x20;
+static const byte EVENT_MODE = 0x21;
+static const byte ECHO_MODE = 0x22;
+
+static const char reg_size = 10;
+volatile uint8_t i2c_regs[reg_size];
+volatile byte reg_position;
+volatile long int i2c_reg_changed;
+
+
+
 void send_raspberry_shutdown() {
   /*
      0: Successful send.
@@ -54,13 +65,6 @@ void send_motor_ready() {
 //  }
 }
 
-
-
-static const char reg_size = 10;
-volatile uint8_t i2c_regs[reg_size];
-volatile byte reg_position;
-volatile long int i2c_reg_changed;
-
 void SetRegisterEvent(const uint8_t* buffer, size_t howMany)
 {
   if (howMany < 1)
@@ -85,7 +89,7 @@ void SetRegisterEvent(const uint8_t* buffer, size_t howMany)
     i2c_reg_changed |= 1 << reg_position;
     reg_position = (reg_position >= reg_size) ? reg_position : 0;
   }
-} //End SetRegisterEvent()
+} // End SetRegisterEvent()
 
 
 void GetRegisterEvent()
@@ -115,9 +119,7 @@ void FireEvent(const uint8_t* buffer, size_t howMany){
   evtManager.trigger(EventID(event_id));
 }
 
-static const byte REGISTER_MODE = 0x20;
-static const byte EVENT_MODE = 0x21;
-static const byte ECHO_MODE = 0x22;
+
 void onPacketReceived(const void* sender, const uint8_t* buffer, size_t size)
 {
    DEBUG_PRINTLN("onPacketReceived");
@@ -155,45 +157,51 @@ void onPacketReceived(const void* sender, const uint8_t* buffer, size_t size)
 //    }
 }
 
-
 void esp_setup(){
   Serial3.begin(115200);
-
-
-  // rpc.begin(Serial3);
 }
 
+bool search_char(const char *search_string, int string_length, char current_character, int &index){
+  if(search_string[index++] != current_character){
+    index = 0;
+  }
+  else if(index == string_length){
+    return true;
+  }
+  return false;
+}
 
+const char *search_string = "OFF uart log";
 void esp_loop(){
-  // put your main code  here, to run repeatedly:
-  static boolean setup_already = true;
-  
-  char *search = {"OFF uart log"};
+  static boolean packets_enabled = false;
+  static boolean esp_logging_complete = false;
   int index = 0;
   
+  // Read from Serial3 (ESP) and map to Serial1 (USB)
   while(Serial3.available()){
     char current_character = Serial3.read();
-    if(search[index++] != current_character){
-      index = 0;
-    }
-    if(index == 11){
-      setup_already = false;
-    }
     Serial.write(current_character);
+
+    // Check for the end of the ESP logging
+    if(!esp_logging_complete){
+      // TODO: Move strings into PROGMEM and just fetch the byte we need to check next.
+      
+      int string_length = 11;
+      if(search_char(search_string, string_length, current_character, index)){
+        esp_logging_complete = true;
+      }
+    }
   }
+  
+  // Read from Serial1 (USB) and map to Serial3 (ESP)
   while(Serial.available()){
     Serial3.write(Serial.read());
   }
-  
-  
-  if (not setup_already){
+
+  // Enable the packet interface
+  if (not packets_enabled && esp_logging_complete){
     myPacketSerial.setStream(&Serial3);
     myPacketSerial.setPacketHandler(&onPacketReceived);
-    setup_already = true;
+    packets_enabled = true;
   }
-
-  
-//  rpc.interface(
-//    send_raspberry_shutdown, "send_raspberry_shutdown: Shutdown the raspberry pi.",
-//    send_motor_ready, "send_motor_ready: Signal the motor is ready for the next command.");
 }
