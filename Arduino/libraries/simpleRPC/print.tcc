@@ -10,7 +10,7 @@
 /**
  * Recursion terminator for {multiPrint}.
  */
-void multiPrint(Stream &s) {}
+void multiPrint(Stream &) {}
 
 /**
  * Write a list of parameters to serial.

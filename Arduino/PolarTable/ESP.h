@@ -161,7 +161,7 @@ void esp_setup(){
   Serial3.begin(115200);
 }
 
-bool search_char(char *search_string, int string_length, int &index){
+bool search_char(const char *search_string, int string_length, char current_character, int &index){
   if(search_string[index++] != current_character){
     index = 0;
   }
@@ -171,6 +171,7 @@ bool search_char(char *search_string, int string_length, int &index){
   return false;
 }
 
+const char *search_string = "OFF uart log";
 void esp_loop(){
   static boolean packets_enabled = false;
   static boolean esp_logging_complete = false;
@@ -184,9 +185,9 @@ void esp_loop(){
     // Check for the end of the ESP logging
     if(!esp_logging_complete){
       // TODO: Move strings into PROGMEM and just fetch the byte we need to check next.
-      char *search_string = {"OFF uart log"};
+      
       int string_length = 11;
-      if(search_char(search_string, string_length, index)){
+      if(search_char(search_string, string_length, current_character, index)){
         esp_logging_complete = true;
       }
     }
