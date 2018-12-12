@@ -46,3 +46,6 @@
 [submodule "Arduino/libraries/kEncoder"]
 	path = Arduino/libraries/kEncoder
 	url = https://github.com/KeirRice/kEncoder.git
+[submodule "Arduino/libraries/kPin"]
+	path = Arduino/libraries/kPin
+	url = https://github.com/KeirRice/kPin.git
