@@ -137,13 +137,13 @@ struct LightingEventDriver : public FsmEventDriver
         new_color.b = data[2];
       }
       else if (evt->label == LIGHTING_SET_RED) {      
-        new_color.r = (byte)evt->extra;
+        new_color.r = *(byte*)evt->extra;
       }
       else if (evt->label == LIGHTING_SET_GREEN) {      
-        new_color.g = (byte)evt->extra;
+        new_color.g = *(byte*)evt->extra;
       }
       else if (evt->label == LIGHTING_SET_BLUE) {      
-        new_color.b = (byte)evt->extra;
+        new_color.b = *(byte*)evt->extra;
       }
       incomingColorTarget = rgb2hsv_approximate(new_color);
       fsm->trigger(LIGHTING_BLEND);      
