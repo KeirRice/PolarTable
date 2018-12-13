@@ -85,17 +85,15 @@ void ShowCommands()
 
 
 
-SystemID LookupMotor(char id){
-  if(id == "T" || id == "t"){
+
+SystemID LookupMotor(const char *id){
+  if(strncasecmp(id, "T", 1) == 0){
     return MOTOR_THETA;
   }
-  else if(id == "R" || id == "r"){
+  else if(strncasecmp(id, "R", 1) == 0){
     return MOTOR_RADIUS;
   }
   return 0;
-}
-SystemID LookupMotor(char *id){
-  return LookupMotor(id[0]);
 }
 SystemID LookupMotor(byte id){
   if(id == 0){
@@ -164,7 +162,7 @@ void OnSetRegisters()
   byte register_address = cmdMessenger.readBinArg<byte>();
   byte register_count = cmdMessenger.readBinArg<byte>();
 
-  for(unsigned int register_address = 0; register_address < register_count; ++register_address){
+  for(; register_address < register_count; ++register_address){
     byte value = cmdMessenger.readBinArg<byte>();
 
     // TODO: Overflow protection
@@ -179,7 +177,7 @@ void OnGetRegisters()
   byte register_count = cmdMessenger.readBinArg<byte>();
 
   cmdMessenger.sendCmdStart(kAcknowledge);
-  for(unsigned int register_address = 0; register_address < register_count; ++register_address){
+  for(; register_address < register_count; ++register_address){
     byte value = registers[register_address++];
     cmdMessenger.sendCmdBinArg((byte) value);
   }  
@@ -353,5 +351,3 @@ void command_loop()
   // Process incoming serial data, and perform callbacks
   cmdMessenger.feedinSerialData();
 }
-
-
