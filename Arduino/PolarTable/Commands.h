@@ -1,3 +1,15 @@
+#pragma once
+
+#ifdef DISABLE_COMMANDS
+
+// Setup function
+void command_setup() {}
+// Loop function
+void command_loop() {}
+
+#else // DISABLE_COMMANDS
+
+
 // *** SentandReceive ***
 
 // This example expands the previous Receive example. The Arduino will now send back a status.
@@ -352,3 +364,5 @@ void command_loop()
   // Process incoming serial data, and perform callbacks
   cmdMessenger.feedinSerialData();
 }
+
+#endif // DISABLE_COMMANDS
