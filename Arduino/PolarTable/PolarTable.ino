@@ -34,8 +34,9 @@ typedef struct FsmEventDriver : public EventTask
 #define EI_NOTEXTERNAL
 #include <EnableInterrupt.h>
 #include <kEncoder.h>
-kEncoder::AbsoluteEncoder abs_encoder(kEncoder::PortGroup(kPin::PORT_K, 0b00001111));
-kEncoder::RelativeEncoder rel_encoder(kEncoder::PortGroup(kPin::PORT_K, 0b00110000));
+kEncoder::AbsoluteEncoder abs_encoder(kPin::Group::Port(kPin::PORT_K, 0b00001111));
+kEncoder::RelativeEncoder rel_encoder(kPin::Group::Port(kPin::PORT_K, 0b00110000));
+
 
 void abs_encoder_isr(){
   abs_encoder.interputHandler();
