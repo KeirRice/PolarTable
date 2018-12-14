@@ -13,19 +13,15 @@
 #include "Arduino.h"
 #include <assert.h>
 
-// #define ENABLE_MOCK_WIRE_LIBRARY
-// #define ENABLE_TESTING
-// #define ENABLE_SERIAL_UI
-
 //#define DISABLE_CALIBRATION
 //#define DISABLE_BUTTON
 //#define DISABLE_BUTTON_LED
-//#define DISABLE_CALIBRATION
 //#define DISABLE_LIGHTING
 //#define DISABLE_MOTORS
 //#define DISABLE_RASPBERRY_COMS
 //#define DISABLE_RASPBERRY_MANAGER
-//#define DISABLE_I2C_COMS
+//#define DISABLE_COMMANDS
+//#define DISABLE_ESP
 
 // Convert a byte to text we can print
 void print_byte(byte code)
