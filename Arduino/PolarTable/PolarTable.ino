@@ -34,8 +34,8 @@ typedef struct FsmEventDriver : public EventTask
 #define EI_NOTEXTERNAL
 #include <EnableInterrupt.h>
 #include <kEncoder.h>
-kEncoder::AbsoluteEncoder abs_encoder(kPin::Group::Port(kPin::PORT_K, 0b00001111));
-kEncoder::RelativeEncoder rel_encoder(kPin::Group::Port(kPin::PORT_K, 0b00110000));
+kEncoder::AbsoluteEncoder abs_encoder;
+kEncoder::RelativeEncoder rel_encoder;
 
 
 void abs_encoder_isr(){
@@ -74,10 +74,12 @@ void setup()
 
   // Encode setup.
 #ifndef DISABLE_ENCODER_ABSOLUTE
-  abs_encoder.setup(&abs_encoder_isr);
+  kPin::Group::Port *asb_port = new kPin::Group::Port(kPin::PORT_K, 0b00001111);
+  abs_encoder.setup((*asb_port), &abs_encoder_isr);
 #endif // DISABLE_ENCODER_ABSOLUTE
 #ifndef DISABLE_ENCODER_RELATIVE
-  rel_encoder.setup(&rel_encoder_isr);
+  kPin::Group::Port *rel_port = new kPin::Group::Port(kPin::PORT_K, 0b00110000);
+  rel_encoder.setup((*rel_port), &rel_encoder_isr);
 #endif // DISABLE_ENCODER_RELATIVE
   
   // testing_setup();
@@ -86,13 +88,13 @@ void setup()
 
 void loop()
 {
-  esp_loop();
-  button_loop();
-  button_led_loop();
-  lighting_loop();
-  motor_loop();
-  calibration_loop();
-  command_loop();
+//  esp_loop();
+//  button_loop();
+//  button_led_loop();
+//  lighting_loop();
+//  motor_loop();
+//  calibration_loop();
+//  command_loop();
 }
 //void setup(){}
 //void loop(){}
