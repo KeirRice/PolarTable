@@ -5,6 +5,13 @@
 *************************************************************/
 #pragma once
 
+#ifdef DISABLE_ESP
+
+void esp_setup(){}
+void esp_loop(){}
+
+#else // DISABLE_ESP
+
 #include <util/atomic.h> // this library includes the ATOMIC_BLOCK macro.
 #include <PacketSerial.h>
 #include <simpleRPC.h>
@@ -206,3 +213,5 @@ void esp_loop(){
     packets_enabled = true;
   }
 }
+
+#endif // DISABLE_ESP
