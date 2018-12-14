@@ -330,6 +330,7 @@ void attachCommandCallbacks()
 // Setup function
 void command_setup() 
 {
+  DEBUG_WHERE();
   // Listen on serial connection for messages from the PC
   Serial3.begin(115200); 
 

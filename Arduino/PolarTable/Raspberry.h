@@ -130,7 +130,7 @@ void raspberry_on_state(){
 *************************************************************/
 
 void raspberry_manager_setup() {
-  
+  DEBUG_WHERE();
   pinMode(PIN_PI_POWER, OUTPUT);
   PIN_PI_POWER.digitalWrite(HIGH);
   

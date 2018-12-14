@@ -158,6 +158,7 @@ void onPacketReceived(const void* sender, const uint8_t* buffer, size_t size)
 }
 
 void esp_setup(){
+  DEBUG_WHERE();
   Serial3.begin(115200);
 }
 

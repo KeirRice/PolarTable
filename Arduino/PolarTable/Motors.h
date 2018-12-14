@@ -263,6 +263,7 @@ struct MotorEventDriver : public FsmEventDriver
 *************************************************************/
 
 void motor_setup() {
+  DEBUG_WHERE();
   struct MotorEventDriver motor_event_driver = MotorEventDriver(&fsm_motors);
   evtManager.subscribe(Subscriber(MOVEMENT, &motor_event_driver));
 

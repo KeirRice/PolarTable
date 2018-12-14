@@ -213,6 +213,7 @@ void fade_out()
 
 void button_led_setup()
 {    
+  DEBUG_WHERE();
   // Off => On, On => OFF
   fsm_button_led.add_transition(&state_led_off, &state_led_on, BUTTON_ON, NULL);
   fsm_button_led.add_transition(&state_led_on, &state_led_off, BUTTON_OFF, NULL);

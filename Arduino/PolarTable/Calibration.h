@@ -45,6 +45,7 @@ void motors_calibration_exit(){
 }
 
 void calibration_setup() {
+  DEBUG_WHERE();
   // Use io.pinMode(<pin>, <mode>) to set our relative encoder switches
   PIN_A_SWITCH.pinMode(INPUT_PULLUP);
   PIN_B_SWITCH.pinMode(INPUT_PULLUP);

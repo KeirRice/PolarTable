@@ -167,6 +167,8 @@ struct LightingEventDriver : public FsmEventDriver
 *************************************************************/
 
 void lighting_setup() {
+  DEBUG_WHERE();
+  
   assert(PIN_LED_SDIN == 51);
   assert(PIN_LED_SCIN == 52);
   FastLED.addLeds<P9813, 51 /*PIN_LED_SDIN.pin*/, 52 /*PIN_LED_SCIN.pin*/, RGB>(leds, NUM_LEDS);
